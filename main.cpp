@@ -1,13 +1,8 @@
 #include <iostream>
-
-#include <fstream>
-#include <nlohmann/json.hpp>
-using json = nlohmann::json;
+#include "logger.hpp"
 
 int main()
 {
-    json j;
-    ::std::cout << "Solidity2CPN" << ::std::endl;
-
+    LOGI("Solidity2CPN...");
     return 0;
 }
