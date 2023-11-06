@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vadefs.h>
+#include <cstdarg>
 
 #include "base.hpp"
 #include "singleton.hpp"
