@@ -17,7 +17,7 @@
 #include <libsolutil/CommonIO.h>
 #include <libsolutil/JSON.h>
 
-namespace po = boost::program_options;
+#include <libsolidity/interface/CompilerStack.h>
 
 _START_SOLIDITY2CPN_NM_
 
@@ -43,7 +43,7 @@ bool CLI::ParseArgs(int argc, char const *const *argv)
     po::options_description allOptions = GetOptionsDescription();
     po::positional_options_description filesPositions = GetPositionalOptionsDescription();
 
-    options_ = {};
+    options_.Clear();
     args_ = {};
 
     // parse the compiler arguments
@@ -200,6 +200,7 @@ void CLI::ProcessInput()
     case CLIMode::Version:
         break;
     case CLIMode::NetGen:
+        CompileAndGenerate();
         break;
     }
 }
@@ -214,23 +215,44 @@ void CLI::PrintHelp() const
 
 void CLI::PrintLicense() const
 {
-    const char* wtfplLicenseText =
-    "            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE\n"
-    "                    Version 2, December 2004\n"
-    "\n"
-    " Copyright (C) [2023] [Z3r0M3r0ry]\n"
-    "\n"
-    " Everyone is permitted to copy and distribute verbatim or modified\n"
-    " copies of this license document, and changing it is allowed as long\n"
-    " as the name is changed.\n"
-    "\n"
-    "            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE\n"
-    "   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION\n"
-    "\n"
-    "  0. You just DO WHAT THE FUCK YOU WANT TO.\n";
+    const char *wtfplLicenseText =
+        "            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE\n"
+        "                    Version 2, December 2004\n"
+        "\n"
+        " Copyright (C) [2023] [Z3r0M3r0ry]\n"
+        "\n"
+        " Everyone is permitted to copy and distribute verbatim or modified\n"
+        " copies of this license document, and changing it is allowed as long\n"
+        " as the name is changed.\n"
+        "\n"
+        "            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE\n"
+        "   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION\n"
+        "\n"
+        "  0. You just DO WHAT THE FUCK YOU WANT TO.\n";
 
     // Assuming LOGI is a macro or function for logging or displaying information
     LOGI(wtfplLicenseText);
+}
+
+void CLI::CompileAndGenerate()
+{
+    compiler_ = ::std::make_unique<solidity::frontend::CompilerStack>();
+    compiler_->setMetadataFormat(solidity::frontend::CompilerStack::MetadataFormat::NoMetadata);
+    compiler_->setMetadataHash(solidity::frontend::CompilerStack::MetadataHash::None);
+
+    // set sources
+    compiler_->setSources(fileReader_.sourceUnits());
+
+    bool result = compiler_->compile();
+
+    for (auto const &error : compiler_->errors())
+    {
+        LOGE("%s", error->what());
+    }
+
+    if(!result) {
+        LOGE("Error compiling...");
+    }
 }
 
 po::positional_options_description CLI::GetPositionalOptionsDescription()
@@ -269,7 +291,7 @@ po::options_description CLI::GetOptionsDescription()
         po::value<std::string>()->value_name("path"),
         "If given, creates the output file and output products will be put under that folder")(
         g_strEVMVersion.c_str(),
-        po::value<std::string>()->value_name("version")->default_value(EVMVersion{}.name()),
+        po::value<std::string>()->value_name("version")->default_value(solidity::langutil::EVMVersion{}.name()),
         "Select desired EVM version. Either homestead, tangerineWhistle, spuriousDragon, "
         "byzantium, constantinople, petersburg, istanbul, berlin, london, paris or shanghai.");
     desc.add(outputOptions);

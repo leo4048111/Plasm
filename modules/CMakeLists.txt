@@ -3,11 +3,9 @@ project(Solidity2CPN)
 set(TARGET s2c_modules)
 set(S2C_MODULE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(S2C_MODULE_BASE_INCLUDE_DIR ${S2C_MODULE_ROOT_DIR}/base/include)
-set(S2C_MODULE_PARSE_INCLUDE_DIR ${S2C_MODULE_ROOT_DIR}/parse/include)
 set(S2C_MODULE_NETGEN_INCLUDE_DIR ${S2C_MODULE_ROOT_DIR}/netgen/include)
 
 set(S2C_MODULE_BASE_SRC_DIR ${S2C_MODULE_ROOT_DIR}/base/src)
-set(S2C_MODULE_PARSE_SRC_DIR ${S2C_MODULE_ROOT_DIR}/parse/src)
 set(S2C_MODULE_NETGEN_SRC_DIR ${S2C_MODULE_ROOT_DIR}/netgen/src)
 
 # env 
@@ -20,8 +18,6 @@ set(S2C_MODULE_HDR
     ${S2C_MODULE_BASE_INCLUDE_DIR}/cli.hpp
     ${S2C_MODULE_BASE_INCLUDE_DIR}/logger.hpp
     ${S2C_MODULE_BASE_INCLUDE_DIR}/singleton.hpp
-    # parse
-    ${S2C_MODULE_PARSE_INCLUDE_DIR}/parse.hpp
     # netgen
     ${S2C_MODULE_NETGEN_INCLUDE_DIR}/generator.hpp
 )
@@ -30,12 +26,12 @@ set(S2C_MODULE_SRC
     # base
     ${S2C_MODULE_BASE_SRC_DIR}/logger.cpp
     ${S2C_MODULE_BASE_SRC_DIR}/cli.cpp
-    # parse
-    ${S2C_MODULE_PARSE_SRC_DIR}/parse.cpp
     # netgen
 )
 
 # deps
+set(BOOST_COMPONENTS "filesystem;unit_test_framework;program_options;system")
+
 if (WIN32)
 	# Boost 1.77 fixes a bug that causes crashes on Windows for some relative paths in --allow-paths.
 	# See https://github.com/boostorg/filesystem/issues/201
@@ -66,5 +62,6 @@ target_include_directories(${TARGET} PUBLIC
 
 target_link_libraries(${TARGET} PUBLIC
     solidity
-    Boost::boost 
+    Boost::boost
+    Boost::program_options
 )
