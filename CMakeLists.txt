@@ -11,16 +11,14 @@ set(S2C_THIRD_PARTY_DIR ${S2C_ROOT_DIR}/third_party)
 # modules
 add_subdirectory(${S2C_ROOT_DIR}/modules)
 
+# deps
+
+add_subdirectory(${S2C_THIRD_PARTY_DIR}/solidity)
+
 # target
 add_executable(${TARGET} ${S2C_ROOT_DIR}/main.cpp)
 
 # deps
-target_include_directories(
-    ${TARGET} 
-    PRIVATE
-    ${S2C_THIRD_PARTY_DIR}/json/single_include/
-    )
-
 target_link_libraries(
     ${TARGET}
     PRIVATE

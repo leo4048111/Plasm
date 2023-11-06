@@ -1,8 +1,10 @@
 #include <iostream>
-#include "logger.hpp"
+#include "cli.hpp"
 
-int main()
+
+int main(int argc, char** argv)
 {
-    LOGI("Solidity2CPN...");
+    auto& cli = SOLIDITY2CPN_NM::CLI::GetInstance();
+    cli.Run(argc, argv);
     return 0;
 }
