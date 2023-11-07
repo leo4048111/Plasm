@@ -29,23 +29,6 @@ set(S2C_MODULE_SRC
     # netgen
 )
 
-# deps
-set(BOOST_COMPONENTS "filesystem;unit_test_framework;program_options;system")
-
-if (WIN32)
-	# Boost 1.77 fixes a bug that causes crashes on Windows for some relative paths in --allow-paths.
-	# See https://github.com/boostorg/filesystem/issues/201
-	find_package(Boost 1.77.0 QUIET REQUIRED COMPONENTS ${BOOST_COMPONENTS})
-else()
-	# Boost 1.65 is the first to also provide boost::get for rvalue-references (#5787).
-	find_package(Boost 1.65.0 QUIET REQUIRED COMPONENTS ${BOOST_COMPONENTS})
-endif()
-
-if (NOT TARGET Boost::boost) # header only target
-	add_library(Boost::boost INTERFACE IMPORTED)
-	set_property(TARGET Boost::boost APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
-endif()
-
 # target
 add_library(${TARGET} 
     ${S2C_MODULE_HDR} 
@@ -54,10 +37,7 @@ add_library(${TARGET}
 
 target_include_directories(${TARGET} PUBLIC 
     ${S2C_MODULE_BASE_INCLUDE_DIR}
-    ${S2C_MODULE_PARSE_INCLUDE_DIR}
     ${S2C_MODULE_NETGEN_INCLUDE_DIR}
-    # nlohmann::json
-    ${S2C_THIRD_PARTY_DIR}/json/single_include/
 )
 
 target_link_libraries(${TARGET} PUBLIC
