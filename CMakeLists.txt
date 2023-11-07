@@ -3,7 +3,6 @@ project(Solidity2CPN)
 set(TARGET Solidity2CPN)
 
 # env
-add_definitions(-D_GNU_SOURCE)
 set(CMAKE_CXX_STANDARD 20)
 set(S2C_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(S2C_THIRD_PARTY_DIR ${S2C_ROOT_DIR}/third_party)
@@ -12,7 +11,7 @@ set(S2C_THIRD_PARTY_DIR ${S2C_ROOT_DIR}/third_party)
 list(APPEND CMAKE_MODULE_PATH ${S2C_ROOT_DIR}/cmake)
 
 # boost
-set(BOOST_COMPONENTS "filesystem;unit_test_framework;program_options;system")
+set(BOOST_COMPONENTS "filesystem;program_options;system")
 
 if (WIN32)
 	# Boost 1.77 fixes a bug that causes crashes on Windows for some relative paths in --allow-paths.

@@ -18,6 +18,7 @@
 #include <libsolutil/JSON.h>
 
 #include <libsolidity/interface/CompilerStack.h>
+#include <libsolidity/ast/ASTJsonExporter.h>
 
 _START_SOLIDITY2CPN_NM_
 
@@ -159,9 +160,9 @@ void CLI::ReadInputFiles()
         if (!boost::filesystem::exists(infile))
         {
             if (!options_.input.ignoreMissingFiles)
-                LOGE("%s%s%s", '"', infile.string().c_str(), "\" is not found.");
+                LOGE("\"%s\" is not found.", infile.string().c_str());
             else
-                LOGW("%s is not found. Skipping.", infile.string().c_str());
+                LOGW("\"%s\" is not found. Skipping.", infile.string().c_str());
 
             continue;
         }
@@ -252,6 +253,12 @@ void CLI::CompileAndGenerate()
 
     if(!result) {
         LOGE("Error compiling...");
+        return;
+    }
+
+    for(auto& x : fileReader_.sourceUnits()) {
+        auto& unit = compiler_->ast(x.second);
+        // solidity::frontend::ASTJsonExporter(compiler_->state(), compiler_->sourceIndices()).print(::std::cout, unit, solidity::util::JsonFormat{});
     }
 }
 
