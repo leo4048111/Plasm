@@ -4,6 +4,10 @@ set(TARGET Solidity2CPN)
 
 # env
 set(CMAKE_CXX_STANDARD 20)
+execute_process(COMMAND ${CMAKE_CXX_COMPILER} -fuse-ld=gold -Wl,--version ERROR_QUIET OUTPUT_VARIABLE LD_VERSION)
+if ("${LD_VERSION}" MATCHES "GNU gold")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-ld=gold")
+endif ()
 set(S2C_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(S2C_THIRD_PARTY_DIR ${S2C_ROOT_DIR}/third_party)
 

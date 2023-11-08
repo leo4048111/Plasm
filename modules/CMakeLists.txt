@@ -8,7 +8,7 @@ set(S2C_MODULE_NETGEN_INCLUDE_DIR ${S2C_MODULE_ROOT_DIR}/netgen/include)
 set(S2C_MODULE_BASE_SRC_DIR ${S2C_MODULE_ROOT_DIR}/base/src)
 set(S2C_MODULE_NETGEN_SRC_DIR ${S2C_MODULE_ROOT_DIR}/netgen/src)
 
-# env 
+# env
 set(CMAKE_CXX_STANDARD 20)
 
 # src & include
@@ -43,5 +43,6 @@ target_include_directories(${TARGET} PUBLIC
 target_link_libraries(${TARGET} PUBLIC
     solidity
     Boost::boost
+    Boost::filesystem
     Boost::program_options
 )
