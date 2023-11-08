@@ -257,8 +257,8 @@ void CLI::CompileAndGenerate()
     }
 
     for(auto& x : fileReader_.sourceUnits()) {
-        auto& unit = compiler_->ast(x.second);
-        // solidity::frontend::ASTJsonExporter(compiler_->state(), compiler_->sourceIndices()).print(::std::cout, unit, solidity::util::JsonFormat{});
+        auto& unit = compiler_->ast(x.first);
+        solidity::frontend::ASTJsonExporter(compiler_->state(), compiler_->sourceIndices()).print(::std::cout, unit, solidity::util::JsonFormat{});
     }
 }
 
