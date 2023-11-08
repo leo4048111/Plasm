@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
-project(Solidity2CPN)
-set(TARGET Solidity2CPN)
+project(Plasm)
+set(TARGET Plasm)
 
 # env
 set(CMAKE_CXX_STANDARD 20)
@@ -8,11 +8,11 @@ execute_process(COMMAND ${CMAKE_CXX_COMPILER} -fuse-ld=gold -Wl,--version ERROR_
 if ("${LD_VERSION}" MATCHES "GNU gold")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-ld=gold")
 endif ()
-set(S2C_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(S2C_THIRD_PARTY_DIR ${S2C_ROOT_DIR}/third_party)
+set(PSM_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(PSM_THIRD_PARTY_DIR ${PSM_ROOT_DIR}/third_party)
 
 # deps
-list(APPEND CMAKE_MODULE_PATH ${S2C_ROOT_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${PSM_ROOT_DIR}/cmake)
 
 # boost
 set(BOOST_COMPONENTS "filesystem;program_options;system")
@@ -45,17 +45,17 @@ endif()
 #     message(FATAL_ERROR "Solidity not found")
 # endif()
 
-add_subdirectory(${S2C_THIRD_PARTY_DIR}/solidity)
+add_subdirectory(${PSM_THIRD_PARTY_DIR}/solidity)
 
 # modules
-add_subdirectory(${S2C_ROOT_DIR}/modules)
+add_subdirectory(${PSM_ROOT_DIR}/modules)
 
 # target
-add_executable(${TARGET} ${S2C_ROOT_DIR}/main.cpp)
+add_executable(${TARGET} ${PSM_ROOT_DIR}/main.cpp)
 
 # deps
 target_link_libraries(
     ${TARGET}
     PRIVATE
-    s2c_modules
+    psm_modules
 )

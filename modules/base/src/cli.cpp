@@ -20,7 +20,7 @@
 #include <libsolidity/interface/CompilerStack.h>
 #include <libsolidity/ast/ASTJsonExporter.h>
 
-_START_SOLIDITY2CPN_NM_
+_START_PSM_NM_
 
 bool CLI::Run(int argc, char const *const *argv)
 {
@@ -307,4 +307,4 @@ po::options_description CLI::GetOptionsDescription()
     return desc;
 }
 
-_END_SOLIDITY2CPN_NM_
+_END_PSM_NM_

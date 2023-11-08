@@ -11,4 +11,3 @@ private:                                   \
     ~classname() = default;                \
     classname(const classname &) = delete; \
     classname &operator=(const classname &) = delete;
-    

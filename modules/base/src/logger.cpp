@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <string>
 
-_START_SOLIDITY2CPN_NM_
+_START_PSM_NM_
 
 void Logger::PrintLog(LogLevel level, const char *file,
                       const char *function, int line, const char *fmt, ...)
@@ -71,4 +71,4 @@ void Logger::PrintLogV(LogLevel level, const char *file, const char *function, i
     }
 }
 
-_END_SOLIDITY2CPN_NM_
+_END_PSM_NM_

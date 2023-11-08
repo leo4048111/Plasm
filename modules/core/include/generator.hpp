@@ -2,11 +2,11 @@
 
 #include "base.hpp"
 
-_START_SOLIDITY2CPN_NM_
+_START_PSM_NM_
 
 class Generator {
 public:
     
 };
 
-_END_SOLIDITY2CPN_NM_
+_END_PSM_NM_

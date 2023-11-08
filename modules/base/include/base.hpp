@@ -1,11 +1,11 @@
 #pragma once
 
-#define SOLIDITY2CPN_NM s2c
+#define PSM_NM psm
 
-#define _START_SOLIDITY2CPN_NM_ \
-    namespace s2c      \
+#define _START_PSM_NM_ \
+    namespace psm      \
     {
 
-#define _END_SOLIDITY2CPN_NM_ \
+#define _END_PSM_NM_ \
     }
 

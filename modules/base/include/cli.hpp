@@ -14,7 +14,7 @@
 
 namespace po = boost::program_options;
 
-_START_SOLIDITY2CPN_NM_
+_START_PSM_NM_
 
 static std::string const g_strHelp = "help";
 static std::string const g_strVersion = "version";
@@ -95,4 +95,4 @@ private:
     ::std::unique_ptr<solidity::frontend::CompilerStack> compiler_;
 };
 
-_END_SOLIDITY2CPN_NM_
+_END_PSM_NM_
