@@ -155,6 +155,7 @@ private:
     static constexpr const char *TIME = "time";
     static constexpr const char *REAL = "real";
     static constexpr const char *STRING = "string";
+    static constexpr const char *ENUMERATE = "enum";
     static constexpr const char *PRODUCT = "product";
     static constexpr const char *ALIAS = "alias";
 };

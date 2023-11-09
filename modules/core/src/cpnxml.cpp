@@ -1,5 +1,7 @@
 #include "cpnxml.hpp"
 
+#include "logger.hpp"
+
 _START_PSM_NM_
 
 CPNXml::CPNXml(::std::string name) : name_(name)
@@ -321,13 +323,16 @@ void CPNXml::DeclareStringColorSet(
 {
     int id = MakeId();
     const char *STRING_DECL_LAYOUT_FMT;
-    if (string_expr) {
+    if (string_expr)
+    {
         // FIXME: `with` and `and` clause in String color set decl is a little complicated
         // Will follow up implementation later on...
-        if(int_expr) {
+        if (int_expr)
+        {
             STRING_DECL_LAYOUT_FMT = "colset %s = string;";
         }
-        else {
+        else
+        {
             STRING_DECL_LAYOUT_FMT = "colset %s = string;";
         }
     }
@@ -347,7 +352,8 @@ void CPNXml::DeclareStringColorSet(
     if (string_expr)
     {
         // TODO: Handle with clause...
-        if(int_expr) {
+        if (int_expr)
+        {
             // TODO: Handle and clause...
         }
     }
@@ -358,10 +364,13 @@ void CPNXml::DeclareStringColorSet(
     if (string_expr)
     {
         // TODO: Handle with clause...
-        if(int_expr) {
+        if (int_expr)
+        {
             // TODO: Handle and clause...
             sprintf(buf, STRING_DECL_LAYOUT_FMT, name.c_str());
-        } else {
+        }
+        else
+        {
             sprintf(buf, STRING_DECL_LAYOUT_FMT, name.c_str());
         }
     }
@@ -372,7 +381,51 @@ void CPNXml::DeclareStringColorSet(
 
 void CPNXml::DeclareEnumeratedColorSet(
     ::std::string name,
-    ::std::vector<::std::string> ids){};
+    ::std::vector<::std::string> ids)
+{
+    int id = MakeId();
+    const char *ENUMERATED_DECL_LAYOUT_FMT;
+    ENUMERATED_DECL_LAYOUT_FMT = "colset %s = with %s;";
+
+    pugi::xml_node color = sdBlock_.append_child(COLOR);
+    color.append_attribute(ID) = ::std::to_string(id).c_str();
+
+    // <id>
+    pugi::xml_node idnode = color.append_child(ID);
+    idnode.text().set(name.c_str());
+
+    // <enum>
+    pugi::xml_node enumnode = color.append_child(ENUMERATE);
+    enumnode.text().set("\n");
+
+    // Handle ids
+    ::std::string sid = "";
+
+    // Integrity check
+    if(ids.empty()) {
+        // Should be unreachable...
+        LOGE("DeclareEnumeratedColorSet does not accept empty ids...");
+        PSM_BAIL();
+    }
+
+    // Assemble ids
+    for(auto& x : ids) {
+        pugi::xml_node idnode2 = enumnode.append_child(ID);
+        idnode2.text().set(x.c_str());
+        sid += x;
+        sid += '|';
+    }
+
+    // Trim last '|'
+    sid = sid.substr(0, sid.size() - 1);
+
+    // <layout>
+    pugi::xml_node layout = color.append_child(LAYOUT);
+    char buf[256];
+
+    sprintf(buf, ENUMERATED_DECL_LAYOUT_FMT, name.c_str(), sid.c_str());
+    layout.text().set(buf);
+};
 
 void CPNXml::DeclareIndexColorSet(
     ::std::string name,
