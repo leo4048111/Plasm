@@ -402,14 +402,16 @@ void CPNXml::DeclareEnumeratedColorSet(
     ::std::string sid = "";
 
     // Integrity check
-    if(ids.empty()) {
+    if (ids.empty())
+    {
         // Should be unreachable...
         LOGE("DeclareEnumeratedColorSet does not accept empty ids...");
         PSM_BAIL();
     }
 
     // Assemble ids
-    for(auto& x : ids) {
+    for (auto &x : ids)
+    {
         pugi::xml_node idnode2 = enumnode.append_child(ID);
         idnode2.text().set(x.c_str());
         sid += x;
@@ -429,7 +431,12 @@ void CPNXml::DeclareEnumeratedColorSet(
 
 void CPNXml::DeclareIndexColorSet(
     ::std::string name,
-    ::std::string int_expr){};
+    ::std::string int_expr)
+{
+    // FIXME: Implementation for DeclareIndexColorSet is a little complicated
+    // Moreover this is not a regularly used decl.
+    // Will follow up implementation later...
+};
 
 // Compound color sets (using previously CPNXml::Declared color sets)
 void CPNXml::DeclareProductColorSet(

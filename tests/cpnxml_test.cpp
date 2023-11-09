@@ -17,6 +17,7 @@ int main()
     x.DeclareTimeColorSet("TIME");
     x.DeclareStringColorSet("STRING");
     x.DeclareEnumeratedColorSet("DAYS", {"MON", "TUES", "THURS", "WEDNES", "FRI", "SATUR", "SUN"});
+    x.DeclareIndexColorSet("PH", "1..5");
 
     x.DeclareAliasColorSets("tmp", "INTINF");
     x.DeclareAliasColorSets("TYPE", "STRING");

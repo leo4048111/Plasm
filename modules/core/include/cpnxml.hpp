@@ -58,6 +58,7 @@ public:
         ::std::string int_expr);
 
     // Compound color sets (using previously declared color sets)
+    // TODO: More decl supports
     void DeclareProductColorSet(
         ::std::string name,
         ::std::vector<::std::string> components);
