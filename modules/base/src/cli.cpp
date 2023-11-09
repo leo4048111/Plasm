@@ -259,6 +259,8 @@ void CLI::CompileAndGenerate()
         Generator generator;
         generator.toCPN(unit);
     }
+
+    compiler_->reset();
 }
 
 po::positional_options_description CLI::GetPositionalOptionsDescription()
