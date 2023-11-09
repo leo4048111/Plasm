@@ -104,6 +104,36 @@ void CPNXml::DeclareUnitColorSet(
     ::std::string name,
     ::std::optional<::std::string> new_unit)
 {
+    int id = MakeId();
+    const char* UNIT_DECL_LAYOUT_FMT;
+    if(new_unit)
+        UNIT_DECL_LAYOUT_FMT = "colset %s = unit with %s;";
+    else
+        UNIT_DECL_LAYOUT_FMT = "colset %s = unit;";
+    pugi::xml_node color = sdBlock_.append_child(COLOR);
+    color.append_attribute(ID) = ::std::to_string(id).c_str();
+
+    // <id>
+    pugi::xml_node idnode = color.append_child(ID);
+    idnode.text().set(name.c_str());
+
+    // <unit>
+    pugi::xml_node unit = color.append_child(UNIT);
+    unit.text().set("\n");
+    if(new_unit) {
+        pugi::xml_node with = unit.append_child(WITH);
+        pugi::xml_node idnode2 = with.append_child(ID);
+        idnode2.text().set(new_unit->c_str());
+    }
+
+    // <layout>
+    pugi::xml_node layout = color.append_child(LAYOUT);
+    char buf[256];
+    if(new_unit)
+        sprintf(buf, UNIT_DECL_LAYOUT_FMT, name.c_str(), new_unit->c_str());
+    else
+        sprintf(buf, UNIT_DECL_LAYOUT_FMT, name.c_str());
+    layout.text().set(buf);
 }
 
 void CPNXml::DeclareBooleanColorSet(
@@ -152,8 +182,9 @@ void CPNXml::DeclareAliasColorSets(
     ::std::string name0)
 {
     int id = MakeId();
-    static const char* ALIAS_DECL_LAYOUT_FMT = "colset %s = %s;";
+    const char* ALIAS_DECL_LAYOUT_FMT = "colset %s = %s;";
     pugi::xml_node color = sdBlock_.append_child(COLOR);
+    color.append_attribute(ID) = ::std::to_string(id).c_str();
 
     // <id>
     pugi::xml_node idnode = color.append_child(ID);

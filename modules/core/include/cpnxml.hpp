@@ -144,6 +144,7 @@ private:
     // Color Set
     static constexpr const char *COLOR = "color";
     static constexpr const char *LAYOUT = "layout";
+    static constexpr const char *WITH = "with";
 
     // Color set declarations
     static constexpr const char *UNIT = "unit";

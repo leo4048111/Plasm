@@ -7,6 +7,7 @@ int main()
     int pageId1 = x.AddPage("TestNet");
 
     // Color set declarations
+    x.DeclareUnitColorSet("UNIT");
     x.DeclareAliasColorSets("STRING", "string");
     x.DeclareAliasColorSets("TYPE", "STRING");
     x.DeclareAliasColorSets("TYPE2", "TYPE");
