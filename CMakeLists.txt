@@ -45,7 +45,11 @@ endif()
 #     message(FATAL_ERROR "Solidity not found")
 # endif()
 
+# solidity
 add_subdirectory(${PSM_THIRD_PARTY_DIR}/solidity)
+
+# pugixml
+add_subdirectory(${PSM_THIRD_PARTY_DIR}/pugixml)
 
 # modules
 add_subdirectory(${PSM_ROOT_DIR}/modules)

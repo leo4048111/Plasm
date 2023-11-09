@@ -43,6 +43,7 @@ target_include_directories(${TARGET} PUBLIC
 
 target_link_libraries(${TARGET} PUBLIC
     solidity
+    pugixml
     Boost::boost
     Boost::filesystem
     Boost::program_options
