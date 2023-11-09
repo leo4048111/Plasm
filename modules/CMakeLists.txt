@@ -8,9 +8,6 @@ set(PSM_MODULE_CORE_INCLUDE_DIR ${PSM_MODULE_ROOT_DIR}/core/include)
 set(PSM_MODULE_BASE_SRC_DIR ${PSM_MODULE_ROOT_DIR}/base/src)
 set(PSM_MODULE_CORE_SRC_DIR ${PSM_MODULE_ROOT_DIR}/core/src)
 
-# env
-set(CMAKE_CXX_STANDARD 20)
-
 # src & include
 set(PSM_MODULE_HDR
     # base
@@ -20,6 +17,7 @@ set(PSM_MODULE_HDR
     ${PSM_MODULE_BASE_INCLUDE_DIR}/singleton.hpp
     # core
     ${PSM_MODULE_CORE_INCLUDE_DIR}/generator.hpp
+    ${PSM_MODULE_CORE_INCLUDE_DIR}/cpnxml.hpp
 )
 
 set(PSM_MODULE_SRC
@@ -28,6 +26,7 @@ set(PSM_MODULE_SRC
     ${PSM_MODULE_BASE_SRC_DIR}/cli.cpp
     # core
     ${PSM_MODULE_CORE_SRC_DIR}/generator.cpp
+    ${PSM_MODULE_CORE_SRC_DIR}/cpnxml.cpp
 )
 
 # target

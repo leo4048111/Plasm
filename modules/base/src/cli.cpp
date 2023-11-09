@@ -82,7 +82,7 @@ void CLI::ProcessArgs()
         for (std::string const &includePath : args_[g_strIncludePath].as<std::vector<std::string>>())
         {
             if (includePath.empty())
-                LOGW("%s%s%s", "Empty values are not allowed in --", g_strIncludePath, ".");
+                LOGW("%s%s%s", "Empty values are not allowed in --", g_strIncludePath.c_str(), ".");
 
             options_.input.includePaths.push_back(includePath);
         }
@@ -126,10 +126,10 @@ void CLI::ReadInputFiles()
     if (fileReader_.basePath() != "")
     {
         if (!boost::filesystem::exists(fileReader_.basePath()))
-            LOGW("%s%s%s", "Base path does not exist: \"", fileReader_.basePath().string(), '"');
+            LOGW("%s%s%s", "Base path does not exist: \"", fileReader_.basePath().string().c_str(), '"');
 
         if (!boost::filesystem::is_directory(fileReader_.basePath()))
-            LOGW("%s%s%s", "Base path is not a directory: \"", fileReader_.basePath().string(), '"');
+            LOGW("%s%s%s", "Base path is not a directory: \"", fileReader_.basePath().string().c_str(), '"');
     }
 
     for (boost::filesystem::path const &includePath : options_.input.includePaths)

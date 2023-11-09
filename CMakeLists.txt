@@ -3,7 +3,12 @@ project(Plasm)
 set(TARGET Plasm)
 
 # env
-set(CMAKE_CXX_STANDARD 20)
+# Require C++17, for Solidity compatibility.
+if (NOT DEFINED CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17) # This requires at least CMake 3.8 to accept this C++17 flag.
+endif ()
+
+# if using gnu/gcc, check if ld.gold is available
 execute_process(COMMAND ${CMAKE_CXX_COMPILER} -fuse-ld=gold -Wl,--version ERROR_QUIET OUTPUT_VARIABLE LD_VERSION)
 if ("${LD_VERSION}" MATCHES "GNU gold")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-ld=gold")
