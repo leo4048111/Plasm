@@ -9,6 +9,8 @@ int main()
     // Color set declarations
     x.DeclareUnitColorSet("UNIT");
     x.DeclareBooleanColorSet("BOOL");
+    x.DeclareIntegerColorSet("INT");
+    x.DeclareLargeIntegerColorSet("INTINF");
 
     x.DeclareAliasColorSets("STRING", "string");
     x.DeclareAliasColorSets("TYPE", "STRING");

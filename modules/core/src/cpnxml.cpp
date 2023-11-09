@@ -105,8 +105,8 @@ void CPNXml::DeclareUnitColorSet(
     ::std::optional<::std::string> new_unit)
 {
     int id = MakeId();
-    const char* UNIT_DECL_LAYOUT_FMT;
-    if(new_unit)
+    const char *UNIT_DECL_LAYOUT_FMT;
+    if (new_unit)
         UNIT_DECL_LAYOUT_FMT = "colset %s = unit with %s;";
     else
         UNIT_DECL_LAYOUT_FMT = "colset %s = unit;";
@@ -120,7 +120,8 @@ void CPNXml::DeclareUnitColorSet(
     // <unit>
     pugi::xml_node unit = color.append_child(UNIT);
     unit.text().set("\n");
-    if(new_unit) {
+    if (new_unit)
+    {
         pugi::xml_node with = unit.append_child(WITH);
         pugi::xml_node idnode2 = with.append_child(ID);
         idnode2.text().set(new_unit->c_str());
@@ -129,7 +130,7 @@ void CPNXml::DeclareUnitColorSet(
     // <layout>
     pugi::xml_node layout = color.append_child(LAYOUT);
     char buf[256];
-    if(new_unit)
+    if (new_unit)
         sprintf(buf, UNIT_DECL_LAYOUT_FMT, name.c_str(), new_unit->c_str());
     else
         sprintf(buf, UNIT_DECL_LAYOUT_FMT, name.c_str());
@@ -141,8 +142,8 @@ void CPNXml::DeclareBooleanColorSet(
     ::std::optional<::std::tuple<::std::string, ::std::string>> new_false_true)
 {
     int id = MakeId();
-    const char* BOOLEAN_DECL_LAYOUT_FMT;
-    if(new_false_true)
+    const char *BOOLEAN_DECL_LAYOUT_FMT;
+    if (new_false_true)
         BOOLEAN_DECL_LAYOUT_FMT = "colset %s = bool with (%s, %s);";
     else
         BOOLEAN_DECL_LAYOUT_FMT = "colset %s = bool;";
@@ -156,7 +157,8 @@ void CPNXml::DeclareBooleanColorSet(
     // <bool>
     pugi::xml_node boolnode = color.append_child(BOOL);
     boolnode.text().set("\n");
-    if(new_false_true) {
+    if (new_false_true)
+    {
         pugi::xml_node with = boolnode.append_child(WITH);
         pugi::xml_node idnode2 = with.append_child(ID);
         idnode2.text().set(::std::get<0>(*new_false_true).c_str());
@@ -167,7 +169,7 @@ void CPNXml::DeclareBooleanColorSet(
     // <layout>
     pugi::xml_node layout = color.append_child(LAYOUT);
     char buf[256];
-    if(new_false_true)
+    if (new_false_true)
         sprintf(buf, BOOLEAN_DECL_LAYOUT_FMT, name.c_str(), ::std::get<0>(*new_false_true).c_str(), ::std::get<1>(*new_false_true).c_str());
     else
         sprintf(buf, BOOLEAN_DECL_LAYOUT_FMT, name.c_str());
@@ -176,13 +178,79 @@ void CPNXml::DeclareBooleanColorSet(
 
 void CPNXml::DeclareIntegerColorSet(
     ::std::string name,
-    ::std::optional<::std::string> int_expr){
+    ::std::optional<::std::string> int_expr)
+{
+    int id = MakeId();
+    const char *INTEGER_DECL_LAYOUT_FMT;
+    if (int_expr)
+        // FIXME: with clause in Integer color set decl is a little complicated
+        // Will follow up implementation later on...
+        INTEGER_DECL_LAYOUT_FMT = "colset %s = int;";
+    else
+        INTEGER_DECL_LAYOUT_FMT = "colset %s = int;";
+    pugi::xml_node color = sdBlock_.append_child(COLOR);
+    color.append_attribute(ID) = ::std::to_string(id).c_str();
 
+    // <id>
+    pugi::xml_node idnode = color.append_child(ID);
+    idnode.text().set(name.c_str());
+
+    // <int>
+    pugi::xml_node intnode = color.append_child(INT);
+    intnode.text().set("\n");
+    if (int_expr)
+    {
+        // TODO: Handle with clause...
+    }
+
+    // <layout>
+    pugi::xml_node layout = color.append_child(LAYOUT);
+    char buf[256];
+    if (int_expr)
+        // TODO: Handle with clause...
+        sprintf(buf, INTEGER_DECL_LAYOUT_FMT, name.c_str());
+    else
+        sprintf(buf, INTEGER_DECL_LAYOUT_FMT, name.c_str());
+    layout.text().set(buf);
 };
 
 void CPNXml::DeclareLargeIntegerColorSet(
     ::std::string name,
-    ::std::optional<::std::string> int_expr){};
+    ::std::optional<::std::string> int_expr)
+{
+    int id = MakeId();
+    const char *LARGEINTEGER_DECL_LAYOUT_FMT;
+    if (int_expr)
+        // FIXME: with clause in Integer color set decl is a little complicated
+        // Will follow up implementation later on...
+        LARGEINTEGER_DECL_LAYOUT_FMT = "colset %s = intinf;";
+    else
+        LARGEINTEGER_DECL_LAYOUT_FMT = "colset %s = intinf;";
+    pugi::xml_node color = sdBlock_.append_child(COLOR);
+    color.append_attribute(ID) = ::std::to_string(id).c_str();
+
+    // <id>
+    pugi::xml_node idnode = color.append_child(ID);
+    idnode.text().set(name.c_str());
+
+    // <intinf>
+    pugi::xml_node intinf = color.append_child(INTINF);
+    intinf.text().set("\n");
+    if (int_expr)
+    {
+        // TODO: Handle with clause...
+    }
+
+    // <layout>
+    pugi::xml_node layout = color.append_child(LAYOUT);
+    char buf[256];
+    if (int_expr)
+        // TODO: Handle with clause...
+        sprintf(buf, LARGEINTEGER_DECL_LAYOUT_FMT, name.c_str());
+    else
+        sprintf(buf, LARGEINTEGER_DECL_LAYOUT_FMT, name.c_str());
+    layout.text().set(buf);
+};
 
 void CPNXml::DeclareRealColorSet(
     ::std::string name,
@@ -214,7 +282,7 @@ void CPNXml::DeclareAliasColorSets(
     ::std::string name0)
 {
     int id = MakeId();
-    const char* ALIAS_DECL_LAYOUT_FMT = "colset %s = %s;";
+    const char *ALIAS_DECL_LAYOUT_FMT = "colset %s = %s;";
     pugi::xml_node color = sdBlock_.append_child(COLOR);
     color.append_attribute(ID) = ::std::to_string(id).c_str();
 
