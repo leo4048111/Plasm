@@ -1,3 +1,5 @@
+// cpnxml_test.cpp
+
 #include "cpnxml.hpp"
 
 int main()
@@ -11,8 +13,11 @@ int main()
     x.DeclareBooleanColorSet("BOOL");
     x.DeclareIntegerColorSet("INT");
     x.DeclareLargeIntegerColorSet("INTINF");
+    x.DeclareRealColorSet("REAL");
+    x.DeclareTimeColorSet("TIME");
+    x.DeclareStringColorSet("STRING");
 
-    x.DeclareAliasColorSets("STRING", "string");
+    x.DeclareAliasColorSets("tmp", "INTINF");
     x.DeclareAliasColorSets("TYPE", "STRING");
     x.DeclareAliasColorSets("TYPE2", "TYPE");
     x.Dump();

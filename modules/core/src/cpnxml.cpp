@@ -254,15 +254,121 @@ void CPNXml::DeclareLargeIntegerColorSet(
 
 void CPNXml::DeclareRealColorSet(
     ::std::string name,
-    ::std::optional<::std::string> real_expr){};
+    ::std::optional<::std::string> real_expr)
+{
+    int id = MakeId();
+    const char *REAL_DECL_LAYOUT_FMT;
+    if (real_expr)
+        // FIXME: with clause in Real color set decl is a little complicated
+        // Will follow up implementation later on...
+        REAL_DECL_LAYOUT_FMT = "colset %s = real;";
+    else
+        REAL_DECL_LAYOUT_FMT = "colset %s = real;";
+    pugi::xml_node color = sdBlock_.append_child(COLOR);
+    color.append_attribute(ID) = ::std::to_string(id).c_str();
+
+    // <id>
+    pugi::xml_node idnode = color.append_child(ID);
+    idnode.text().set(name.c_str());
+
+    // <real>
+    pugi::xml_node real = color.append_child(REAL);
+    real.text().set("\n");
+    if (real_expr)
+    {
+        // TODO: Handle with clause...
+    }
+
+    // <layout>
+    pugi::xml_node layout = color.append_child(LAYOUT);
+    char buf[256];
+    if (real_expr)
+        // TODO: Handle with clause...
+        sprintf(buf, REAL_DECL_LAYOUT_FMT, name.c_str());
+    else
+        sprintf(buf, REAL_DECL_LAYOUT_FMT, name.c_str());
+    layout.text().set(buf);
+};
 
 void CPNXml::DeclareTimeColorSet(
-    ::std::string name){};
+    ::std::string name)
+{
+    int id = MakeId();
+    const char *TIME_DECL_LAYOUT_FMT;
+    TIME_DECL_LAYOUT_FMT = "colset %s = time;";
+    pugi::xml_node color = sdBlock_.append_child(COLOR);
+    color.append_attribute(ID) = ::std::to_string(id).c_str();
+
+    // <id>
+    pugi::xml_node idnode = color.append_child(ID);
+    idnode.text().set(name.c_str());
+
+    // <time>
+    pugi::xml_node timenode = color.append_child(TIME);
+    timenode.text().set("\n");
+
+    // <layout>
+    pugi::xml_node layout = color.append_child(LAYOUT);
+    char buf[256];
+    sprintf(buf, TIME_DECL_LAYOUT_FMT, name.c_str());
+    layout.text().set(buf);
+};
 
 void CPNXml::DeclareStringColorSet(
     ::std::string name,
     ::std::optional<::std::string> string_expr,
-    ::std::optional<::std::string> int_expr){};
+    ::std::optional<::std::string> int_expr)
+{
+    int id = MakeId();
+    const char *STRING_DECL_LAYOUT_FMT;
+    if (string_expr) {
+        // FIXME: `with` and `and` clause in String color set decl is a little complicated
+        // Will follow up implementation later on...
+        if(int_expr) {
+            STRING_DECL_LAYOUT_FMT = "colset %s = string;";
+        }
+        else {
+            STRING_DECL_LAYOUT_FMT = "colset %s = string;";
+        }
+    }
+    else
+        STRING_DECL_LAYOUT_FMT = "colset %s = string;";
+
+    pugi::xml_node color = sdBlock_.append_child(COLOR);
+    color.append_attribute(ID) = ::std::to_string(id).c_str();
+
+    // <id>
+    pugi::xml_node idnode = color.append_child(ID);
+    idnode.text().set(name.c_str());
+
+    // <string>
+    pugi::xml_node stringnode = color.append_child(STRING);
+    stringnode.text().set("\n");
+    if (string_expr)
+    {
+        // TODO: Handle with clause...
+        if(int_expr) {
+            // TODO: Handle and clause...
+        }
+    }
+
+    // <layout>
+    pugi::xml_node layout = color.append_child(LAYOUT);
+    char buf[256];
+    if (string_expr)
+    {
+        // TODO: Handle with clause...
+        if(int_expr) {
+            // TODO: Handle and clause...
+            sprintf(buf, STRING_DECL_LAYOUT_FMT, name.c_str());
+        } else {
+            sprintf(buf, STRING_DECL_LAYOUT_FMT, name.c_str());
+        }
+    }
+    else
+        sprintf(buf, STRING_DECL_LAYOUT_FMT, name.c_str());
+    layout.text().set(buf);
+};
 
 void CPNXml::DeclareEnumeratedColorSet(
     ::std::string name,
