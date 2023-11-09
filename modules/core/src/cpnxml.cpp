@@ -431,8 +431,7 @@ void CPNXml::DeclareEnumeratedColorSet(
 
 void CPNXml::DeclareIndexColorSet(
     ::std::string name,
-    ::std::string int_expr)
-{
+    ::std::string int_expr){
     // FIXME: Implementation for DeclareIndexColorSet is a little complicated
     // Moreover this is not a regularly used decl.
     // Will follow up implementation later...
@@ -441,7 +440,53 @@ void CPNXml::DeclareIndexColorSet(
 // Compound color sets (using previously CPNXml::Declared color sets)
 void CPNXml::DeclareProductColorSet(
     ::std::string name,
-    ::std::vector<::std::string> components){};
+    ::std::vector<::std::string> components)
+{
+    int id = MakeId();
+    const char *PRODUCT_DECL_LAYOUT_FMT;
+    PRODUCT_DECL_LAYOUT_FMT = "colset %s = product %s;";
+
+    pugi::xml_node color = sdBlock_.append_child(COLOR);
+    color.append_attribute(ID) = ::std::to_string(id).c_str();
+
+    // <id>
+    pugi::xml_node idnode = color.append_child(ID);
+    idnode.text().set(name.c_str());
+
+    // <product>
+    pugi::xml_node product = color.append_child(PRODUCT);
+    product.text().set("\n");
+
+    // Handle ids
+    ::std::string spros = "";
+
+    // Integrity check
+    if (components.empty())
+    {
+        // Should be unreachable...
+        LOGE("DeclareProductColorSet does not accept empty components...");
+        PSM_BAIL();
+    }
+
+    // Assemble components
+    for (auto &x : components)
+    {
+        pugi::xml_node idnode2 = product.append_child(ID);
+        idnode2.text().set(x.c_str());
+        spros += x;
+        spros += '*';
+    }
+
+    // Trim last '*'
+    spros = spros.substr(0, spros.size() - 1);
+
+    // <layout>
+    pugi::xml_node layout = color.append_child(LAYOUT);
+    char buf[256];
+
+    sprintf(buf, PRODUCT_DECL_LAYOUT_FMT, name.c_str(), spros.c_str());
+    layout.text().set(buf);
+};
 
 void CPNXml::DeclareAliasColorSets(
     ::std::string name,

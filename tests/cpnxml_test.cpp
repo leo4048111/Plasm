@@ -18,10 +18,9 @@ int main()
     x.DeclareStringColorSet("STRING");
     x.DeclareEnumeratedColorSet("DAYS", {"MON", "TUES", "THURS", "WEDNES", "FRI", "SATUR", "SUN"});
     x.DeclareIndexColorSet("PH", "1..5");
+    x.DeclareAliasColorSets("DATA", "STRING");
+    x.DeclareProductColorSet("PACKAGE", {"DATA", "STRING", "INT", "BOOL"});
 
-    x.DeclareAliasColorSets("tmp", "INTINF");
-    x.DeclareAliasColorSets("TYPE", "STRING");
-    x.DeclareAliasColorSets("TYPE2", "TYPE");
     x.Dump();
     return 0;
 }
