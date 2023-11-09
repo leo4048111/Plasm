@@ -215,6 +215,7 @@ void CLI::PrintHelp() const
 void CLI::PrintLicense() const
 {
     const char *wtfplLicenseText =
+        "\n"
         "            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE\n"
         "                    Version 2, December 2004\n"
         "\n"
