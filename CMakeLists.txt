@@ -68,3 +68,6 @@ target_link_libraries(
     PRIVATE
     psm_modules
 )
+
+# tests
+add_subdirectory(${PSM_ROOT_DIR}/tests)

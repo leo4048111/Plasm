@@ -1,6 +1,7 @@
 #include "base.hpp"
 
 #include <string>
+#include <map>
 
 #include "pugixml.hpp"
 
@@ -12,7 +13,7 @@ public:
 
     void Dump() const;
 
-    void AddPage(::std::string name);
+    int AddPage(::std::string name);
 
 private:
     template<typename T1, typename T2>
@@ -48,6 +49,7 @@ private:
     pugi::xml_node monitorblock_;
     pugi::xml_node indexNode_;
     pugi::xml_node instances_;
+    ::std::map<int, pugi::xml_node> pages_;
 
 private:
     static constexpr const char* FILE_EXT = ".cpn";
@@ -69,7 +71,13 @@ private:
     static constexpr const char* INDEX_NODE = "IndexNode";
     static constexpr ::std::pair<const char*, const char*> INDEX_NODE_EXPANDED = {"expanded", "false"};
 
-    // Component attributes
+    // General component attributes
+    static constexpr const char* ID = "id";
+    static constexpr const char* NAME = "name";
+
+    // Page attribs
+    static constexpr const char* PAGE = "page";
+    static constexpr const char* PAGEATTR = "pageattr";
 
     // Predefined basic types
     static constexpr const char* UNIT = "unit";

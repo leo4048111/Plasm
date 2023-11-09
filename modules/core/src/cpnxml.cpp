@@ -68,4 +68,16 @@ void CPNXml::InitCpnet()
     instances_ = cpnet_.append_child(INSTANCES);
 }
 
+int CPNXml::AddPage(::std::string name) {
+    int id = MakeId();
+    pugi::xml_node page = cpnet_.append_child(PAGE);
+    page.append_attribute(ID) = ::std::to_string(id).c_str();
+
+    // <pageattr ...>
+    pugi::xml_node pageattr = page.append_child(PAGEATTR);
+    pageattr.append_attribute(NAME) = name.c_str();
+
+    return id;
+}
+
 _END_PSM_NM_
