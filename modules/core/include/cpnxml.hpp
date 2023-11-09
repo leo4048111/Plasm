@@ -101,6 +101,7 @@ private:
     pugi::xml_node cpnet_;
     pugi::xml_node globbox_;
     pugi::xml_node sdBlock_;
+    pugi::xml_node spBlock_;
     pugi::xml_node options_;
     pugi::xml_node binders_;
     pugi::xml_node monitorblock_;
@@ -123,6 +124,7 @@ private:
     static constexpr const char *GLOBBOX = "globbox";
     static constexpr const char *BLOCK = "block";
     static constexpr const char *SD_BLOCK_NAME = "Standard declarations";
+    static constexpr const char *SP_BLOCK_NAME = "Standard priorities";
     static constexpr const char *OPTIONS = "options";
     static constexpr const char *BINDERS = "binders";
     static constexpr const char *INSTANCES = "instances";

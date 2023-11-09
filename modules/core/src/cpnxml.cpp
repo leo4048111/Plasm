@@ -51,8 +51,8 @@ void CPNXml::InitCpnet()
 
     // <globbox>
     globbox_ = cpnet_.append_child(GLOBBOX);
-    int blockId = AddBlock(SD_BLOCK_NAME);
-    sdBlock_ = blocks_[blockId];
+    sdBlock_ = blocks_[AddBlock(SD_BLOCK_NAME)];
+    spBlock_ = blocks_[AddBlock(SP_BLOCK_NAME)];
 
     // <options>
     options_ = cpnet_.append_child(OPTIONS);
