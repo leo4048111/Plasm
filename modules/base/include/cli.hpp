@@ -67,10 +67,10 @@ class CLI {
     SOLIDITY2CPN_SINGLETON(CLI)
 
 public:
-    bool Run(int argc, char const* const* argv);
+    void Run(int argc, char const* const* argv);
 
 private:
-    bool ParseArgs(int argc, char const* const* argv);
+    void ParseArgs(int argc, char const* const* argv);
 
     void ProcessArgs();
 

@@ -6,6 +6,7 @@
 #include <map>
 
 #include "logger.hpp"
+#include "generator.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -22,24 +23,16 @@
 
 _START_PSM_NM_
 
-bool CLI::Run(int argc, char const *const *argv)
+void CLI::Run(int argc, char const *const *argv)
 {
-    bool res = ParseArgs(argc, argv);
-
-    if (!res)
-    {
-        LOGE("Error parsing arguments...");
-        return false;
-    }
-
     // Pipeline
+    ParseArgs(argc, argv);
     ProcessArgs();
     ReadInputFiles();
     ProcessInput();
-    return true;
 }
 
-bool CLI::ParseArgs(int argc, char const *const *argv)
+void CLI::ParseArgs(int argc, char const *const *argv)
 {
     po::options_description allOptions = GetOptionsDescription();
     po::positional_options_description filesPositions = GetPositionalOptionsDescription();
@@ -58,11 +51,10 @@ bool CLI::ParseArgs(int argc, char const *const *argv)
     catch (po::error const &exception)
     {
         LOGE(exception.what());
-        return false;
+        PSM_BAIL();
     }
 
     po::notify(args_);
-    return true;
 }
 
 void CLI::ProcessArgs()
@@ -153,14 +145,17 @@ void CLI::ReadInputFiles()
             "The specified values of base path and/or include paths would result in multiple "
             "input files being assigned the same source unit name:\n";
         LOGE(message.c_str());
+        PSM_BAIL();
     }
 
     for (boost::filesystem::path const &infile : options_.input.paths)
     {
         if (!boost::filesystem::exists(infile))
         {
-            if (!options_.input.ignoreMissingFiles)
+            if (!options_.input.ignoreMissingFiles) {
                 LOGE("\"%s\" is not found.", infile.string().c_str());
+                PSM_BAIL();
+            }
             else
                 LOGW("\"%s\" is not found. Skipping.", infile.string().c_str());
 
@@ -169,8 +164,10 @@ void CLI::ReadInputFiles()
 
         if (!boost::filesystem::is_regular_file(infile))
         {
-            if (!options_.input.ignoreMissingFiles)
+            if (!options_.input.ignoreMissingFiles) {
                 LOGE("%s%s%s", '"', infile.string().c_str(), "\" is not a valid regular file.");
+                PSM_BAIL();
+            }
             else
                 LOGW("%s is not a valid regular file. Skipping.", infile.string().c_str());
 
@@ -185,6 +182,7 @@ void CLI::ReadInputFiles()
     if (fileReader_.sourceUnits().empty())
     {
         LOGE("All specified input files either do not exist or are not regular files.");
+        PSM_BAIL();
     }
 }
 
@@ -248,17 +246,18 @@ void CLI::CompileAndGenerate()
 
     for (auto const &error : compiler_->errors())
     {
-        LOGE("%s", error->what());
+        LOGW("%s", error->what());
     }
 
     if(!result) {
         LOGE("Error compiling...");
-        return;
+        PSM_BAIL();
     }
 
     for(auto& x : fileReader_.sourceUnits()) {
         auto& unit = compiler_->ast(x.first);
-        solidity::frontend::ASTJsonExporter(compiler_->state(), compiler_->sourceIndices()).print(::std::cout, unit, solidity::util::JsonFormat{});
+        Generator generator;
+        generator.toCPN(unit);
     }
 }
 

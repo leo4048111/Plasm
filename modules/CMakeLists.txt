@@ -27,6 +27,7 @@ set(PSM_MODULE_SRC
     ${PSM_MODULE_BASE_SRC_DIR}/logger.cpp
     ${PSM_MODULE_BASE_SRC_DIR}/cli.cpp
     # core
+    ${PSM_MODULE_CORE_SRC_DIR}/generator.cpp
 )
 
 # target
