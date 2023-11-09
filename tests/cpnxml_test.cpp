@@ -8,6 +8,8 @@ int main()
 
     // Color set declarations
     x.DeclareUnitColorSet("UNIT");
+    x.DeclareBooleanColorSet("BOOL");
+
     x.DeclareAliasColorSets("STRING", "string");
     x.DeclareAliasColorSets("TYPE", "STRING");
     x.DeclareAliasColorSets("TYPE2", "TYPE");
