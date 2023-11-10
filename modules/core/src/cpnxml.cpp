@@ -88,6 +88,77 @@ int CPNXml::AddPage(::std::string name)
     return id;
 }
 
+int CPNXml::AddPlace(
+    int pageId,
+    ::std::string name,
+    ::std::string type,
+    ::std::optional<::std::string> initial_marking)
+{
+    // Check page
+    if (pages_.count(pageId) == 0)
+    {
+        LOGE("AddPlace page not found, expect valid page id...");
+        PSM_BAIL();
+    }
+
+    // Get page node
+    pugi::xml_node page = pages_[pageId];
+    int id = MakeId();
+
+    // <place>
+    pugi::xml_node place = page.append_child(PLACE);
+    place.append_attribute(ID) = ::std::to_string(id).c_str();
+
+    // Note: Currently we expect place node positions to be calculated automatically to avoid overlap
+    // Later, interface which accepts position inputs might be implemented.
+    // <posattr>
+    pugi::xml_node posattr = place.append_child(POSATTR);
+    // FIXME: Position calculation
+    posattr.append_attribute(POS_X) = "100";
+    posattr.append_attribute(POS_Y) = "100";
+
+    // <text>
+    pugi::xml_node textnode = place.append_child(TEXT);
+    textnode.text().set(name.c_str());
+
+    // <ellipse ...>
+    pugi::xml_node shape = place.append_child(ELLIPSE);
+    shape.append_attribute(Key(SHAPE_WIDTH)) = Value(SHAPE_WIDTH);
+    shape.append_attribute(Key(SHAPE_HEIGHT)) = Value(SHAPE_HEIGHT);
+
+    // <token ...>
+    pugi::xml_node token = place.append_child(TOKEN);
+    token.append_attribute(POS_X) = "100";
+    token.append_attribute(POS_Y) = "100";
+    token.text().set("\n");
+
+    // <marking ...>
+    pugi::xml_node marking = place.append_child(MARKING);
+    marking.append_attribute(POS_X) = "100";
+    marking.append_attribute(POS_Y) = "100";
+    marking.text().set("\n");
+
+    // <type>(FIXME: Expect an id, but not given)
+    pugi::xml_node typenode = place.append_child(TYPE);
+    pugi::xml_node typetextnode = typenode.append_child(TEXT);
+    typetextnode.append_attribute(Key(GENERATOR_TOOL)) = Value(GENERATOR_TOOL);
+    typetextnode.append_attribute(Key(GENERATOR_VERSION)) = Value(GENERATOR_VERSION);
+    typetextnode.text().set(type.c_str());
+
+    // <initmark ...>(FIXME: Expect an id, but not given)
+    if (initial_marking)
+    {
+        pugi::xml_node initmark = place.append_child(INITMARK);
+        pugi::xml_node posattr2 = initmark.append_child(POSATTR);
+        pugi::xml_node initmarktextnode = initmark.append_child(TEXT);
+        initmarktextnode.append_attribute(Key(GENERATOR_TOOL)) = Value(GENERATOR_TOOL);
+        initmarktextnode.append_attribute(Key(GENERATOR_VERSION)) = Value(GENERATOR_VERSION);
+        initmarktextnode.text().set(initial_marking->c_str());
+    }
+
+    return id;
+}
+
 int CPNXml::AddBlock(::std::string name)
 {
     int id = MakeId();

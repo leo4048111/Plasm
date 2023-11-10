@@ -17,6 +17,7 @@ public:
     void Dump() const;
 
     // Add a page to main document
+    // @return page id
     int AddPage(::std::string name);
 
     // See definition https://cpntools.org/2018/01/12/color-sets/
@@ -71,13 +72,19 @@ public:
     // A variable is an identifier whose value can be changed during the execution of the model.
     void DeclareVar(
         ::std::string name,
-        ::std::string cs_name
-    );
+        ::std::string cs_name);
 
     void DeclareVar(
         ::std::vector<::std::string> names,
-        ::std::string cs_name
-    );
+        ::std::string cs_name);
+
+    // Add a place to given page
+    // @return place id
+    int AddPlace(
+        int pageId,
+        ::std::string name,
+        ::std::string type,
+        ::std::optional<::std::string> initial_marking);
 
 private:
     template <typename T1, typename T2>
@@ -100,7 +107,7 @@ private:
 
     void InitCpnet();
 
-    // Note: Currently not exposing AddBlock as an interface, only Standard priorities is required 
+    // Note: Currently not exposing AddBlock as an interface, only Standard priorities is required
     int AddBlock(::std::string name);
 
 private:
@@ -149,6 +156,8 @@ private:
     // General component attributes
     static constexpr const char *ID = "id";
     static constexpr const char *NAME = "name";
+    static constexpr const char *TEXT = "text";
+    static constexpr const char *HIDDEN = "hidden";
 
     // Page attribs
     static constexpr const char *PAGE = "page";
@@ -175,6 +184,21 @@ private:
     // Variable declarations
     static constexpr const char *VARIABLE = "var";
     static constexpr const char *TYPE = "type";
+
+    // Drawing(Include posattr only, others are not necessary attributes...)
+    static constexpr const char *POSATTR = "posattr";
+    static constexpr const char *POS_X = "x";
+    static constexpr const char *POS_Y = "y";
+    static constexpr const char *ELLIPSE = "ellipse";
+    static constexpr const char *BOX = "box";
+    static constexpr ::std::pair<const char *, const char *> SHAPE_WIDTH = {"w", "74"};
+    static constexpr ::std::pair<const char *, const char *> SHAPE_HEIGHT = {"h", "60"};
+
+    // Place
+    static constexpr const char *PLACE = "place";
+    static constexpr const char *TOKEN = "token";
+    static constexpr const char *MARKING = "marking";
+    static constexpr const char *INITMARK = "initmark";
 };
 
 _END_PSM_NM_

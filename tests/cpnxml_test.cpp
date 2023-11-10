@@ -25,6 +25,9 @@ int main()
     x.DeclareVar("v", "UNIT");
     x.DeclareVar({"x", "y", "z"}, "INT");
 
+    // Add place
+    x.AddPlace(pageId1, "IStart", "UNIT", "1`()");
+
     x.Dump();
     return 0;
 }
