@@ -1,4 +1,4 @@
-#define SOLIDITY2CPN_SINGLETON(classname)  \
+#define PSM_SINGLETON(classname)  \
 public:                                    \
     static classname &GetInstance()        \
     {                                      \

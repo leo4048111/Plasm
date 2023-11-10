@@ -26,7 +26,7 @@ enum class LogLevel {
 };
 
 class Logger {
-    SOLIDITY2CPN_SINGLETON(Logger)
+    PSM_SINGLETON(Logger)
 
 public:
     void PrintLog(LogLevel level, const char *file,

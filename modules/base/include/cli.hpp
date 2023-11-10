@@ -64,7 +64,7 @@ struct CLIOptions {
 };
 
 class CLI {
-    SOLIDITY2CPN_SINGLETON(CLI)
+    PSM_SINGLETON(CLI)
 
 public:
     void Run(int argc, char const* const* argv);
