@@ -21,6 +21,10 @@ int main()
     x.DeclareAliasColorSets("DATA", "STRING");
     x.DeclareProductColorSet("PACKAGE", {"DATA", "STRING", "INT", "BOOL"});
 
+    // Var declarations
+    x.DeclareVar("v", "UNIT");
+    x.DeclareVar({"x", "y", "z"}, "INT");
+
     x.Dump();
     return 0;
 }

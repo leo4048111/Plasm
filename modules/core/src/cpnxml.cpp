@@ -513,4 +513,43 @@ void CPNXml::DeclareAliasColorSets(
     layout.text().set(buf);
 }
 
+void CPNXml::DeclareVar(
+    ::std::string name,
+    ::std::string cs_name)
+{
+    int id = MakeId();
+    pugi::xml_node variable = sdBlock_.append_child(VARIABLE);
+    variable.append_attribute(ID) = ::std::to_string(id).c_str();
+
+    // <type>
+    pugi::xml_node type = variable.append_child(TYPE);
+    pugi::xml_node idnode = type.append_child(ID);
+    idnode.text().set(cs_name.c_str());
+
+    // <id>
+    pugi::xml_node idnode2 = variable.append_child(ID);
+    idnode2.text().set(name.c_str());
+}
+
+void CPNXml::DeclareVar(
+    ::std::vector<::std::string> names,
+    ::std::string cs_name)
+{
+    int id = MakeId();
+    pugi::xml_node variable = sdBlock_.append_child(VARIABLE);
+    variable.append_attribute(ID) = ::std::to_string(id).c_str();
+
+    // <type>
+    pugi::xml_node type = variable.append_child(TYPE);
+    pugi::xml_node idnode = type.append_child(ID);
+    idnode.text().set(cs_name.c_str());
+
+    // <id>
+    for (auto &x : names)
+    {
+        pugi::xml_node idnode2 = variable.append_child(ID);
+        idnode2.text().set(x.c_str());
+    }
+}
+
 _END_PSM_NM_

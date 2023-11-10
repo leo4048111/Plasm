@@ -67,6 +67,18 @@ public:
         ::std::string name,
         ::std::string name0);
 
+    // See definition https://cpntools.org/2018/01/09/variables/
+    // A variable is an identifier whose value can be changed during the execution of the model.
+    void DeclareVar(
+        ::std::string name,
+        ::std::string cs_name
+    );
+
+    void DeclareVar(
+        ::std::vector<::std::string> names,
+        ::std::string cs_name
+    );
+
 private:
     template <typename T1, typename T2>
     const T1 &Key(const ::std::pair<T1, T2> &p)
@@ -159,6 +171,10 @@ private:
     static constexpr const char *ENUMERATE = "enum";
     static constexpr const char *PRODUCT = "product";
     static constexpr const char *ALIAS = "alias";
+
+    // Variable declarations
+    static constexpr const char *VARIABLE = "var";
+    static constexpr const char *TYPE = "type";
 };
 
 _END_PSM_NM_
