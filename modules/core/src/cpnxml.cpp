@@ -203,6 +203,8 @@ int CPNXml::AddTransition(
     posattr.append_attribute(POS_X) = "100";
     posattr.append_attribute(POS_Y) = "100";
 
+    AddStyleDisc(transition);
+
     // <text>
     pugi::xml_node textnode = transition.append_child(TEXT);
     textnode.text().set(name.c_str());
