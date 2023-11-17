@@ -106,7 +106,8 @@ public:
         int pageId,
         Orientation orientation,
         int transendId,
-        int placeendId
+        int placeendId,
+        ::std::optional<::std::string> annotation
     );
 
 private:
@@ -180,6 +181,7 @@ private:
 
     // General component attributes
     static constexpr const char *ID = "id";
+    static constexpr const char *IDREF = "idref";
     static constexpr const char *NAME = "name";
     static constexpr const char *TEXT = "text";
     static constexpr const char *HIDDEN = "hidden";
@@ -212,12 +214,15 @@ private:
 
     // Drawing(Include posattr only, others are not necessary attributes...)
     static constexpr const char *POSATTR = "posattr";
+    static constexpr const char *ARROWATTR = "arrowattr";
     static constexpr const char *POS_X = "x";
     static constexpr const char *POS_Y = "y";
     static constexpr const char *ELLIPSE = "ellipse";
     static constexpr const char *BOX = "box";
     static constexpr ::std::pair<const char *, const char *> SHAPE_WIDTH = {"w", "74"};
     static constexpr ::std::pair<const char *, const char *> SHAPE_HEIGHT = {"h", "60"};
+    static constexpr ::std::pair<const char *, const char *> ARROW_HEADSIZE = {"headsize", "1.200000"};
+    static constexpr ::std::pair<const char *, const char *> ARROW_CURRENTCYCKLE = {"currentcyckle", "2"};
 
     // Place
     static constexpr const char *PLACE = "place";
@@ -232,6 +237,14 @@ private:
     // Transition
     static constexpr const char *TRANSITION = "trans";
     static constexpr ::std::pair<const char *, const char *> EXPLICIT = {"explicit", "false"};
+
+    // Arc
+    static constexpr const char *ARC = "arc";
+    static constexpr const char *ANNOT = "annot";
+    static constexpr const char *TRANSEND = "transend";
+    static constexpr const char *PLACEEND = "placeend";
+    static constexpr const char *ORIENTATION = "orientation";
+    static constexpr ::std::pair<const char *, const char *> ORDER = {"order", "1"};
 };
 
 _END_PSM_NM_

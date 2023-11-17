@@ -217,6 +217,82 @@ int CPNXml::AddTransition(
     return id;
 }
 
+void CPNXml::AddArc(
+    int pageId,
+    Orientation orientation,
+    int transendId,
+    int placeendId,
+    ::std::optional<::std::string> annotation)
+{
+    // Check page
+    if (pages_.count(pageId) == 0)
+    {
+        LOGE("AddPlace page not found, expect valid page id...");
+        PSM_BAIL();
+    }
+
+    // Get page node
+    pugi::xml_node page = pages_[pageId];
+    int id = MakeId();
+
+    // <arc>
+    pugi::xml_node arc = page.append_child(ARC);
+    arc.append_attribute(ID) = ::std::to_string(id).c_str();
+    switch (orientation)
+    {
+    case Orientation::PLACE_TO_TRANSITION:
+        arc.append_attribute(ORIENTATION) = "PtoT";
+        break;
+    case Orientation::TRANSITION_TO_PLACE:
+        arc.append_attribute(ORIENTATION) = "TtoP";
+        break;
+    case Orientation::BIDIRECTIONAL:
+        arc.append_attribute(ORIENTATION) = "BOTHDIR";
+        break;
+    }
+    arc.append_attribute(Key(ORDER)) = Value(ORDER);
+
+    // <posattr>
+    pugi::xml_node posattr = arc.append_child(POSATTR);
+    // FIXME: Position calculation
+    posattr.append_attribute(POS_X) = "0";
+    posattr.append_attribute(POS_Y) = "0";
+
+    AddStyleDisc(arc);
+
+    pugi::xml_node arrowattr = arc.append_child(ARROWATTR);
+    arrowattr.append_attribute(Key(ARROW_HEADSIZE)) = Value(ARROW_HEADSIZE);
+    arrowattr.append_attribute(Key(ARROW_CURRENTCYCKLE)) = Value(ARROW_CURRENTCYCKLE);
+
+    // <transend ...>
+    pugi::xml_node transend = arc.append_child(TRANSEND);
+    transend.append_attribute(IDREF) = ::std::to_string(transendId).c_str();
+
+    // <placeend ...>
+    pugi::xml_node placeend = arc.append_child(PLACEEND);
+    placeend.append_attribute(IDREF) = ::std::to_string(placeendId).c_str();
+
+    if(annotation) {
+        // <annot ...>
+        int annotId = MakeId();
+        pugi::xml_node annot = arc.append_child(ANNOT);
+        annot.append_attribute(ID) = ::std::to_string(annotId).c_str();
+        pugi::xml_node annotposattr = annot.append_child(POSATTR);
+        annotposattr.append_attribute(POS_X) = "0";
+        annotposattr.append_attribute(POS_Y) = "0";
+
+        AddStyleDisc(annot);
+
+        pugi::xml_node annottextnode = annot.append_child(TEXT);
+        annottextnode.append_attribute(Key(GENERATOR_TOOL)) = Value(GENERATOR_TOOL);
+        annottextnode.append_attribute(Key(GENERATOR_VERSION)) = Value(GENERATOR_VERSION);
+        annottextnode.text().set(annotation->c_str());
+    }
+
+    pugi::xml_node textnode = arc.append_child(TEXT);
+    textnode.text().set("\n");
+}
+
 int CPNXml::AddBlock(::std::string name)
 {
     int id = MakeId();

@@ -26,8 +26,15 @@ int main()
     x.DeclareVar({"x", "y", "z"}, "INT");
 
     // Add place
-    x.AddPlace(pageId1, "IStart", "UNIT", "1`()");
-    x.AddTransition(pageId1, "BTrans");
+    int placeId = x.AddPlace(pageId1, "IStart", "UNIT", "1`()");
+    int transId = x.AddTransition(pageId1, "BTrans");
+    x.AddArc(
+        pageId1,
+        PSM_NM::CPNXml::Orientation::PLACE_TO_TRANSITION,
+        transId,
+        placeId,
+        "1`()"
+    );
 
     x.Dump();
     return 0;
