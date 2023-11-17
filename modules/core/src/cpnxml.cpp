@@ -109,13 +109,16 @@ int CPNXml::AddPlace(
     pugi::xml_node place = page.append_child(PLACE);
     place.append_attribute(ID) = ::std::to_string(id).c_str();
 
+    // Add style disc
+    AddStyleDisc(place);
+
     // Note: Currently we expect place node positions to be calculated automatically to avoid overlap
     // Later, interface which accepts position inputs might be implemented.
     // <posattr>
     pugi::xml_node posattr = place.append_child(POSATTR);
     // FIXME: Position calculation
-    posattr.append_attribute(POS_X) = "100";
-    posattr.append_attribute(POS_Y) = "100";
+    posattr.append_attribute(POS_X) = "-331.000000";
+    posattr.append_attribute(POS_Y) = "191";
 
     // <text>
     pugi::xml_node textnode = place.append_child(TEXT);
@@ -128,18 +131,28 @@ int CPNXml::AddPlace(
 
     // <token ...>
     pugi::xml_node token = place.append_child(TOKEN);
-    token.append_attribute(POS_X) = "100";
-    token.append_attribute(POS_Y) = "100";
+    token.append_attribute(POS_X) = "0";
+    token.append_attribute(POS_Y) = "0";
     token.text().set("\n");
 
     // <marking ...>
     pugi::xml_node marking = place.append_child(MARKING);
-    marking.append_attribute(POS_X) = "100";
-    marking.append_attribute(POS_Y) = "100";
+    marking.append_attribute(POS_X) = "0";
+    marking.append_attribute(POS_Y) = "0";
+    pugi::xml_node snap = marking.append_child(SNAP);
+    snap.append_attribute(Key(SNAP_ID)) = Value(SNAP_ID);
+    snap.append_attribute(Key(ANCHOR_H)) = Value(ANCHOR_H);
+    snap.append_attribute(Key(ANCHOR_V)) = Value(ANCHOR_V);
     marking.text().set("\n");
 
-    // <type>(FIXME: Expect an id, but not given)
+    // <type>
     pugi::xml_node typenode = place.append_child(TYPE);
+    int tid = MakeId();
+    typenode.append_attribute(ID) = ::std::to_string(tid).c_str();
+    pugi::xml_node posattr3 = typenode.append_child(POSATTR);
+    posattr3.append_attribute(POS_X) = "0";
+    posattr3.append_attribute(POS_Y) = "0";
+    AddStyleDisc(typenode);
     pugi::xml_node typetextnode = typenode.append_child(TEXT);
     typetextnode.append_attribute(Key(GENERATOR_TOOL)) = Value(GENERATOR_TOOL);
     typetextnode.append_attribute(Key(GENERATOR_VERSION)) = Value(GENERATOR_VERSION);
@@ -149,12 +162,55 @@ int CPNXml::AddPlace(
     if (initial_marking)
     {
         pugi::xml_node initmark = place.append_child(INITMARK);
+        int imid = MakeId();
+        initmark.append_attribute(ID) = ::std::to_string(imid).c_str();
         pugi::xml_node posattr2 = initmark.append_child(POSATTR);
+        posattr2.append_attribute(POS_X) = "0";
+        posattr2.append_attribute(POS_Y) = "0";
+        AddStyleDisc(initmark);
         pugi::xml_node initmarktextnode = initmark.append_child(TEXT);
         initmarktextnode.append_attribute(Key(GENERATOR_TOOL)) = Value(GENERATOR_TOOL);
         initmarktextnode.append_attribute(Key(GENERATOR_VERSION)) = Value(GENERATOR_VERSION);
         initmarktextnode.text().set(initial_marking->c_str());
     }
+
+    return id;
+}
+
+int CPNXml::AddTransition(
+    int pageId,
+    ::std::string name)
+{
+    // Check page
+    if (pages_.count(pageId) == 0)
+    {
+        LOGE("AddPlace page not found, expect valid page id...");
+        PSM_BAIL();
+    }
+
+    // Get page node
+    pugi::xml_node page = pages_[pageId];
+    int id = MakeId();
+
+    // <trans>
+    pugi::xml_node transition = page.append_child(TRANSITION);
+    transition.append_attribute(ID) = ::std::to_string(id).c_str();
+    transition.append_attribute(Key(EXPLICIT)) = Value(EXPLICIT);
+
+    // <posattr>
+    pugi::xml_node posattr = transition.append_child(POSATTR);
+    // FIXME: Position calculation
+    posattr.append_attribute(POS_X) = "100";
+    posattr.append_attribute(POS_Y) = "100";
+
+    // <text>
+    pugi::xml_node textnode = transition.append_child(TEXT);
+    textnode.text().set(name.c_str());
+
+    // <box ...>
+    pugi::xml_node shape = transition.append_child(BOX);
+    shape.append_attribute(Key(SHAPE_WIDTH)) = Value(SHAPE_WIDTH);
+    shape.append_attribute(Key(SHAPE_HEIGHT)) = Value(SHAPE_HEIGHT);
 
     return id;
 }
@@ -621,6 +677,26 @@ void CPNXml::DeclareVar(
         pugi::xml_node idnode2 = variable.append_child(ID);
         idnode2.text().set(x.c_str());
     }
+}
+
+void CPNXml::AddStyleDisc(pugi::xml_node node)
+{
+    // Adding fill attributes
+    pugi::xml_node fillattr = node.append_child("fillattr");
+    fillattr.append_attribute("colour") = "White";
+    fillattr.append_attribute("pattern") = "Solid";
+    fillattr.append_attribute("filled") = "false";
+
+    // Adding line attributes
+    pugi::xml_node lineattr = node.append_child("lineattr");
+    lineattr.append_attribute("colour") = "Black";
+    lineattr.append_attribute("thick") = "0";
+    lineattr.append_attribute("type") = "Solid";
+
+    // Adding text attributes
+    pugi::xml_node textattr = node.append_child("textattr");
+    textattr.append_attribute("colour") = "Black";
+    textattr.append_attribute("bold") = "false";
 }
 
 _END_PSM_NM_

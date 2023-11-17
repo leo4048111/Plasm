@@ -27,6 +27,7 @@ int main()
 
     // Add place
     x.AddPlace(pageId1, "IStart", "UNIT", "1`()");
+    x.AddTransition(pageId1, "BTrans");
 
     x.Dump();
     return 0;

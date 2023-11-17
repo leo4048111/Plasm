@@ -86,6 +86,29 @@ public:
         ::std::string type,
         ::std::optional<::std::string> initial_marking);
 
+    // Add a transition to given page
+    // @return transition id
+    int AddTransition(
+        int pageId,
+        ::std::string name
+    );
+
+    // Add an arc to given page
+    // @return void
+    enum class Orientation
+    {
+        PLACE_TO_TRANSITION,
+        TRANSITION_TO_PLACE,
+        BIDIRECTIONAL
+    };
+
+    void AddArc(
+        int pageId,
+        Orientation orientation,
+        int transendId,
+        int placeendId
+    );
+
 private:
     template <typename T1, typename T2>
     const T1 &Key(const ::std::pair<T1, T2> &p)
@@ -109,6 +132,8 @@ private:
 
     // Note: Currently not exposing AddBlock as an interface, only Standard priorities is required
     int AddBlock(::std::string name);
+
+    void AddStyleDisc(pugi::xml_node node);
 
 private:
     ::std::string name_;
@@ -199,6 +224,14 @@ private:
     static constexpr const char *TOKEN = "token";
     static constexpr const char *MARKING = "marking";
     static constexpr const char *INITMARK = "initmark";
+    static constexpr const char *SNAP = "snap";
+    static constexpr ::std::pair<const char *, const char *> SNAP_ID = {"snap_id", "0"};
+    static constexpr ::std::pair<const char *, const char *> ANCHOR_H = {"anchor.horizontal", "0"};
+    static constexpr ::std::pair<const char *, const char *> ANCHOR_V = {"anchor.vertical", "0"};
+
+    // Transition
+    static constexpr const char *TRANSITION = "trans";
+    static constexpr ::std::pair<const char *, const char *> EXPLICIT = {"explicit", "false"};
 };
 
 _END_PSM_NM_
