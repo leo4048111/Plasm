@@ -23,17 +23,18 @@ int main()
 
     // Var declarations
     x.DeclareVar("v", "UNIT");
+    x.DeclareVar("cond", "BOOL");
     x.DeclareVar({"x", "y", "z"}, "INT");
 
     // Add place
-    int placeId = x.AddPlace(pageId1, "IStart", "UNIT", "1`()");
+    int placeId = x.AddPlace(pageId1, "IStart", "UNIT", "5`()");
     int transId = x.AddTransition(pageId1, "BTrans");
     x.AddArc(
         pageId1,
         PSM_NM::CPNXml::Orientation::PLACE_TO_TRANSITION,
         transId,
         placeId,
-        "1`()"
+        "if cond then 1`() else empty"
     );
 
     x.Dump();
