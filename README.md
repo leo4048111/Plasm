@@ -1,7 +1,7 @@
 # Plasm
 A solidity to CPN tool.
 
-Still developing...
+Still developing, contributions are welcomed
 
 ```
 ├── CMakeLists.txt
