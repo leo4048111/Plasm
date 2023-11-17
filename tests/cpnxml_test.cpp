@@ -29,12 +29,21 @@ int main()
     // Add place
     int placeId = x.AddPlace(pageId1, "IStart", "UNIT", "5`()");
     int transId = x.AddTransition(pageId1, "BTrans");
+    int placeEndId = x.AddPlace(pageId1, "IEnd", "UNIT", "5`()");
     x.AddArc(
         pageId1,
         PSM_NM::CPNXml::Orientation::PLACE_TO_TRANSITION,
         transId,
         placeId,
         "if cond then 1`() else empty"
+    );
+
+    x.AddArc(
+        pageId1,
+        PSM_NM::CPNXml::Orientation::TRANSITION_TO_PLACE,
+        transId,
+        placeEndId,
+        "1`()"
     );
 
     x.Dump();
