@@ -208,6 +208,8 @@ bool CPNIDEGenerator::visit(VariableDeclaration const &_node)
 
     // Register symbol
     symbol_tbl_.insert(::std::make_pair(_node.id(), id));
+    symbol_tbl_2_.insert(::std::make_pair(_node.name(), id));
+    symbol_name_tbl_.insert(::std::make_pair(_node.id(), _node.name()));
     return true;
 }
 
@@ -370,8 +372,39 @@ bool CPNIDEGenerator::visit(Conditional const &_node)
 bool CPNIDEGenerator::visit(Assignment const &_node)
 {
     LOGT("CPNIDEGenerator in %s", "Assignment");
+    auto id1 = _node.leftHandSide().id();
+    auto id2 = _node.rightHandSide().id();
     int lhsId = symbol_tbl_[_node.leftHandSide().id()];
     int rhsId = symbol_tbl_[_node.rightHandSide().id()];
+
+    ::std::string name = "trans_" + ::std::to_string(_node.id());
+    int transId = cpnxml_->AddTransition(pageId_, name);
+
+    // Get value from right
+    cpnxml_->AddArc(
+        pageId_,
+        CPNXml::Orientation::BIDIRECTIONAL,
+        transId,
+        rhsId,
+        symbol_name_tbl_[_node.rightHandSide().id()]
+    );
+
+    // Set value to left
+    cpnxml_->AddArc( // assign
+        pageId_,
+        CPNXml::Orientation::TRANSITION_TO_PLACE,
+        transId,
+        lhsId,
+        symbol_name_tbl_[_node.rightHandSide().id()]
+    );
+
+    cpnxml_->AddArc( // remove old value
+        pageId_,
+        CPNXml::Orientation::PLACE_TO_TRANSITION,
+        transId,
+        lhsId,
+        symbol_name_tbl_[_node.leftHandSide().id()]
+    );
 
     return true;
 }
@@ -433,6 +466,8 @@ bool CPNIDEGenerator::visit(IndexRangeAccess const &_node)
 bool CPNIDEGenerator::visit(Identifier const &_node)
 {
     LOGT("CPNIDEGenerator in %s", "Identifier");
+    int cpnid = symbol_tbl_2_[_node.name()];
+    symbol_tbl_.insert(::std::make_pair(_node.id(), cpnid));
     return true;
 }
 
