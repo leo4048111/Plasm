@@ -257,7 +257,7 @@ void CLI::CompileAndGenerate()
 
     for(auto& x : fileReader_.sourceUnits()) {
         auto& unit = compiler_->ast(x.first);
-        Generator generator;
+        NoopGenerator generator;
         generator.toCPN(unit);
     }
 

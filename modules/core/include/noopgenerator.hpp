@@ -7,10 +7,10 @@
 
 _START_PSM_NM_
 
-class Generator: public solidity::frontend::ASTConstVisitor
+class NoopGenerator: public solidity::frontend::ASTConstVisitor
 {
 public:
-	explicit Generator();
+	explicit NoopGenerator();
 
 	void toCPN(solidity::frontend::ASTNode const& _node);
 
@@ -70,10 +70,7 @@ public:
 	bool visit(solidity::frontend::Literal const& _node) override;
 	bool visit(solidity::frontend::StructuredDocumentation const& _node) override;
 
-	void endVisit(solidity::frontend::EventDefinition const&) override;
-
-private:
-	void foo() {};
+	void endVisit(solidity::frontend::SourceUnit const& _node);
 };
 
 _END_PSM_NM_
