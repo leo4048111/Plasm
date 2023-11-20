@@ -78,6 +78,8 @@ public:
 
 private:
     ::std::unique_ptr<CPNXml> cpnxml_{nullptr};
+    // maps _node.id() to cpnide id
+    ::std::map<int64_t, int> symbol_tbl_;
     int pageId_{-1};
 };
 
