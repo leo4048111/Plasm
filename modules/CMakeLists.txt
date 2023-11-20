@@ -16,7 +16,8 @@ set(PSM_MODULE_HDR
     ${PSM_MODULE_BASE_INCLUDE_DIR}/logger.hpp
     ${PSM_MODULE_BASE_INCLUDE_DIR}/singleton.hpp
     # core
-    ${PSM_MODULE_CORE_INCLUDE_DIR}/generator.hpp
+    ${PSM_MODULE_CORE_INCLUDE_DIR}/noopgenerator.hpp
+    ${PSM_MODULE_CORE_INCLUDE_DIR}/cpnidegenerator.hpp
     ${PSM_MODULE_CORE_INCLUDE_DIR}/cpnxml.hpp
 )
 
@@ -25,7 +26,8 @@ set(PSM_MODULE_SRC
     ${PSM_MODULE_BASE_SRC_DIR}/logger.cpp
     ${PSM_MODULE_BASE_SRC_DIR}/cli.cpp
     # core
-    ${PSM_MODULE_CORE_SRC_DIR}/generator.cpp
+    ${PSM_MODULE_CORE_SRC_DIR}/noopgenerator.cpp
+    ${PSM_MODULE_CORE_SRC_DIR}/cpnidegenerator.cpp
     ${PSM_MODULE_CORE_SRC_DIR}/cpnxml.cpp
 )
 

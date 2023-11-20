@@ -84,7 +84,7 @@ public:
         int pageId,
         ::std::string name,
         ::std::string type,
-        ::std::optional<::std::string> initial_marking);
+        ::std::optional<::std::string> initial_marking = ::std::nullopt);
 
     // Add a transition to given page
     // @return transition id

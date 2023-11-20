@@ -6,7 +6,8 @@
 #include <map>
 
 #include "logger.hpp"
-#include "generator.hpp"
+#include "noopgenerator.hpp"
+#include "cpnidegenerator.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -257,7 +258,7 @@ void CLI::CompileAndGenerate()
 
     for(auto& x : fileReader_.sourceUnits()) {
         auto& unit = compiler_->ast(x.first);
-        NoopGenerator generator;
+        CPNIDEGenerator generator;
         generator.toCPN(unit);
     }
 

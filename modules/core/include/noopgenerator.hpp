@@ -69,8 +69,6 @@ public:
 	bool visit(solidity::frontend::ElementaryTypeNameExpression const& _node) override;
 	bool visit(solidity::frontend::Literal const& _node) override;
 	bool visit(solidity::frontend::StructuredDocumentation const& _node) override;
-
-	void endVisit(solidity::frontend::SourceUnit const& _node);
 };
 
 _END_PSM_NM_

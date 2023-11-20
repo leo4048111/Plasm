@@ -30,6 +30,8 @@ int main()
     int placeId = x.AddPlace(pageId1, "IStart", "UNIT", "5`()");
     int transId = x.AddTransition(pageId1, "BTrans");
     int placeEndId = x.AddPlace(pageId1, "IEnd", "UNIT", "5`()");
+    int trans2Id = x.AddTransition(pageId1, "BTrans2");
+    int placeEnd2Id = x.AddPlace(pageId1, "IEnd2", "UNIT", "");
     x.AddArc(
         pageId1,
         PSM_NM::CPNXml::Orientation::PLACE_TO_TRANSITION,
@@ -43,6 +45,22 @@ int main()
         PSM_NM::CPNXml::Orientation::TRANSITION_TO_PLACE,
         transId,
         placeEndId,
+        "1`()"
+    );
+
+    x.AddArc(
+        pageId1,
+        PSM_NM::CPNXml::Orientation::PLACE_TO_TRANSITION,
+        trans2Id,
+        placeEndId,
+        "1`()"
+    );
+
+    x.AddArc(
+        pageId1,
+        PSM_NM::CPNXml::Orientation::TRANSITION_TO_PLACE,
+        trans2Id,
+        placeEnd2Id,
         "1`()"
     );
 

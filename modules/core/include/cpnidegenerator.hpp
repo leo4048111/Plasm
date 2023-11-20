@@ -74,10 +74,9 @@ public:
 	bool visit(solidity::frontend::Literal const& _node) override;
 	bool visit(solidity::frontend::StructuredDocumentation const& _node) override;
 
-	void endVisit(solidity::frontend::ContractDefinition const& _node) override;
-
 private:
 	::std::unique_ptr<CPNXml> cpnxml_{nullptr};
+    int pageId_{-1};
 };
 
 _END_PSM_NM_

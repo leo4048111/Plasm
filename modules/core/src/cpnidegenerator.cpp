@@ -7,6 +7,55 @@ _START_PSM_NM_
 
 using namespace solidity::frontend;
 
+static std::string TypeCategory2String(Type::Category category) {
+    switch (category) {
+        case Type::Category::Address:
+            return "Address";
+        case Type::Category::Integer:
+            return "Integer";
+        case Type::Category::RationalNumber:
+            return "RationalNumber";
+        case Type::Category::StringLiteral:
+            return "StringLiteral";
+        case Type::Category::Bool:
+            return "Bool";
+        case Type::Category::FixedPoint:
+            return "FixedPoint";
+        case Type::Category::Array:
+            return "Array";
+        case Type::Category::ArraySlice:
+            return "ArraySlice";
+        case Type::Category::FixedBytes:
+            return "FixedBytes";
+        case Type::Category::Contract:
+            return "Contract";
+        case Type::Category::Struct:
+            return "Struct";
+        case Type::Category::Function:
+            return "Function";
+        case Type::Category::Enum:
+            return "Enum";
+        case Type::Category::UserDefinedValueType:
+            return "UserDefinedValueType";
+        case Type::Category::Tuple:
+            return "Tuple";
+        case Type::Category::Mapping:
+            return "Mapping";
+        case Type::Category::TypeType:
+            return "TypeType";
+        case Type::Category::Modifier:
+            return "Modifier";
+        case Type::Category::Magic:
+            return "Magic";
+        case Type::Category::Module:
+            return "Module";
+        case Type::Category::InaccessibleDynamic:
+            return "InaccessibleDynamic";
+        default:
+            return "Unknown";
+    }
+}
+
 CPNIDEGenerator::CPNIDEGenerator() {};
 
 void CPNIDEGenerator::toCPN(solidity::frontend::ASTNode const& _node) {
@@ -34,6 +83,45 @@ bool CPNIDEGenerator::visit(ImportDirective const& _node)
 bool CPNIDEGenerator::visit(ContractDefinition const& _node)
 {
 	LOGT("CPNIDEGenerator in %s", "ContractDefinition");
+        // Init cpnxml
+    cpnxml_ = ::std::make_unique<CPNXml>(_node.name());
+    pageId_ = cpnxml_->AddPage(_node.name());
+
+    // Init types: Mapping to cpnide
+    // enum class Category
+	// {
+	// 	Address -> string
+	// 	Integer -> integer
+	// 	RationalNumber -> INTEGER
+	// 	StringLiteral -> String
+	// 	Bool -> bool
+	// 	FixedPoint -> real
+	// 	Array -> *** Not available temporarily ***
+	// 	ArraySlice -> *** Not available temporarily ***
+	// 	FixedBytes -> *** Not available temporarily ***
+	// 	Contract -> Not variable
+	// 	Struct -> Colorset with Struct name
+	// 	Function -> Not variable
+	// 	Enum -> Enumerated
+	// 	UserDefinedValueType -> *** Not available temporarily ***
+	// 	Tuple  -> *** Not available temporarily ***
+	// 	Mapping -> *** Not available temporarily ***
+	// 	TypeType -> *** Not available temporarily ***
+	// 	Modifier -> *** Not available temporarily ***
+	// 	Magic -> *** Not available temporarily ***
+	// 	Module -> *** Not available temporarily ***
+	// 	InaccessibleDynamic -> *** Not available temporarily ***
+	// };
+
+    cpnxml_->DeclareStringColorSet("Address");
+    cpnxml_->DeclareIntegerColorSet("Integer");
+    cpnxml_->DeclareIntegerColorSet("RationalNumber");
+    cpnxml_->DeclareStringColorSet("StringLiteral");
+    cpnxml_->DeclareBooleanColorSet("Bool");
+    cpnxml_->DeclareRealColorSet("FixedPoint");
+    // TODO enum
+    // TODO struct
+
 	return true;
 }
 
@@ -101,11 +189,14 @@ bool CPNIDEGenerator::visit(VariableDeclaration const& _node)
 {
     LOGT("CPNIDEGenerator in %s", "VariableDeclaration");
     // Simply make a place for that value
-    auto type = _node->type();
-    auto category = type->category();
+    auto category = _node.type()->category();
+    auto name = _node.name();
+    // Add var decl
+    cpnxml_->DeclareVar(name, TypeCategory2String(category));
 
-    switch()
-
+    // Add place for var storage
+    PSM_ASSERT(pageId_ != -1);
+    cpnxml_->AddPlace(pageId_, name, TypeCategory2String(category));
 
 	return true;
 }
@@ -349,49 +440,5 @@ bool CPNIDEGenerator::visit(StructuredDocumentation const& _node)
     LOGT("CPNIDEGenerator in %s", "StructuredDocumentation");
 	return true;
 }
-
-void CPNIDEGenerator::endVisit(ContractDefinition const& _node)
-{
-    // Init cpnxml
-    cpnxml_ = ::std::make_unique<CPNXml>(_node.name());
-
-    // Init types: Mapping to cpnide
-    // enum class Category
-	// {
-	// 	Address -> string
-	// 	Integer -> integer
-	// 	RationalNumber -> INTEGER
-	// 	StringLiteral -> String
-	// 	Bool -> bool
-	// 	FixedPoint -> real
-	// 	Array -> *** Not available temporarily ***
-	// 	ArraySlice -> *** Not available temporarily ***
-	// 	FixedBytes -> *** Not available temporarily ***
-	// 	Contract -> Not variable
-	// 	Struct -> Colorset with Struct name
-	// 	Function -> Not variable
-	// 	Enum -> Enumerated
-	// 	UserDefinedValueType -> *** Not available temporarily ***
-	// 	Tuple  -> *** Not available temporarily ***
-	// 	Mapping -> *** Not available temporarily ***
-	// 	TypeType -> *** Not available temporarily ***
-	// 	Modifier -> *** Not available temporarily ***
-	// 	Magic -> *** Not available temporarily ***
-	// 	Module -> *** Not available temporarily ***
-	// 	InaccessibleDynamic -> *** Not available temporarily ***
-	// };
-
-    cpnxml_->DeclareStringColorSet("Address");
-    cpnxml_->DeclareIntegerColorSet("Integer");
-    cpnxml_->DeclareIntegerColorSet("RationalNumber");
-    cpnxml_->DeclareStringColorSet("StringLiteral");
-    cpnxml_->DeclareBooleanColorSet("Bool");
-    cpnxml_->DeclareRealColorSet("FixedPoint");
-    // TODO enum
-    // TODO struct
-
-    endVisitNode(_node);
-}
-
 
 _END_PSM_NM_
