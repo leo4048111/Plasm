@@ -62,6 +62,11 @@ void CPNIDEGenerator::toCPN(solidity::frontend::ASTNode const& _node) {
     _node.accept(*this);
 }
 
+void CPNIDEGenerator::Dump() const {
+    if(cpnxml_)
+        cpnxml_->Dump();
+}
+
 bool CPNIDEGenerator::visit(SourceUnit const& _node)
 {
 	LOGT("CPNIDEGenerator in %s", "SourceUnit");

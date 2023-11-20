@@ -260,6 +260,7 @@ void CLI::CompileAndGenerate()
         auto& unit = compiler_->ast(x.first);
         CPNIDEGenerator generator;
         generator.toCPN(unit);
+        generator.Dump();
     }
 
     compiler_->reset();
