@@ -159,19 +159,21 @@ int CPNXml::AddPlace(
     typetextnode.text().set(type.c_str());
 
     // <initmark ...>(FIXME: Expect an id, but not given)
+    pugi::xml_node initmark = place.append_child(INITMARK);
+    int imid = MakeId();
+    initmark.append_attribute(ID) = ::std::to_string(imid).c_str();
+    pugi::xml_node posattr2 = initmark.append_child(POSATTR);
+    posattr2.append_attribute(POS_X) = "0";
+    posattr2.append_attribute(POS_Y) = "0";
+    AddStyleDisc(initmark);
+    pugi::xml_node initmarktextnode = initmark.append_child(TEXT);
+    initmarktextnode.append_attribute(Key(GENERATOR_TOOL)) = Value(GENERATOR_TOOL);
+    initmarktextnode.append_attribute(Key(GENERATOR_VERSION)) = Value(GENERATOR_VERSION);
     if (initial_marking)
     {
-        pugi::xml_node initmark = place.append_child(INITMARK);
-        int imid = MakeId();
-        initmark.append_attribute(ID) = ::std::to_string(imid).c_str();
-        pugi::xml_node posattr2 = initmark.append_child(POSATTR);
-        posattr2.append_attribute(POS_X) = "0";
-        posattr2.append_attribute(POS_Y) = "0";
-        AddStyleDisc(initmark);
-        pugi::xml_node initmarktextnode = initmark.append_child(TEXT);
-        initmarktextnode.append_attribute(Key(GENERATOR_TOOL)) = Value(GENERATOR_TOOL);
-        initmarktextnode.append_attribute(Key(GENERATOR_VERSION)) = Value(GENERATOR_VERSION);
         initmarktextnode.text().set(initial_marking->c_str());
+    } else {
+        initmarktextnode.text().set("\n");
     }
 
     return id;
@@ -272,7 +274,8 @@ void CPNXml::AddArc(
     pugi::xml_node placeend = arc.append_child(PLACEEND);
     placeend.append_attribute(IDREF) = ::std::to_string(placeendId).c_str();
 
-    if(annotation) {
+    if (annotation)
+    {
         // <annot ...>
         int annotId = MakeId();
         pugi::xml_node annot = arc.append_child(ANNOT);
