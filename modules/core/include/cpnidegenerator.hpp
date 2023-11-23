@@ -76,14 +76,25 @@ public:
     bool visit(solidity::frontend::Literal const &_node) override;
     bool visit(solidity::frontend::StructuredDocumentation const &_node) override;
 
+    void endVisit(solidity::frontend::Assignment const &_node) override;
+
+private:
+    ::std::string makeVar(::std::string type);
+
+    void addSymbolEntry(int64_t id, ::std::string name, int cpnid, ::std::string type);
+
 private:
     ::std::unique_ptr<CPNXml> cpnxml_{nullptr};
-    // mapping _node.id() -> cpnide id
-    ::std::map<int64_t, int> symbol_tbl_;
-    // mapping symbol name -> cpnide id
-    ::std::map<::std::string, int> symbol_tbl_2_;
-    // mapping cpnide id -> symbol name
+
+    // Get variable cpn node id with variable name
+    ::std::map<::std::string, int64_t> variable_name_id;
+
+    // mapping _node.id() -> name
     ::std::map<int64_t, ::std::string> symbol_name_tbl_;
+    // mapping _node.id() -> cpnide id
+    ::std::map<int64_t, int> symbol_id_tbl_;
+    // mapping _node.id() -> type
+    ::std::map<int64_t, ::std::string> symbol_type_tbl_;
     int pageId_{-1};
 };
 
