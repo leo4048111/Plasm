@@ -83,6 +83,10 @@ private:
 
     void addSymbolEntry(int64_t id, ::std::string name, int cpnid, ::std::string type);
 
+    int makeIStart();
+
+    int makeIEnd();
+
 private:
     ::std::unique_ptr<CPNXml> cpnxml_{nullptr};
 
@@ -96,6 +100,8 @@ private:
     // mapping _node.id() -> type
     ::std::map<int64_t, ::std::string> symbol_type_tbl_;
     int pageId_{-1};
+
+    static constexpr const char* CONTROL_TOKEN_ANNOT = "1`()";
 };
 
 _END_PSM_NM_

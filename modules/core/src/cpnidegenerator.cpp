@@ -74,6 +74,32 @@ void CPNIDEGenerator::toCPN(solidity::frontend::ASTNode const &_node)
     return name;
 }
 
+int CPNIDEGenerator::makeIStart()
+{
+    static int iStartCnt = 0;
+    ::std::string name = "IStart_" + ::std::to_string(iStartCnt++);
+
+    int id = cpnxml_->AddPlace(
+        pageId_,
+        name,
+        "UNIT");
+
+    return id;
+}
+
+int CPNIDEGenerator::makeIEnd()
+{
+    static int iEndCnt = 0;
+    ::std::string name = "IEnd_" + ::std::to_string(iEndCnt++);
+
+    int id = cpnxml_->AddPlace(
+        pageId_,
+        name,
+        "UNIT");
+
+    return id;
+}
+
 void CPNIDEGenerator::addSymbolEntry(int64_t id, ::std::string name, int cpnid, ::std::string type)
 {
     symbol_name_tbl_[id] = name;
@@ -146,6 +172,9 @@ bool CPNIDEGenerator::visit(ContractDefinition const &_node)
     cpnxml_->DeclareRealColorSet("FixedPoint");
     // TODO enum
     // TODO struct
+
+    // Control unit
+    cpnxml_->DeclareUnitColorSet("UNIT");
 
     return true;
 }
@@ -403,11 +432,30 @@ void CPNIDEGenerator::endVisit(Assignment const &_node)
     int lhsId = symbol_id_tbl_[_node.leftHandSide().id()];
     int rhsId = symbol_id_tbl_[_node.rightHandSide().id()];
 
-    ::std::string name = "trans_" + ::std::to_string(_node.id());
+    ::std::string name = "assignment_" + ::std::to_string(_node.id());
     int transId = cpnxml_->AddTransition(pageId_, name);
+
+    int iStartId = makeIStart();
+    int iEndId = makeIEnd();
 
     auto var1 = makeVar(symbol_type_tbl_[id1]);
     auto var2 = makeVar(symbol_type_tbl_[id2]);
+
+    // IStart to trans
+    cpnxml_->AddArc(
+        pageId_,
+        CPNXml::Orientation::PLACE_TO_TRANSITION,
+        transId,
+        iStartId,
+        CONTROL_TOKEN_ANNOT);
+
+    // trans to IEnd
+    cpnxml_->AddArc(
+        pageId_,
+        CPNXml::Orientation::TRANSITION_TO_PLACE,
+        transId,
+        iEndId,
+        CONTROL_TOKEN_ANNOT);
 
     // Get value from right
     cpnxml_->AddArc(
