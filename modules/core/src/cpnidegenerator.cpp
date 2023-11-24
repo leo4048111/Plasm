@@ -82,7 +82,9 @@ int CPNIDEGenerator::makeIStart()
     int id = cpnxml_->AddPlace(
         pageId_,
         name,
-        "UNIT");
+        "UNIT",
+        100,
+        100);
 
     return id;
 }
@@ -92,10 +94,7 @@ int CPNIDEGenerator::makeIEnd()
     static int iEndCnt = 0;
     ::std::string name = "IEnd_" + ::std::to_string(iEndCnt++);
 
-    int id = cpnxml_->AddPlace(
-        pageId_,
-        name,
-        "UNIT");
+    int id = addPlace(name, "UNIT");
 
     return id;
 }
@@ -107,16 +106,57 @@ void CPNIDEGenerator::addSymbolEntry(int64_t id, ::std::string name, int cpnid, 
     symbol_type_tbl_[id] = type;
 }
 
-void CPNIDEGenerator::Dump() const
+void CPNIDEGenerator::dump() const
 {
     if (cpnxml_)
         cpnxml_->Dump();
+}
+
+int CPNIDEGenerator::addPlace(::std::string name, ::std::string type, ::std::optional<::std::string> initial_marking)
+{
+    int id = cpnxml_->AddPlace(pageId_, name, type, 0.f, 0.f, initial_marking);
+
+    // Save place id
+    places_.insert(id);
+
+    // Add place to graph
+    ogdf::node placeNode = graph_.newNode();
+
+    // Mapping
+    mapping_onodes_cnodes_.insert(::std::make_pair(placeNode->index(), id));
+
+    return id;
 }
 
 bool CPNIDEGenerator::visit(SourceUnit const &_node)
 {
     LOGT("CPNIDEGenerator in %s", "SourceUnit");
     return true;
+}
+
+void CPNIDEGenerator::endVisit(SourceUnit const &_node)
+{
+    // This will be called at the end of compilation
+    LOGT("CPNIDEGenerator endVisit %s", "SourceUnit");
+
+    ogdf::FMMMLayout fmmm;
+    fmmm.useHighLevelOptions(true);
+    fmmm.unitEdgeLength(50.0);
+    fmmm.newInitialPlacement(true);
+    fmmm.qualityVersusSpeed(ogdf::FMMMOptions::QualityVsSpeed::BeautifulAndFast);
+
+    ogdf::GraphAttributes ga(graph_, ogdf::GraphAttributes::nodeGraphics);
+
+    fmmm.call(ga);
+
+    // Adjust node positions
+    for (ogdf::node v : graph_.nodes) {
+        if(places_.count(v->index())) {
+            cpnxml_->MovePlace(mapping_onodes_cnodes_[v->index()], ga.x(v), ga.y(v));
+        } else if(transitions_.count(v->index())) {
+            // TODO
+        }
+    }
 }
 
 bool CPNIDEGenerator::visit(PragmaDirective const &_node)
@@ -256,8 +296,7 @@ void CPNIDEGenerator::endVisit(VariableDeclaration const &_node)
     cpnxml_->DeclareVar(name, type);
 
     // Add place for var storage
-    PSM_ASSERT(pageId_ != -1);
-    int id = cpnxml_->AddPlace(pageId_, name, TypeCategory2String(category));
+    int id = addPlace(name, TypeCategory2String(category));
 
     // Register symbol
     addSymbolEntry(_node.id(), name, id, type);
@@ -437,7 +476,7 @@ void CPNIDEGenerator::endVisit(Assignment const &_node)
     int rhsId = symbol_id_tbl_[_node.rightHandSide().id()];
 
     ::std::string name = "assignment_" + ::std::to_string(_node.id());
-    int transId = cpnxml_->AddTransition(pageId_, name);
+    int transId = cpnxml_->AddTransition(pageId_, name, 100, 100);
 
     int iStartId = makeIStart();
     int iEndId = makeIEnd();

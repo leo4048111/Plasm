@@ -84,14 +84,27 @@ public:
         int pageId,
         ::std::string name,
         ::std::string type,
+        float posX,
+        float posY,
         ::std::optional<::std::string> initial_marking = ::std::nullopt);
+
+    void MovePlace(
+        int placeId,
+        float posX,
+        float posY);
 
     // Add a transition to given page
     // @return transition id
     int AddTransition(
         int pageId,
-        ::std::string name
-    );
+        ::std::string name,
+        float posX,
+        float posY);
+
+    void MoveTransition(
+        int transitionId,
+        float posX,
+        float posY);
 
     // Add an arc to given page
     // @return void
@@ -107,8 +120,7 @@ public:
         Orientation orientation,
         int transendId,
         int placeendId,
-        ::std::optional<::std::string> annotation
-    );
+        ::std::optional<::std::string> annotation);
 
 private:
     template <typename T1, typename T2>
@@ -155,6 +167,8 @@ private:
     pugi::xml_node instances_;
     ::std::map<int, pugi::xml_node> pages_;
     ::std::map<int, pugi::xml_node> blocks_;
+    ::std::map<int, pugi::xml_node> places_;
+    ::std::map<int, pugi::xml_node> transitions_;
 
 private:
     static constexpr const char *FILE_EXT = ".cpn";
