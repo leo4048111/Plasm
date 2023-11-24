@@ -128,6 +128,22 @@ int CPNIDEGenerator::addPlace(::std::string name, ::std::string type, ::std::opt
     return id;
 }
 
+int CPNIDEGenerator::addTransition(::std::string name)
+{
+    int id = cpnxml_->AddTransition(pageId_, name, 0.f, 0.f);
+
+    // Save transition id
+    transitions_.insert(id);
+
+    // Add transition to graph
+    ogdf::node transNode = graph_.newNode();
+
+    // Mapping
+    mapping_onodes_cnodes_.insert(::std::make_pair(transNode->index(), id));
+
+    return id;
+}
+
 bool CPNIDEGenerator::visit(SourceUnit const &_node)
 {
     LOGT("CPNIDEGenerator in %s", "SourceUnit");
@@ -139,22 +155,32 @@ void CPNIDEGenerator::endVisit(SourceUnit const &_node)
     // This will be called at the end of compilation
     LOGT("CPNIDEGenerator endVisit %s", "SourceUnit");
 
-    ogdf::FMMMLayout fmmm;
-    fmmm.useHighLevelOptions(true);
-    fmmm.unitEdgeLength(50.0);
-    fmmm.newInitialPlacement(true);
-    fmmm.qualityVersusSpeed(ogdf::FMMMOptions::QualityVsSpeed::BeautifulAndFast);
+    ogdf::GraphAttributes ga(graph_,
+                             ogdf::GraphAttributes::nodeGraphics | ogdf::GraphAttributes::edgeGraphics);
 
-    ogdf::GraphAttributes ga(graph_, ogdf::GraphAttributes::nodeGraphics);
+    ogdf::SugiyamaLayout SL;
+    SL.setRanking(new ogdf::OptimalRanking);
+    SL.setCrossMin(new ogdf::MedianHeuristic);
 
-    fmmm.call(ga);
+    ogdf::OptimalHierarchyLayout *ohl = new ogdf::OptimalHierarchyLayout;
+    ohl->layerDistance(200.0);
+    ohl->nodeDistance(200.0);
+    ohl->weightBalancing(0.8);
+    SL.setLayout(ohl);
+
+    SL.call(ga);
 
     // Adjust node positions
-    for (ogdf::node v : graph_.nodes) {
-        if(places_.count(v->index())) {
-            cpnxml_->MovePlace(mapping_onodes_cnodes_[v->index()], ga.x(v), ga.y(v));
-        } else if(transitions_.count(v->index())) {
-            // TODO
+    for (ogdf::node v : graph_.nodes)
+    {
+        int id = mapping_onodes_cnodes_[v->index()];
+        if (places_.count(id))
+        {
+            cpnxml_->MovePlace(id, ga.x(v), ga.y(v));
+        }
+        else if (transitions_.count(id))
+        {
+            cpnxml_->MoveTransition(id, ga.x(v), ga.y(v));
         }
     }
 }
@@ -476,7 +502,7 @@ void CPNIDEGenerator::endVisit(Assignment const &_node)
     int rhsId = symbol_id_tbl_[_node.rightHandSide().id()];
 
     ::std::string name = "assignment_" + ::std::to_string(_node.id());
-    int transId = cpnxml_->AddTransition(pageId_, name, 100, 100);
+    int transId = addTransition(name);
 
     int iStartId = makeIStart();
     int iEndId = makeIEnd();

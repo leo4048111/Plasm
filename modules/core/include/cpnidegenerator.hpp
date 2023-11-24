@@ -7,6 +7,10 @@
 #include <ogdf/basic/Graph.h>
 #include <ogdf/basic/graph_generators.h>
 #include <ogdf/energybased/FMMMLayout.h>
+#include <ogdf/layered/SugiyamaLayout.h>
+#include <ogdf/layered/MedianHeuristic.h>
+#include <ogdf/layered/OptimalHierarchyLayout.h>
+#include <ogdf/layered/OptimalRanking.h>
 
 #include <memory>
 #include <set>
@@ -95,6 +99,7 @@ private:
 
     int addPlace(::std::string name, ::std::string type, ::std::optional<::std::string> initial_marking = ::std::nullopt);
 
+    int addTransition(::std::string name);
 private:
     ::std::unique_ptr<CPNXml> cpnxml_{nullptr};
     // For layout calculation
