@@ -242,6 +242,12 @@ bool CPNIDEGenerator::visit(FunctionDefinition const &_node)
 bool CPNIDEGenerator::visit(VariableDeclaration const &_node)
 {
     LOGT("CPNIDEGenerator in %s", "VariableDeclaration");
+    return true;
+}
+
+void CPNIDEGenerator::endVisit(VariableDeclaration const &_node)
+{
+    LOGT("CPNIDEGenerator endVisit %s", "VariableDeclaration");
     // Simply make a place for that value
     auto category = _node.type()->category();
     auto name = _node.name();
@@ -258,8 +264,6 @@ bool CPNIDEGenerator::visit(VariableDeclaration const &_node)
 
     // Add mapping from name to id
     variable_name_id[name] = _node.id();
-
-    return true;
 }
 
 bool CPNIDEGenerator::visit(ModifierDefinition const &_node)

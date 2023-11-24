@@ -78,6 +78,8 @@ public:
 
     void endVisit(solidity::frontend::Assignment const &_node) override;
 
+    void endVisit(solidity::frontend::VariableDeclaration const &_node) override;
+
 private:
     ::std::string makeVar(::std::string type);
 
