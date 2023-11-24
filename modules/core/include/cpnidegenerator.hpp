@@ -100,6 +100,13 @@ private:
     int addPlace(::std::string name, ::std::string type, ::std::optional<::std::string> initial_marking = ::std::nullopt);
 
     int addTransition(::std::string name);
+
+    void addArc(
+        CPNXml::Orientation orientation,
+        int transendId,
+        int placeendId,
+        ::std::optional<::std::string> annotation = ::std::nullopt);
+
 private:
     ::std::unique_ptr<CPNXml> cpnxml_{nullptr};
     // For layout calculation

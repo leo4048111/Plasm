@@ -144,6 +144,20 @@ int CPNIDEGenerator::addTransition(::std::string name)
     return id;
 }
 
+void CPNIDEGenerator::addArc(
+    CPNXml::Orientation orientation,
+    int transendId,
+    int placeendId,
+    ::std::optional<::std::string> annotation)
+{
+    cpnxml_->AddArc(
+        pageId_,
+        orientation,
+        transendId,
+        placeendId,
+        annotation);
+}
+
 bool CPNIDEGenerator::visit(SourceUnit const &_node)
 {
     LOGT("CPNIDEGenerator in %s", "SourceUnit");
@@ -156,16 +170,21 @@ void CPNIDEGenerator::endVisit(SourceUnit const &_node)
     LOGT("CPNIDEGenerator endVisit %s", "SourceUnit");
 
     ogdf::GraphAttributes ga(graph_,
-                             ogdf::GraphAttributes::nodeGraphics | ogdf::GraphAttributes::edgeGraphics);
+                             ogdf::GraphAttributes::nodeGraphics |
+                                 ogdf::GraphAttributes::edgeGraphics |
+                                 ogdf::GraphAttributes::nodeLabel |
+                                 ogdf::GraphAttributes::edgeStyle |
+                                 ogdf::GraphAttributes::nodeStyle |
+                                 ogdf::GraphAttributes::nodeTemplate);
 
     ogdf::SugiyamaLayout SL;
-    SL.setRanking(new ogdf::OptimalRanking);
     SL.setCrossMin(new ogdf::MedianHeuristic);
+    SL.arrangeCCs(false);
 
     ogdf::OptimalHierarchyLayout *ohl = new ogdf::OptimalHierarchyLayout;
-    ohl->layerDistance(200.0);
-    ohl->nodeDistance(200.0);
-    ohl->weightBalancing(0.8);
+    ohl->layerDistance(30.0);
+    ohl->nodeDistance(25.0);
+    ohl->weightBalancing(0.7);
     SL.setLayout(ohl);
 
     SL.call(ga);
@@ -511,39 +530,34 @@ void CPNIDEGenerator::endVisit(Assignment const &_node)
     auto var2 = makeVar(symbol_type_tbl_[id2]);
 
     // IStart to trans
-    cpnxml_->AddArc(
-        pageId_,
+    addArc(
         CPNXml::Orientation::PLACE_TO_TRANSITION,
         transId,
         iStartId,
         CONTROL_TOKEN_ANNOT);
 
     // trans to IEnd
-    cpnxml_->AddArc(
-        pageId_,
+    addArc(
         CPNXml::Orientation::TRANSITION_TO_PLACE,
         transId,
         iEndId,
         CONTROL_TOKEN_ANNOT);
 
     // Get value from right
-    cpnxml_->AddArc(
-        pageId_,
+    addArc(
         CPNXml::Orientation::BIDIRECTIONAL,
         transId,
         rhsId,
         var1);
 
     // Set value to left
-    cpnxml_->AddArc( // assign
-        pageId_,
+    addArc( // assign
         CPNXml::Orientation::TRANSITION_TO_PLACE,
         transId,
         lhsId,
         var1);
 
-    cpnxml_->AddArc( // remove old value
-        pageId_,
+    addArc( // remove old value
         CPNXml::Orientation::PLACE_TO_TRANSITION,
         transId,
         lhsId,

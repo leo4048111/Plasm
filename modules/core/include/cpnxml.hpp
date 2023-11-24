@@ -120,7 +120,7 @@ public:
         Orientation orientation,
         int transendId,
         int placeendId,
-        ::std::optional<::std::string> annotation);
+        ::std::optional<::std::string> annotation = ::std::nullopt);
 
 private:
     template <typename T1, typename T2>
