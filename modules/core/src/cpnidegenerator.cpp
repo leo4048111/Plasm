@@ -64,16 +64,144 @@ void CPNIDEGenerator::toCPN(solidity::frontend::ASTNode const &_node)
     _node.accept(*this);
 }
 
-void CPNIDEGenerator::Dump() const
+::std::string CPNIDEGenerator::makeVar(::std::string type)
+{
+    static int varCnt = 0;
+    ::std::string name = "var_" + ::std::to_string(varCnt++);
+
+    cpnxml_->DeclareVar(name, type);
+
+    return name;
+}
+
+int CPNIDEGenerator::makeIStart()
+{
+    static int iStartCnt = 0;
+    ::std::string name = "IStart_" + ::std::to_string(iStartCnt++);
+
+    int id = cpnxml_->AddPlace(
+        pageId_,
+        name,
+        "UNIT",
+        100,
+        100);
+
+    return id;
+}
+
+int CPNIDEGenerator::makeIEnd()
+{
+    static int iEndCnt = 0;
+    ::std::string name = "IEnd_" + ::std::to_string(iEndCnt++);
+
+    int id = addPlace(name, "UNIT");
+
+    return id;
+}
+
+void CPNIDEGenerator::addSymbolEntry(int64_t id, ::std::string name, int cpnid, ::std::string type)
+{
+    symbol_name_tbl_[id] = name;
+    symbol_id_tbl_[id] = cpnid;
+    symbol_type_tbl_[id] = type;
+}
+
+void CPNIDEGenerator::dump() const
 {
     if (cpnxml_)
         cpnxml_->Dump();
+}
+
+int CPNIDEGenerator::addPlace(::std::string name, ::std::string type, ::std::optional<::std::string> initial_marking)
+{
+    int id = cpnxml_->AddPlace(pageId_, name, type, 0.f, 0.f, initial_marking);
+
+    // Save place id
+    places_.insert(id);
+
+    // Add place to graph
+    ogdf::node placeNode = graph_.newNode();
+
+    // Mapping
+    mapping_onodes_cnodes_.insert(::std::make_pair(placeNode->index(), id));
+
+    return id;
+}
+
+int CPNIDEGenerator::addTransition(::std::string name)
+{
+    int id = cpnxml_->AddTransition(pageId_, name, 0.f, 0.f);
+
+    // Save transition id
+    transitions_.insert(id);
+
+    // Add transition to graph
+    ogdf::node transNode = graph_.newNode();
+
+    // Mapping
+    mapping_onodes_cnodes_.insert(::std::make_pair(transNode->index(), id));
+
+    return id;
+}
+
+void CPNIDEGenerator::addArc(
+    CPNXml::Orientation orientation,
+    int transendId,
+    int placeendId,
+    ::std::optional<::std::string> annotation)
+{
+    cpnxml_->AddArc(
+        pageId_,
+        orientation,
+        transendId,
+        placeendId,
+        annotation);
 }
 
 bool CPNIDEGenerator::visit(SourceUnit const &_node)
 {
     LOGT("CPNIDEGenerator in %s", "SourceUnit");
     return true;
+}
+
+void CPNIDEGenerator::endVisit(SourceUnit const &_node)
+{
+    // This will be called at the end of compilation
+    LOGT("CPNIDEGenerator endVisit %s", "SourceUnit");
+
+    ogdf::GraphAttributes ga(graph_,
+                             ogdf::GraphAttributes::nodeGraphics |
+                                 ogdf::GraphAttributes::edgeGraphics |
+                                 ogdf::GraphAttributes::nodeLabel |
+                                 ogdf::GraphAttributes::edgeStyle |
+                                 ogdf::GraphAttributes::nodeStyle |
+                                 ogdf::GraphAttributes::nodeTemplate);
+
+    ogdf::SugiyamaLayout SL;
+    SL.setCrossMin(new ogdf::MedianHeuristic);
+    SL.arrangeCCs(false);
+
+    ogdf::OptimalHierarchyLayout *ohl = new ogdf::OptimalHierarchyLayout;
+    ohl->layerDistance(30.0);
+    ohl->nodeDistance(25.0);
+    ohl->weightBalancing(0.7);
+    SL.setLayout(ohl);
+
+    SL.call(ga);
+
+    // Adjust node positions
+    for (ogdf::node v : graph_.nodes)
+    {
+        int id = mapping_onodes_cnodes_[v->index()];
+        if (places_.count(id))
+        {
+            cpnxml_->MovePlace(id, ga.x(v), ga.y(v));
+        }
+        else if (transitions_.count(id))
+        {
+            cpnxml_->MoveTransition(id, ga.x(v), ga.y(v));
+        }
+    }
 }
 
 bool CPNIDEGenerator::visit(PragmaDirective const &_node)
@@ -129,6 +257,9 @@ bool CPNIDEGenerator::visit(ContractDefinition const &_node)
     cpnxml_->DeclareRealColorSet("FixedPoint");
     // TODO enum
     // TODO struct
+
+    // Control unit
+    cpnxml_->DeclareUnitColorSet("UNIT");
 
     return true;
 }
@@ -196,21 +327,27 @@ bool CPNIDEGenerator::visit(FunctionDefinition const &_node)
 bool CPNIDEGenerator::visit(VariableDeclaration const &_node)
 {
     LOGT("CPNIDEGenerator in %s", "VariableDeclaration");
+    return true;
+}
+
+void CPNIDEGenerator::endVisit(VariableDeclaration const &_node)
+{
+    LOGT("CPNIDEGenerator endVisit %s", "VariableDeclaration");
     // Simply make a place for that value
     auto category = _node.type()->category();
     auto name = _node.name();
+    auto type = TypeCategory2String(category);
     // Add var decl
-    cpnxml_->DeclareVar(name, TypeCategory2String(category));
+    cpnxml_->DeclareVar(name, type);
 
     // Add place for var storage
-    PSM_ASSERT(pageId_ != -1);
-    int id = cpnxml_->AddPlace(pageId_, name, TypeCategory2String(category));
+    int id = addPlace(name, TypeCategory2String(category));
 
     // Register symbol
-    symbol_tbl_.insert(::std::make_pair(_node.id(), id));
-    symbol_tbl_2_.insert(::std::make_pair(_node.name(), id));
-    symbol_name_tbl_.insert(::std::make_pair(_node.id(), _node.name()));
-    return true;
+    addSymbolEntry(_node.id(), name, id, type);
+
+    // Add mapping from name to id
+    variable_name_id[name] = _node.id();
 }
 
 bool CPNIDEGenerator::visit(ModifierDefinition const &_node)
@@ -372,41 +509,59 @@ bool CPNIDEGenerator::visit(Conditional const &_node)
 bool CPNIDEGenerator::visit(Assignment const &_node)
 {
     LOGT("CPNIDEGenerator in %s", "Assignment");
+    return true;
+}
+
+void CPNIDEGenerator::endVisit(Assignment const &_node)
+{
+    LOGT("CPNIDEGenerator endVisit %s", "Assignment");
     auto id1 = _node.leftHandSide().id();
     auto id2 = _node.rightHandSide().id();
-    int lhsId = symbol_tbl_[_node.leftHandSide().id()];
-    int rhsId = symbol_tbl_[_node.rightHandSide().id()];
+    int lhsId = symbol_id_tbl_[_node.leftHandSide().id()];
+    int rhsId = symbol_id_tbl_[_node.rightHandSide().id()];
 
-    ::std::string name = "trans_" + ::std::to_string(_node.id());
-    int transId = cpnxml_->AddTransition(pageId_, name);
+    ::std::string name = "assignment_" + ::std::to_string(_node.id());
+    int transId = addTransition(name);
+
+    int iStartId = makeIStart();
+    int iEndId = makeIEnd();
+
+    auto var1 = makeVar(symbol_type_tbl_[id1]);
+    auto var2 = makeVar(symbol_type_tbl_[id2]);
+
+    // IStart to trans
+    addArc(
+        CPNXml::Orientation::PLACE_TO_TRANSITION,
+        transId,
+        iStartId,
+        CONTROL_TOKEN_ANNOT);
+
+    // trans to IEnd
+    addArc(
+        CPNXml::Orientation::TRANSITION_TO_PLACE,
+        transId,
+        iEndId,
+        CONTROL_TOKEN_ANNOT);
 
     // Get value from right
-    cpnxml_->AddArc(
-        pageId_,
+    addArc(
         CPNXml::Orientation::BIDIRECTIONAL,
         transId,
         rhsId,
-        symbol_name_tbl_[_node.rightHandSide().id()]
-    );
+        var1);
 
     // Set value to left
-    cpnxml_->AddArc( // assign
-        pageId_,
+    addArc( // assign
         CPNXml::Orientation::TRANSITION_TO_PLACE,
         transId,
         lhsId,
-        symbol_name_tbl_[_node.rightHandSide().id()]
-    );
+        var1);
 
-    cpnxml_->AddArc( // remove old value
-        pageId_,
+    addArc( // remove old value
         CPNXml::Orientation::PLACE_TO_TRANSITION,
         transId,
         lhsId,
-        symbol_name_tbl_[_node.leftHandSide().id()]
-    );
-
-    return true;
+        var2);
 }
 
 bool CPNIDEGenerator::visit(TupleExpression const &_node)
@@ -466,8 +621,13 @@ bool CPNIDEGenerator::visit(IndexRangeAccess const &_node)
 bool CPNIDEGenerator::visit(Identifier const &_node)
 {
     LOGT("CPNIDEGenerator in %s", "Identifier");
-    int cpnid = symbol_tbl_2_[_node.name()];
-    symbol_tbl_.insert(::std::make_pair(_node.id(), cpnid));
+
+    ::std::string name = _node.name();
+    int id = variable_name_id[name];
+    int cpnid = symbol_id_tbl_[id];
+    ::std::string type = symbol_type_tbl_[id];
+    addSymbolEntry(_node.id(), name, cpnid, type);
+
     return true;
 }
 

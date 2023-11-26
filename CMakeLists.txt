@@ -56,6 +56,9 @@ add_subdirectory(${PSM_THIRD_PARTY_DIR}/solidity)
 # pugixml
 add_subdirectory(${PSM_THIRD_PARTY_DIR}/pugixml)
 
+# ogdf
+add_subdirectory(${PSM_THIRD_PARTY_DIR}/ogdf)
+
 # modules
 add_subdirectory(${PSM_ROOT_DIR}/modules)
 

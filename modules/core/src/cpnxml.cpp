@@ -92,6 +92,8 @@ int CPNXml::AddPlace(
     int pageId,
     ::std::string name,
     ::std::string type,
+    float posX,
+    float posY,
     ::std::optional<::std::string> initial_marking)
 {
     // Check page
@@ -116,9 +118,8 @@ int CPNXml::AddPlace(
     // Later, interface which accepts position inputs might be implemented.
     // <posattr>
     pugi::xml_node posattr = place.append_child(POSATTR);
-    // FIXME: Position calculation
-    posattr.append_attribute(POS_X) = "-331.000000";
-    posattr.append_attribute(POS_Y) = "191";
+    posattr.append_attribute(POS_X) = ::std::to_string(posX).c_str();
+    posattr.append_attribute(POS_Y) = ::std::to_string(posY).c_str();
 
     // <text>
     pugi::xml_node textnode = place.append_child(TEXT);
@@ -159,27 +160,47 @@ int CPNXml::AddPlace(
     typetextnode.text().set(type.c_str());
 
     // <initmark ...>(FIXME: Expect an id, but not given)
+    pugi::xml_node initmark = place.append_child(INITMARK);
+    int imid = MakeId();
+    initmark.append_attribute(ID) = ::std::to_string(imid).c_str();
+    pugi::xml_node posattr2 = initmark.append_child(POSATTR);
+    posattr2.append_attribute(POS_X) = "0";
+    posattr2.append_attribute(POS_Y) = "0";
+    AddStyleDisc(initmark);
+    pugi::xml_node initmarktextnode = initmark.append_child(TEXT);
+    initmarktextnode.append_attribute(Key(GENERATOR_TOOL)) = Value(GENERATOR_TOOL);
+    initmarktextnode.append_attribute(Key(GENERATOR_VERSION)) = Value(GENERATOR_VERSION);
     if (initial_marking)
     {
-        pugi::xml_node initmark = place.append_child(INITMARK);
-        int imid = MakeId();
-        initmark.append_attribute(ID) = ::std::to_string(imid).c_str();
-        pugi::xml_node posattr2 = initmark.append_child(POSATTR);
-        posattr2.append_attribute(POS_X) = "0";
-        posattr2.append_attribute(POS_Y) = "0";
-        AddStyleDisc(initmark);
-        pugi::xml_node initmarktextnode = initmark.append_child(TEXT);
-        initmarktextnode.append_attribute(Key(GENERATOR_TOOL)) = Value(GENERATOR_TOOL);
-        initmarktextnode.append_attribute(Key(GENERATOR_VERSION)) = Value(GENERATOR_VERSION);
         initmarktextnode.text().set(initial_marking->c_str());
     }
+    else
+    {
+        initmarktextnode.text().set("\n");
+    }
 
+    places_.insert(::std::make_pair(id, place));
     return id;
+}
+
+void CPNXml::MovePlace(
+    int placeId,
+    float posX,
+    float posY)
+{
+    pugi::xml_node place = places_[placeId];
+
+    pugi::xml_node posattr = place.child(POSATTR);
+
+    posattr.attribute(POS_X).set_value(::std::to_string(posX).c_str());
+    posattr.attribute(POS_Y).set_value(::std::to_string(posY).c_str());
 }
 
 int CPNXml::AddTransition(
     int pageId,
-    ::std::string name)
+    ::std::string name,
+    float posX,
+    float posY)
 {
     // Check page
     if (pages_.count(pageId) == 0)
@@ -199,9 +220,8 @@ int CPNXml::AddTransition(
 
     // <posattr>
     pugi::xml_node posattr = transition.append_child(POSATTR);
-    // FIXME: Position calculation
-    posattr.append_attribute(POS_X) = "100";
-    posattr.append_attribute(POS_Y) = "100";
+    posattr.append_attribute(POS_X) = ::std::to_string(posX).c_str();
+    posattr.append_attribute(POS_Y) = ::std::to_string(posY).c_str();
 
     AddStyleDisc(transition);
 
@@ -214,7 +234,21 @@ int CPNXml::AddTransition(
     shape.append_attribute(Key(SHAPE_WIDTH)) = Value(SHAPE_WIDTH);
     shape.append_attribute(Key(SHAPE_HEIGHT)) = Value(SHAPE_HEIGHT);
 
+    transitions_.insert(::std::make_pair(id, transition));
     return id;
+}
+
+void CPNXml::MoveTransition(
+    int transitionId,
+    float posX,
+    float posY)
+{
+    pugi::xml_node transition = places_[transitionId];
+
+    pugi::xml_node posattr = transition.child(POSATTR);
+
+    posattr.attribute(POS_X).set_value(::std::to_string(posX).c_str());
+    posattr.attribute(POS_Y).set_value(::std::to_string(posY).c_str());
 }
 
 void CPNXml::AddArc(
@@ -272,7 +306,8 @@ void CPNXml::AddArc(
     pugi::xml_node placeend = arc.append_child(PLACEEND);
     placeend.append_attribute(IDREF) = ::std::to_string(placeendId).c_str();
 
-    if(annotation) {
+    if (annotation)
+    {
         // <annot ...>
         int annotId = MakeId();
         pugi::xml_node annot = arc.append_child(ANNOT);

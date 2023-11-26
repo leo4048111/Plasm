@@ -4,8 +4,16 @@
 
 #include <libsolidity/ast/AST.h>
 #include <libsolidity/ast/ASTVisitor.h>
+#include <ogdf/basic/Graph.h>
+#include <ogdf/basic/graph_generators.h>
+#include <ogdf/energybased/FMMMLayout.h>
+#include <ogdf/layered/SugiyamaLayout.h>
+#include <ogdf/layered/MedianHeuristic.h>
+#include <ogdf/layered/OptimalHierarchyLayout.h>
+#include <ogdf/layered/OptimalRanking.h>
 
 #include <memory>
+#include <set>
 
 #include "cpnxml.hpp"
 
@@ -18,7 +26,7 @@ public:
 
     void toCPN(solidity::frontend::ASTNode const &_node);
 
-    void Dump() const;
+    void dump() const;
 
     bool visit(solidity::frontend::SourceUnit const &_node) override;
     bool visit(solidity::frontend::PragmaDirective const &_node) override;
@@ -76,15 +84,51 @@ public:
     bool visit(solidity::frontend::Literal const &_node) override;
     bool visit(solidity::frontend::StructuredDocumentation const &_node) override;
 
+    void endVisit(solidity::frontend::SourceUnit const &_node);
+    void endVisit(solidity::frontend::Assignment const &_node) override;
+    void endVisit(solidity::frontend::VariableDeclaration const &_node) override;
+
+private:
+    ::std::string makeVar(::std::string type);
+
+    void addSymbolEntry(int64_t id, ::std::string name, int cpnid, ::std::string type);
+
+    int makeIStart();
+
+    int makeIEnd();
+
+    int addPlace(::std::string name, ::std::string type, ::std::optional<::std::string> initial_marking = ::std::nullopt);
+
+    int addTransition(::std::string name);
+
+    void addArc(
+        CPNXml::Orientation orientation,
+        int transendId,
+        int placeendId,
+        ::std::optional<::std::string> annotation = ::std::nullopt);
+
 private:
     ::std::unique_ptr<CPNXml> cpnxml_{nullptr};
-    // mapping _node.id() -> cpnide id
-    ::std::map<int64_t, int> symbol_tbl_;
-    // mapping symbol name -> cpnide id
-    ::std::map<::std::string, int> symbol_tbl_2_;
-    // mapping cpnide id -> symbol name
+    // For layout calculation
+    ogdf::Graph graph_;
+
+    // Get variable cpn node id with variable name
+    ::std::map<::std::string, int64_t> variable_name_id;
+
+    // mapping _node.id() -> name
     ::std::map<int64_t, ::std::string> symbol_name_tbl_;
+    // mapping _node.id() -> cpnide id
+    ::std::map<int64_t, int> symbol_id_tbl_;
+    // mapping _node.id() -> type
+    ::std::map<int64_t, ::std::string> symbol_type_tbl_;
+    // mapping ogdf nodes -> cpn nodes
+    ::std::map<int, int> mapping_onodes_cnodes_;
+    // places id
+    ::std::set<int> places_;
+    ::std::set<int> transitions_;
     int pageId_{-1};
+
+    static constexpr const char *CONTROL_TOKEN_ANNOT = "1`()";
 };
 
 _END_PSM_NM_
