@@ -6,6 +6,7 @@ contract TestContract {
     uint256 public b = 2;
 
     function foo() public {
+        a + b;
         a = b;
     }
 }

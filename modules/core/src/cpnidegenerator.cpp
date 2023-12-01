@@ -79,12 +79,7 @@ int CPNIDEGenerator::makeIStart()
     static int iStartCnt = 0;
     ::std::string name = "IStart_" + ::std::to_string(iStartCnt++);
 
-    int id = cpnxml_->AddPlace(
-        pageId_,
-        name,
-        "UNIT",
-        100,
-        100);
+    int id = addPlace(name, "UNIT");
 
     return id;
 }
@@ -517,8 +512,8 @@ void CPNIDEGenerator::endVisit(Assignment const &_node)
     LOGT("CPNIDEGenerator endVisit %s", "Assignment");
     auto id1 = _node.leftHandSide().id();
     auto id2 = _node.rightHandSide().id();
-    int lhsId = symbol_id_tbl_[_node.leftHandSide().id()];
-    int rhsId = symbol_id_tbl_[_node.rightHandSide().id()];
+    int lhsId = symbol_id_tbl_[id1];
+    int rhsId = symbol_id_tbl_[id2];
 
     ::std::string name = "assignment_" + ::std::to_string(_node.id());
     int transId = addTransition(name);
@@ -580,6 +575,68 @@ bool CPNIDEGenerator::visit(BinaryOperation const &_node)
 {
     LOGT("CPNIDEGenerator in %s", "BinaryOperation");
     return true;
+}
+
+void CPNIDEGenerator::endVisit(BinaryOperation const &_node) {
+    LOGT("CPNIDEGenerator endVisit %s", "BinaryOperation");
+
+    auto id1 = _node.leftExpression().id();
+    auto id2 = _node.rightExpression().id();
+    int lhsId = symbol_id_tbl_[id1];
+    int rhsId = symbol_id_tbl_[id2];
+    auto op = _node.getOperator();
+
+    // transition for operation
+    ::std::string name = "bop_" + ::std::to_string(_node.id());
+    int transId = addTransition(name);
+
+    // result place
+    // TODO: Implicit type convertion
+    ::std::string name2 = "b_result_" + ::std::to_string(_node.id());
+    int resultId = addPlace(name2, symbol_type_tbl_[id1]);
+
+    int iStartId = makeIStart();
+    int iEndId = makeIEnd();
+
+    auto var1 = makeVar(symbol_type_tbl_[id1]);
+    auto var2 = makeVar(symbol_type_tbl_[id2]);
+
+    // IStart to trans
+    addArc(
+        CPNXml::Orientation::PLACE_TO_TRANSITION,
+        transId,
+        iStartId,
+        CONTROL_TOKEN_ANNOT);
+
+    // trans to IEnd
+    addArc(
+        CPNXml::Orientation::TRANSITION_TO_PLACE,
+        transId,
+        iEndId,
+        CONTROL_TOKEN_ANNOT);
+
+    // get value from right
+    addArc(
+        CPNXml::Orientation::BIDIRECTIONAL,
+        transId,
+        rhsId,
+        var1);
+
+    // get value from left
+    addArc(
+        CPNXml::Orientation::BIDIRECTIONAL,
+        transId,
+        lhsId,
+        var2);
+
+    // set value to result
+    auto exp = var1 + solidity::langutil::TokenTraits::toString(op) + var2;
+    addArc(
+        CPNXml::Orientation::TRANSITION_TO_PLACE,
+        transId,
+        resultId,
+        exp
+    );
 }
 
 bool CPNIDEGenerator::visit(FunctionCall const &_node)
