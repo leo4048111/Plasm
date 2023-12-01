@@ -637,6 +637,9 @@ void CPNIDEGenerator::endVisit(BinaryOperation const &_node) {
         resultId,
         exp
     );
+
+    // register result
+    addSymbolEntry(_node.id(), name, resultId, symbol_type_tbl_[id1]);
 }
 
 bool CPNIDEGenerator::visit(FunctionCall const &_node)
