@@ -102,6 +102,8 @@ private:
 
     int addTransition(::std::string name);
 
+    void bridgeControlPlaces(int from, int to);
+
     void addArc(
         CPNXml::Orientation orientation,
         int transendId,
@@ -128,6 +130,7 @@ private:
     ::std::set<int> places_;
     ::std::set<int> transitions_;
     int pageId_{-1};
+    int lastIEndId{-1};
 
     static constexpr const char *CONTROL_TOKEN_ANNOT = "1`()";
 };

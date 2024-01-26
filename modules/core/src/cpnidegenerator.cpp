@@ -64,6 +64,28 @@ void CPNIDEGenerator::toCPN(solidity::frontend::ASTNode const &_node)
     _node.accept(*this);
 }
 
+void CPNIDEGenerator::bridgeControlPlaces(int from, int to)
+{
+    static int bridgeCnt = 0;
+    ::std::string name = "bridge_" + ::std::to_string(bridgeCnt++);
+    int bridgeTransId = addTransition(name);
+
+    // from => bridge => to
+    addArc(
+        CPNXml::Orientation::PLACE_TO_TRANSITION,
+        bridgeTransId,
+        from,
+        CONTROL_TOKEN_ANNOT
+    );
+
+    addArc(
+        CPNXml::Orientation::TRANSITION_TO_PLACE,
+        bridgeTransId,
+        to,
+        CONTROL_TOKEN_ANNOT
+    );
+}
+
 ::std::string CPNIDEGenerator::makeVar(::std::string type)
 {
     static int varCnt = 0;
@@ -80,6 +102,9 @@ int CPNIDEGenerator::makeIStart()
     ::std::string name = "IStart_" + ::std::to_string(iStartCnt++);
 
     int id = addPlace(name, "UNIT");
+    if(lastIEndId != -1) {
+        bridgeControlPlaces(lastIEndId, id);
+    }
 
     return id;
 }
@@ -90,6 +115,8 @@ int CPNIDEGenerator::makeIEnd()
     ::std::string name = "IEnd_" + ::std::to_string(iEndCnt++);
 
     int id = addPlace(name, "UNIT");
+
+    lastIEndId = id;
 
     return id;
 }
