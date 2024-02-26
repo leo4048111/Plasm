@@ -450,6 +450,98 @@ bool CPNIDEGenerator::visit(IfStatement const &_node)
     return true;
 }
 
+void CPNIDEGenerator::endVisit(IfStatement const &_node)
+{
+    LOGT("CPNIDEGenerator endVisit %s", "IfStatement");
+    auto id1 = _node.condition().id();
+    auto id2 = _node.trueStatement().id();
+    // conditional else body
+    auto elseBody = _node.falseStatement();
+    bool hasElse = !(elseBody == nullptr);
+    int condId = symbol_id_tbl_[id1];
+    int trueId = symbol_id_tbl_[id2];
+
+    ::std::string name = "ifstatement_" + ::std::to_string(_node.id());
+    int ifStatId = addTransition(name);
+
+    int iStartId = makeIStart();
+    int iEndId = makeIEnd();
+
+    auto condVar = makeVar("Bool");
+    ::std::string ifElseAnnot = "if " + condVar + " then 1`() else empty";
+
+    // IStart to trans
+    addArc(
+        CPNXml::Orientation::PLACE_TO_TRANSITION,
+        iStartId,
+        ifStatId,
+        CONTROL_TOKEN_ANNOT);
+
+    // IfElseStatement to condition
+    addArc(
+        CPNXml::Orientation::BIDIRECTIONAL,
+        ifStatId,
+        condId,
+        condVar);
+
+    ::std::string name2 = "ibodystart_" + ::std::to_string(_node.id());
+    ::std::string name3 = "ibodyend_" + ::std::to_string(_node.id());
+    int iBodyStartId = addPlace(name2, "UNIT");
+    int iBodyEndId = addPlace(name3, "UNIT");
+
+    // IfElseStatement to ibodystart
+    addArc(
+        CPNXml::Orientation::TRANSITION_TO_PLACE,
+        iBodyStartId,
+        ifStatId,
+        CONTROL_TOKEN_ANNOT);
+
+    int bodyExpr = addTransition("iftruebody_" + ::std::to_string(_node.id()));
+
+    // ibodystart to bodyexpr
+    addArc(
+        CPNXml::Orientation::PLACE_TO_TRANSITION,
+        iBodyStartId,
+        bodyExpr,
+        CONTROL_TOKEN_ANNOT
+    );
+
+    // bodyexpr to ibodyend
+    addArc(
+        CPNXml::Orientation::TRANSITION_TO_PLACE,
+        iBodyEndId,
+        bodyExpr,
+        CONTROL_TOKEN_ANNOT
+    );
+
+    // ibodyend to endif
+    int endifid = addTransition("endif_" + ::std::to_string(_node.id()));
+    addArc(
+        CPNXml::Orientation::PLACE_TO_TRANSITION,
+        endifid,
+        iBodyEndId,
+        CONTROL_TOKEN_ANNOT
+    );
+
+    // endif to iend
+    addArc(
+        CPNXml::Orientation::TRANSITION_TO_PLACE,
+        endifid,
+        iEndId,
+        CONTROL_TOKEN_ANNOT
+    );
+
+    // ifstatement to iend
+    ::std::string ifElseAnnot2 = "if " + condVar + " then empty else 1`()";
+    addArc(
+        CPNXml::Orientation::TRANSITION_TO_PLACE,
+        ifStatId,
+        iEndId,
+        ifElseAnnot2
+    );
+    // TODO: else body
+}
+
 bool CPNIDEGenerator::visit(TryCatchClause const &_node)
 {
     LOGT("CPNIDEGenerator in %s", "TryCatchClause");

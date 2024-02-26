@@ -8,5 +8,9 @@ contract TestContract {
 
     function foo() public {
         c = a + b;
+
+        if(2 > 1) {
+            a = 1;
+        }
     }
 }
