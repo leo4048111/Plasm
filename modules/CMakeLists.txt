@@ -45,7 +45,8 @@ target_include_directories(${TARGET} PUBLIC
 target_link_libraries(${TARGET} PUBLIC
     solidity
     pugixml
-    OGDF
+    RapidJSON
+    # OGDF
     Boost::boost
     Boost::filesystem
     Boost::program_options

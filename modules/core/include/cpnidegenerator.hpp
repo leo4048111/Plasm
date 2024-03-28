@@ -4,13 +4,13 @@
 
 #include <libsolidity/ast/AST.h>
 #include <libsolidity/ast/ASTVisitor.h>
-#include <ogdf/basic/Graph.h>
-#include <ogdf/basic/graph_generators.h>
-#include <ogdf/energybased/FMMMLayout.h>
-#include <ogdf/layered/SugiyamaLayout.h>
-#include <ogdf/layered/MedianHeuristic.h>
-#include <ogdf/layered/OptimalHierarchyLayout.h>
-#include <ogdf/layered/OptimalRanking.h>
+// #include <ogdf/basic/Graph.h>
+// #include <ogdf/basic/graph_generators.h>
+// #include <ogdf/energybased/FMMMLayout.h>
+// #include <ogdf/layered/SugiyamaLayout.h>
+// #include <ogdf/layered/MedianHeuristic.h>
+// #include <ogdf/layered/OptimalHierarchyLayout.h>
+// #include <ogdf/layered/OptimalRanking.h>
 
 #include <memory>
 #include <set>
@@ -114,8 +114,8 @@ private:
 
 private:
     ::std::unique_ptr<CPNXml> cpnxml_{nullptr};
-    // For layout calculation
-    ogdf::Graph graph_;
+    // // For layout calculation
+    // ogdf::Graph graph_;
 
     // Get variable cpn node id with variable name
     ::std::map<::std::string, int64_t> variable_name_id;

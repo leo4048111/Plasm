@@ -141,11 +141,11 @@ int CPNIDEGenerator::addPlace(::std::string name, ::std::string type, ::std::opt
     // Save place id
     places_.insert(id);
 
-    // Add place to graph
-    ogdf::node placeNode = graph_.newNode();
+    // // Add place to graph
+    // ogdf::node placeNode = graph_.newNode();
 
-    // Mapping
-    mapping_onodes_cnodes_.insert(::std::make_pair(placeNode->index(), id));
+    // // Mapping
+    // mapping_onodes_cnodes_.insert(::std::make_pair(placeNode->index(), id));
 
     return id;
 }
@@ -157,11 +157,11 @@ int CPNIDEGenerator::addTransition(::std::string name)
     // Save transition id
     transitions_.insert(id);
 
-    // Add transition to graph
-    ogdf::node transNode = graph_.newNode();
+    // // Add transition to graph
+    // ogdf::node transNode = graph_.newNode();
 
-    // Mapping
-    mapping_onodes_cnodes_.insert(::std::make_pair(transNode->index(), id));
+    // // Mapping
+    // mapping_onodes_cnodes_.insert(::std::make_pair(transNode->index(), id));
 
     return id;
 }
@@ -191,39 +191,39 @@ void CPNIDEGenerator::endVisit(SourceUnit const &_node)
     // This will be called at the end of compilation
     LOGT("CPNIDEGenerator endVisit %s", "SourceUnit");
 
-    ogdf::GraphAttributes ga(graph_,
-                             ogdf::GraphAttributes::nodeGraphics |
-                                 ogdf::GraphAttributes::edgeGraphics |
-                                 ogdf::GraphAttributes::nodeLabel |
-                                 ogdf::GraphAttributes::edgeStyle |
-                                 ogdf::GraphAttributes::nodeStyle |
-                                 ogdf::GraphAttributes::nodeTemplate);
+    // ogdf::GraphAttributes ga(graph_,
+    //                          ogdf::GraphAttributes::nodeGraphics |
+    //                              ogdf::GraphAttributes::edgeGraphics |
+    //                              ogdf::GraphAttributes::nodeLabel |
+    //                              ogdf::GraphAttributes::edgeStyle |
+    //                              ogdf::GraphAttributes::nodeStyle |
+    //                              ogdf::GraphAttributes::nodeTemplate);
 
-    ogdf::SugiyamaLayout SL;
-    SL.setCrossMin(new ogdf::MedianHeuristic);
-    SL.arrangeCCs(false);
+    // ogdf::SugiyamaLayout SL;
+    // SL.setCrossMin(new ogdf::MedianHeuristic);
+    // SL.arrangeCCs(false);
 
-    ogdf::OptimalHierarchyLayout *ohl = new ogdf::OptimalHierarchyLayout;
-    ohl->layerDistance(30.0);
-    ohl->nodeDistance(25.0);
-    ohl->weightBalancing(0.7);
-    SL.setLayout(ohl);
+    // ogdf::OptimalHierarchyLayout *ohl = new ogdf::OptimalHierarchyLayout;
+    // ohl->layerDistance(30.0);
+    // ohl->nodeDistance(25.0);
+    // ohl->weightBalancing(0.7);
+    // SL.setLayout(ohl);
 
-    SL.call(ga);
+    // SL.call(ga);
 
-    // Adjust node positions
-    for (ogdf::node v : graph_.nodes)
-    {
-        int id = mapping_onodes_cnodes_[v->index()];
-        if (places_.count(id))
-        {
-            cpnxml_->MovePlace(id, ga.x(v), ga.y(v));
-        }
-        else if (transitions_.count(id))
-        {
-            cpnxml_->MoveTransition(id, ga.x(v), ga.y(v));
-        }
-    }
+    // // Adjust node positions
+    // for (ogdf::node v : graph_.nodes)
+    // {
+    //     int id = mapping_onodes_cnodes_[v->index()];
+    //     if (places_.count(id))
+    //     {
+    //         cpnxml_->MovePlace(id, ga.x(v), ga.y(v));
+    //     }
+    //     else if (transitions_.count(id))
+    //     {
+    //         cpnxml_->MoveTransition(id, ga.x(v), ga.y(v));
+    //     }
+    // }
 }
 
 bool CPNIDEGenerator::visit(PragmaDirective const &_node)
