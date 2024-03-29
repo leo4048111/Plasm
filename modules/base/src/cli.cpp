@@ -220,7 +220,7 @@ void CLI::PrintLicense() const
         "            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE\n"
         "                    Version 2, December 2004\n"
         "\n"
-        " Copyright (C) [2023] [Z3r0M3r0ry]\n"
+        " Copyright (C) [2024] [Z3r0M3r0ry]\n"
         "\n"
         " Everyone is permitted to copy and distribute verbatim or modified\n"
         " copies of this license document, and changing it is allowed as long\n"
