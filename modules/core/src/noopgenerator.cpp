@@ -93,7 +93,7 @@ bool NoopGenerator::visit(OverrideSpecifier const& _node)
 
 bool NoopGenerator::visit(FunctionDefinition const& _node)
 {
-    LOGI("NoopGenerator in %s", "NoopGenerator");
+    LOGI("NoopGenerator in %s", "FunctionDefinition");
 	return true;
 }
 

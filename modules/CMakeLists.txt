@@ -19,6 +19,8 @@ set(PSM_MODULE_HDR
     ${PSM_MODULE_CORE_INCLUDE_DIR}/noopgenerator.hpp
     ${PSM_MODULE_CORE_INCLUDE_DIR}/cpnidegenerator.hpp
     ${PSM_MODULE_CORE_INCLUDE_DIR}/cpnxml.hpp
+    ${PSM_MODULE_CORE_INCLUDE_DIR}/generator.hpp
+    ${PSM_MODULE_CORE_INCLUDE_DIR}/cpn.hpp
 )
 
 set(PSM_MODULE_SRC
@@ -29,6 +31,8 @@ set(PSM_MODULE_SRC
     ${PSM_MODULE_CORE_SRC_DIR}/noopgenerator.cpp
     ${PSM_MODULE_CORE_SRC_DIR}/cpnidegenerator.cpp
     ${PSM_MODULE_CORE_SRC_DIR}/cpnxml.cpp
+    ${PSM_MODULE_CORE_SRC_DIR}/generator.cpp
+    ${PSM_MODULE_CORE_SRC_DIR}/cpn.cpp
 )
 
 # target

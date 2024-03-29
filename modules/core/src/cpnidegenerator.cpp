@@ -342,7 +342,7 @@ bool CPNIDEGenerator::visit(OverrideSpecifier const &_node)
 
 bool CPNIDEGenerator::visit(FunctionDefinition const &_node)
 {
-    LOGT("CPNIDEGenerator in %s", "CPNIDEGenerator");
+    LOGT("CPNIDEGenerator in %s", "FunctionDefinition");
     return true;
 }
 
