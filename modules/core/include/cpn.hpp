@@ -11,11 +11,13 @@ _START_PSM_NM_
 
 namespace cpn
 {
+    static constexpr const char *CTRL_COLOR = "unit";
+
     class Token
     {
     public:
         template <typename T>
-        Token(::std::string color, T value, bool isControl = false);
+        Token(::std::string color, T value);
         ~Token() = default;
 
         template <typename T>
@@ -31,15 +33,14 @@ namespace cpn
             }
         }
 
-        bool isControl() const
+        bool control() const
         {
-            return isControl_;
+            return color_ == CTRL_COLOR;
         }
 
     private:
         ::std::string color_;
         ::std::any value_;
-        bool isControl_;
     };
 
     class Place
@@ -47,6 +48,21 @@ namespace cpn
     public:
         Place(::std::string name, ::std::string color);
         ~Place() = default;
+
+        ::std::string name() const
+        {
+            return name_;
+        }
+
+        ::std::string color() const
+        {
+            return color_;
+        }
+
+        bool control() const
+        {
+            return color_ == CTRL_COLOR;
+        }
 
     private:
         ::std::string name_;
@@ -59,6 +75,11 @@ namespace cpn
     public:
         Transition(::std::string name);
         ~Transition() = default;
+
+        ::std::string name() const
+        {
+            return name_;
+        }
 
     private:
         ::std::string name_;

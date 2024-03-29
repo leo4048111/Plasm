@@ -7,8 +7,8 @@ _START_PSM_NM_
 namespace cpn
 {
     template <typename T>
-    Token::Token(::std::string color, T value, bool isControl)
-        : color_(color), value_(value), isControl_(isControl)
+    Token::Token(::std::string color, T value)
+        : color_(color), value_(value)
     {
     }
 

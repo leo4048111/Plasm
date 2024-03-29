@@ -4,6 +4,7 @@
 
 #include <libsolidity/ast/AST.h>
 #include <libsolidity/ast/ASTVisitor.h>
+#include <stack>
 
 #include "cpn.hpp"
 
@@ -15,6 +16,8 @@ public:
 	explicit Generator();
 
 	void toCPN(solidity::frontend::ASTNode const &_node);
+
+    void dump() const;
 
 	bool visit(solidity::frontend::SourceUnit const &_node) override;
 	bool visit(solidity::frontend::PragmaDirective const &_node) override;
@@ -72,14 +75,24 @@ public:
 	bool visit(solidity::frontend::Literal const &_node) override;
 	bool visit(solidity::frontend::StructuredDocumentation const &_node) override;
 
+	void endVisit(solidity::frontend::SourceUnit const &_node) override;
+	void endVisit(solidity::frontend::ContractDefinition const &_node) override;
+	void endVisit(solidity::frontend::FunctionDefinition const &_node) override;
+
 private:
-	::std::string scope() const { return scope_; };
-	void setScope(::std::string scope) { scope_ = scope; };
+	::std::string scope() const { return sscope_.top(); };
+	void pushScope(::std::string scope) { sscope_.push(scope); };
+	void popScope() { if(!sscope_.empty()) sscope_.pop(); };
 
 private:
     static constexpr const char *SCOPE_GLOB = "global.";
+	static constexpr const char *SCOPE_PARAM = "param.";
+	static constexpr const char *SCOPE_RET = "ret.";
+	static constexpr const char *VAR_MSG = "msg";
+	static constexpr const char *VAR_THIS = "this";
+	static constexpr const char *TYPE_STRUCT = "struct";
 	::std::unique_ptr<cpn::Network> network_;
-	::std::string scope_{""};
+	::std::stack<::std::string> sscope_;
 };
 
 _END_PSM_NM_

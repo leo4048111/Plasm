@@ -262,7 +262,7 @@ void CLI::CompileAndGenerate()
         // CPNIDEGenerator generator;
         Generator generator;
         generator.toCPN(unit);
-        // generator.dump();
+        generator.dump();
     }
 
     compiler_->reset();
