@@ -357,6 +357,35 @@ bool Generator::visit(BinaryOperation const &_node)
     return true;
 }
 
+void Generator::endVisit(BinaryOperation const &_node)
+{
+    // create inout control places
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in" , cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out" , cpn::CTRL_COLOR);
+    network_->addPlace(inPlace);
+    network_->addPlace(outPlace);
+
+    // create binary op transition
+    ::std::shared_ptr<cpn::Transition> transition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()));
+    network_->addTransition(transition);
+
+    // create place for result
+    ::std::shared_ptr<cpn::Place> resultPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".result" , "unknown");
+    network_->addPlace(resultPlace);
+
+    // get lhs and rhs places
+    auto lhsPlace = network_->getPlaceByName(::std::to_string(_node.leftExpression().id()) + ".result");
+    auto rhsPlace = network_->getPlaceByName(::std::to_string(_node.rightExpression().id()) + ".result");
+
+    // create arcs
+    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, transition, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, transition, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(lhsPlace, transition, cpn::Arc::Orientation::BD);
+    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(rhsPlace, transition, cpn::Arc::Orientation::BD);
+    ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(resultPlace, transition, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(resultPlace, transition, cpn::Arc::Orientation::P2T);
+}
+
 bool Generator::visit(FunctionCall const &_node)
 {
     LOGI("Generator in %s", "FunctionCall");
@@ -396,6 +425,37 @@ bool Generator::visit(IndexRangeAccess const &_node)
 bool Generator::visit(Identifier const &_node)
 {
     LOGI("Generator in %s", "Identifier");
+
+    // search for local var
+    auto place = network_->getPlaceByName(scope() + _node.name());
+
+    // search for param
+    if (place == nullptr)
+    {
+        place = network_->getPlaceByName(scope() + SCOPE_PARAM + _node.name());
+    }
+
+    // search for ret
+    if (place == nullptr)
+    {
+        place = network_->getPlaceByName(scope() + SCOPE_RET + _node.name());
+    }
+
+    // search for global var
+    if (place == nullptr)
+    {
+        place = network_->getPlaceByName(SCOPE_GLOB + _node.name());
+    }
+
+    // not found
+    if (place == nullptr)
+    {
+        LOGE("Identifier %s not found", _node.name().c_str());
+        return false;
+    }
+
+    network_->alias(place, ::std::to_string(_node.id()) + ".result");
+
     return true;
 }
 
@@ -423,6 +483,18 @@ void Generator::dump() const
     for (auto const &place : network_->places())
     {
         LOGI("Place: %s, type: %s", place->name().c_str(), place->color().c_str());
+    }
+
+    // transitions
+    for (auto const &transition : network_->transitions())
+    {
+        LOGI("Transition: %s", transition->name().c_str());
+    }
+
+    // arcs
+    for (auto const &arc : network_->arcs())
+    {
+        LOGI("Arc trans: %s, place: %s", arc->place()->name().c_str(), arc->transition()->name().c_str());
     }
 }
 

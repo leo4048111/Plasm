@@ -31,11 +31,23 @@ namespace cpn
     void Network::addPlace(::std::shared_ptr<Place> place)
     {
         places_.push_back(place);
+        place_map_.insert(::std::make_pair(place->name(), place));
     }
 
     void Network::addTransition(::std::shared_ptr<Transition> transition)
     {
         transitions_.push_back(transition);
+        transition_map_.insert(::std::make_pair(transition->name(), transition));
+    }
+
+    void Network::alias(::std::shared_ptr<Place> place, ::std::string alias)
+    {
+        place_map_.insert(::std::make_pair(alias, place));
+    }
+
+    void Network::alias(::std::shared_ptr<Transition> transition, ::std::string alias)
+    {
+        transition_map_.insert(::std::make_pair(alias, transition));
     }
 
     void Network::addArc(::std::shared_ptr<Arc> arc)

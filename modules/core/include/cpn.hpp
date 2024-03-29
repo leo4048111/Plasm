@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <any>
+#include <map>
 
 _START_PSM_NM_
 
@@ -99,6 +100,23 @@ namespace cpn
             ::std::shared_ptr<Transition> transition,
             Orientation orientation);
 
+        ~Arc() = default;
+
+        ::std::shared_ptr<Place> place() const
+        {
+            return place_;
+        }
+
+        ::std::shared_ptr<Transition> transition() const
+        {
+            return transition_;
+        }
+
+        Orientation orientation() const
+        {
+            return orientation_;
+        }
+
     private:
         ::std::shared_ptr<Place> place_;
         ::std::shared_ptr<Transition> transition_;
@@ -130,10 +148,37 @@ namespace cpn
             return arcs_;
         }
 
+        ::std::shared_ptr<Place> getPlaceByName(const ::std::string &name) const
+        {
+            if(place_map_.find(name) != place_map_.end())
+            {
+                return place_map_.at(name);
+            }
+
+            return nullptr;
+        }
+
+        ::std::shared_ptr<Transition> getTransitionByName(const ::std::string &name) const
+        {
+            if(transition_map_.find(name) != transition_map_.end())
+            {
+                return transition_map_.at(name);
+            }
+
+            return nullptr;
+        }
+
+        void alias(::std::shared_ptr<Place> place, ::std::string alias);
+
+        void alias(::std::shared_ptr<Transition> transition, ::std::string alias);
+
     private:
         ::std::vector<::std::shared_ptr<Place>> places_;
         ::std::vector<::std::shared_ptr<Transition>> transitions_;
         ::std::vector<::std::shared_ptr<Arc>> arcs_;
+
+        ::std::map<::std::string, ::std::shared_ptr<Place>> place_map_; // mapping place name to place
+        ::std::map<::std::string, ::std::shared_ptr<Transition>> transition_map_; // mapping place name to place
     };
 }
 
