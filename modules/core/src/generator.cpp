@@ -118,7 +118,8 @@ bool Generator::visit(UserDefinedValueTypeDefinition const &_node)
 bool Generator::visit(ParameterList const &_node)
 {
     LOGI("Generator in %s", "ParameterList");
-    return true;
+    // Do not visit VariableDeclaration since we have visited it in FunctionDefinition
+    return false;
 }
 
 bool Generator::visit(OverrideSpecifier const &_node)
@@ -165,6 +166,14 @@ void Generator::endVisit(FunctionDefinition const &_node)
 bool Generator::visit(VariableDeclaration const &_node)
 {
     LOGI("Generator in %s", "VariableDeclaration");
+
+    auto name = _node.name();
+    auto type = _node.typeName().annotation().type->toString();
+
+    // create places
+    ::std::shared_ptr<cpn::Place> place = ::std::make_shared<cpn::Place>(scope() + name, type);
+    network_->addPlace(place);
+
     return true;
 }
 
