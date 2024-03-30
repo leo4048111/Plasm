@@ -80,6 +80,7 @@ public:
 	void endVisit(solidity::frontend::FunctionDefinition const &_node) override;
 	void endVisit(solidity::frontend::BinaryOperation const &_node) override;
 	void endVisit(solidity::frontend::Assignment const &_node) override;
+	void endVisit(solidity::frontend::IfStatement const &_node) override;
 
 private:
 	::std::string scope() const { return sscope_.top(); };
