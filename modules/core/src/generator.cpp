@@ -339,6 +339,33 @@ bool Generator::visit(Assignment const &_node)
     return true;
 }
 
+void Generator::endVisit(Assignment const &_node)
+{
+    // create inout control places
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in" , cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out" , cpn::CTRL_COLOR);
+    network_->addPlace(inPlace);
+    network_->addPlace(outPlace);
+
+    // create assignment transition
+    ::std::shared_ptr<cpn::Transition> transition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()));
+    network_->addTransition(transition);
+
+    // get lhs and rhs places
+    auto lhsPlace = network_->getPlaceByName(::std::to_string(_node.leftHandSide().id()) + ".result");
+    auto rhsPlace = network_->getPlaceByName(::std::to_string(_node.rightHandSide().id()) + ".result");
+
+    // create alias for result place
+    network_->alias(lhsPlace, ::std::to_string(_node.id()) + ".result");
+
+    // create arcs
+    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, transition, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, transition, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(lhsPlace, transition, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(lhsPlace, transition, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(rhsPlace, transition, cpn::Arc::Orientation::BD);
+}
+
 bool Generator::visit(TupleExpression const &_node)
 {
     LOGI("Generator in %s", "TupleExpression");
