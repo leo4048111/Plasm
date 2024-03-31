@@ -266,6 +266,7 @@ void Generator::endVisit(IfStatement const &_node)
     // create ifstatement transitions
     ::std::shared_ptr<cpn::Transition> ifstmtTransition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()));
     network_->addTransition(ifstmtTransition);
+    // create endif transition for true body
     ::std::shared_ptr<cpn::Transition> endifTrueTransition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".endif.true");
     network_->addTransition(endifTrueTransition);
 
@@ -276,7 +277,12 @@ void Generator::endVisit(IfStatement const &_node)
     auto ifBodyInPlace = network_->getPlaceByName(::std::to_string(_node.trueStatement().id()) + ".in");
     auto ifBodyOutPlace = network_->getPlaceByName(::std::to_string(_node.trueStatement().id()) + ".out");
 
-    // TODO: parse false body
+    // get if false body io place(if has false body)
+    if(_node.falseStatement())
+    {
+        auto ifFalseBodyInPlace = network_->getPlaceByName(::std::to_string(_node.falseStatement()->id()) + ".in");
+        auto ifFalseBodyOutPlace = network_->getPlaceByName(::std::to_string(_node.falseStatement()->id()) + ".out");
+    }
 
     // create arcs
     ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, ifstmtTransition, cpn::Arc::Orientation::P2T);
@@ -289,6 +295,19 @@ void Generator::endVisit(IfStatement const &_node)
     network_->addArc(arc3);
     network_->addArc(arc4);
     network_->addArc(arc5);
+
+    // create arcs for false body
+    if(_node.falseStatement())
+    {
+        ::std::shared_ptr<cpn::Transition> endifFalseTransition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".endif.false");
+        network_->addTransition(endifFalseTransition);
+        ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(ifBodyInPlace, ifstmtTransition, cpn::Arc::Orientation::T2P);
+        ::std::shared_ptr<cpn::Arc> arc7 = ::std::make_shared<cpn::Arc>(ifBodyOutPlace, endifFalseTransition, cpn::Arc::Orientation::P2T);
+        ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::Arc>(outPlace, endifFalseTransition, cpn::Arc::Orientation::T2P);
+        network_->addArc(arc6);
+        network_->addArc(arc7);
+        network_->addArc(arc8);
+    }
 }
 
 bool Generator::visit(TryCatchClause const &_node)
