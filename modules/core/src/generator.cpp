@@ -160,6 +160,13 @@ bool Generator::visit(FunctionDefinition const &_node)
 
 void Generator::endVisit(FunctionDefinition const &_node)
 {
+    // create alias for block io places
+    auto blockInPlace = network_->getPlaceByName(::std::to_string(_node.body().id()) + ".in");
+    auto blockOutPlace = network_->getPlaceByName(::std::to_string(_node.body().id()) + ".out");
+
+    network_->alias(blockInPlace, scope() + "in");
+    network_->alias(blockOutPlace, scope() + "out");
+
     popScope();
 }
 
