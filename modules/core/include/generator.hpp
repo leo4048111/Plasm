@@ -84,6 +84,9 @@ public:
 	void endVisit(solidity::frontend::WhileStatement const &_node) override;
 	void endVisit(solidity::frontend::Block const &_node) override;
 	void endVisit(solidity::frontend::FunctionCall const &_node) override;
+	void endVisit(solidity::frontend::VariableDeclarationStatement const &_node) override;
+	void endVisit(solidity::frontend::ExpressionStatement const &_node) override;
+	void endVisit(solidity::frontend::Return const &_node) override;
 
 private:
 	::std::string scope() const { return sscope_.top(); };
@@ -99,6 +102,7 @@ private:
 	static constexpr const char *TYPE_STRUCT = "struct";
 	::std::unique_ptr<cpn::Network> network_;
 	::std::stack<::std::string> sscope_;
+	::std::map<::std::string, ::std::vector<::std::string>> functionParams_;
 };
 
 _END_PSM_NM_
