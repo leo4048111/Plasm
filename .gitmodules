@@ -10,7 +10,3 @@
 	path = third_party/ogdf
 	url = https://github.com/ogdf/ogdf
 	ignore = dirty
-[submodule "third_party/rapidjson"]
-	path = third_party/rapidjson
-	url = https://github.com/Tencent/rapidjson.git
-	ignore = dirty
