@@ -9,6 +9,7 @@
 #include "noopgenerator.hpp"
 #include "cpnidegenerator.hpp"
 #include "generator.hpp"
+#include "visualizer.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -263,6 +264,14 @@ void CLI::CompileAndGenerate()
         Generator generator;
         generator.toCPN(unit);
         generator.dump();
+
+        // get pointer to cpn
+        auto network = generator.getNetwork();
+
+        // dump csv 
+        // #ifdef DEBUG
+        Visualizer::GetInstance().Draw(network);
+        // #endif
     }
 
     compiler_->reset();

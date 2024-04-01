@@ -6,7 +6,8 @@
 
 _START_PSM_NM_
 
-void Visualizer::Draw(cpn::Network network) const {
+void Visualizer::Draw(::std::shared_ptr<cpn::Network> network) const
+ {
     typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS,
                                   boost::property<boost::vertex_name_t, std::string>,
                                   boost::property<boost::edge_name_t, std::string>> Graph;
@@ -16,21 +17,21 @@ void Visualizer::Draw(cpn::Network network) const {
     std::unordered_map<std::string, boost::graph_traits<Graph>::vertex_descriptor> vertexMap;
 
     // add places
-    for (const auto& place : network.places()) {
+    for (const auto& place : network->places()) {
         auto v = boost::add_vertex(g);
         boost::put(boost::vertex_name, g, v, place->name());
         vertexMap[place->name()] = v;
     }
 
     // add transitions
-    for (const auto& transition : network.transitions()) {
+    for (const auto& transition : network->transitions()) {
         auto v = boost::add_vertex(g);
         boost::put(boost::vertex_name, g, v, transition->name());
         vertexMap[transition->name()] = v;
     }
 
     // add arcs
-    for (const auto& arc : network.arcs()) {
+    for (const auto& arc : network->arcs()) {
         if(arc->orientation() == cpn::Arc::Orientation::BD) {
             std::string sourceName = arc->place()->name();
             std::string targetName = arc->transition()->name();
