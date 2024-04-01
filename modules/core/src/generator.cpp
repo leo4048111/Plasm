@@ -19,7 +19,7 @@ void Generator::toCPN(solidity::frontend::ASTNode const &_node)
 
 bool Generator::visit(SourceUnit const &_node)
 {
-    LOGI("Generator in %s", "SourceUnit");
+    LOGT("Generator in %s", "SourceUnit");
     pushScope(SCOPE_GLOB);
     return true;
 }
@@ -31,20 +31,20 @@ void Generator::endVisit(SourceUnit const &_node)
 
 bool Generator::visit(PragmaDirective const &_node)
 {
-    LOGI("Generator in %s", "PragmaDirective");
+    LOGT("Generator in %s", "PragmaDirective");
     return true;
 }
 
 bool Generator::visit(ImportDirective const &_node)
 {
-    LOGI("Generator in %s", "ImportDirective");
+    LOGT("Generator in %s", "ImportDirective");
     return true;
 }
 
 // parse topnet decls
 bool Generator::visit(ContractDefinition const &_node)
 {
-    LOGI("Generator in %s", "ContractDefinition");
+    LOGT("Generator in %s", "ContractDefinition");
     pushScope(SCOPE_GLOB);
 
     // register global vars to place
@@ -75,62 +75,62 @@ void Generator::endVisit(ContractDefinition const &_node)
 
 bool Generator::visit(IdentifierPath const &_node)
 {
-    LOGI("Generator in %s", "IdentifierPath");
+    LOGT("Generator in %s", "IdentifierPath");
     return true;
 }
 
 bool Generator::visit(InheritanceSpecifier const &_node)
 {
-    LOGI("Generator in %s", "InheritanceSpecifier");
+    LOGT("Generator in %s", "InheritanceSpecifier");
     return true;
 }
 
 bool Generator::visit(UsingForDirective const &_node)
 {
-    LOGI("Generator in %s", "UsingForDirective");
+    LOGT("Generator in %s", "UsingForDirective");
     return true;
 }
 
 bool Generator::visit(StructDefinition const &_node)
 {
-    LOGI("Generator in %s", "StructDefinition");
+    LOGT("Generator in %s", "StructDefinition");
     return true;
 }
 
 bool Generator::visit(EnumDefinition const &_node)
 {
-    LOGI("Generator in %s", "EnumDefinition");
+    LOGT("Generator in %s", "EnumDefinition");
     return true;
 }
 
 bool Generator::visit(EnumValue const &_node)
 {
-    LOGI("Generator in %s", "EnumValue");
+    LOGT("Generator in %s", "EnumValue");
     return true;
 }
 
 bool Generator::visit(UserDefinedValueTypeDefinition const &_node)
 {
-    LOGI("Generator in %s", "UserDefinedValueTypeDefinition");
+    LOGT("Generator in %s", "UserDefinedValueTypeDefinition");
     return true;
 }
 
 bool Generator::visit(ParameterList const &_node)
 {
-    LOGI("Generator in %s", "ParameterList");
+    LOGT("Generator in %s", "ParameterList");
     // Do not visit VariableDeclaration since we have visited it in FunctionDefinition
     return false;
 }
 
 bool Generator::visit(OverrideSpecifier const &_node)
 {
-    LOGI("Generator in %s", "OverrideSpecifier");
+    LOGT("Generator in %s", "OverrideSpecifier");
     return true;
 }
 
 bool Generator::visit(FunctionDefinition const &_node)
 {
-    LOGI("Generator in %s", "FunctionDefinition");
+    LOGT("Generator in %s", "FunctionDefinition");
     pushScope(_node.name() + ".");
 
     // register function parameters
@@ -172,7 +172,7 @@ void Generator::endVisit(FunctionDefinition const &_node)
 
 bool Generator::visit(VariableDeclaration const &_node)
 {
-    LOGI("Generator in %s", "VariableDeclaration");
+    LOGT("Generator in %s", "VariableDeclaration");
 
     auto name = _node.name();
     auto type = _node.typeName().annotation().type->toString();
@@ -186,67 +186,67 @@ bool Generator::visit(VariableDeclaration const &_node)
 
 bool Generator::visit(ModifierDefinition const &_node)
 {
-    LOGI("Generator in %s", "ModifierDefinition");
+    LOGT("Generator in %s", "ModifierDefinition");
     return true;
 }
 
 bool Generator::visit(ModifierInvocation const &_node)
 {
-    LOGI("Generator in %s", "ModifierInvocation");
+    LOGT("Generator in %s", "ModifierInvocation");
     return true;
 }
 
 bool Generator::visit(EventDefinition const &_node)
 {
-    LOGI("Generator in %s", "EventDefinition");
+    LOGT("Generator in %s", "EventDefinition");
     return true;
 }
 
 bool Generator::visit(ErrorDefinition const &_node)
 {
-    LOGI("Generator in %s", "ErrorDefinition");
+    LOGT("Generator in %s", "ErrorDefinition");
     return true;
 }
 
 bool Generator::visit(ElementaryTypeName const &_node)
 {
-    LOGI("Generator in %s", "ErrorDefinition");
+    LOGT("Generator in %s", "ErrorDefinition");
     return true;
 }
 
 bool Generator::visit(UserDefinedTypeName const &_node)
 {
-    LOGI("Generator in %s", "UserDefinedTypeName");
+    LOGT("Generator in %s", "UserDefinedTypeName");
     return true;
 }
 
 bool Generator::visit(FunctionTypeName const &_node)
 {
-    LOGI("Generator in %s", "FunctionTypeName");
+    LOGT("Generator in %s", "FunctionTypeName");
     return true;
 }
 
 bool Generator::visit(Mapping const &_node)
 {
-    LOGI("Generator in %s", "Mapping");
+    LOGT("Generator in %s", "Mapping");
     return true;
 }
 
 bool Generator::visit(ArrayTypeName const &_node)
 {
-    LOGI("Generator in %s", "ArrayTypeName");
+    LOGT("Generator in %s", "ArrayTypeName");
     return true;
 }
 
 bool Generator::visit(InlineAssembly const &_node)
 {
-    LOGI("Generator in %s", "InlineAssembly");
+    LOGT("Generator in %s", "InlineAssembly");
     return true;
 }
 
 bool Generator::visit(Block const &_node)
 {
-    LOGI("Generator in %s", "Block");
+    LOGT("Generator in %s", "Block");
     return true;
 }
 
@@ -297,13 +297,13 @@ void Generator::endVisit(Block const &_node)
 
 bool Generator::visit(PlaceholderStatement const &_node)
 {
-    LOGI("Generator in %s", "PlaceholderStatement");
+    LOGT("Generator in %s", "PlaceholderStatement");
     return true;
 }
 
 bool Generator::visit(IfStatement const &_node)
 {
-    LOGI("Generator in %s", "IfStatement");
+    LOGT("Generator in %s", "IfStatement");
     return true;
 }
 
@@ -364,19 +364,19 @@ void Generator::endVisit(IfStatement const &_node)
 
 bool Generator::visit(TryCatchClause const &_node)
 {
-    LOGI("Generator in %s", "TryCatchClause");
+    LOGT("Generator in %s", "TryCatchClause");
     return true;
 }
 
 bool Generator::visit(TryStatement const &_node)
 {
-    LOGI("Generator in %s", "TryStatement");
+    LOGT("Generator in %s", "TryStatement");
     return true;
 }
 
 bool Generator::visit(WhileStatement const &_node)
 {
-    LOGI("Generator in %s", "WhileStatement");
+    LOGT("Generator in %s", "WhileStatement");
     return true;
 }
 
@@ -430,67 +430,67 @@ void Generator::endVisit(WhileStatement const &_node)
 
 bool Generator::visit(ForStatement const &_node)
 {
-    LOGI("Generator in %s", "ForStatement");
+    LOGT("Generator in %s", "ForStatement");
     return true;
 }
 
 bool Generator::visit(Continue const &_node)
 {
-    LOGI("Generator in %s", "Continue");
+    LOGT("Generator in %s", "Continue");
     return true;
 }
 
 bool Generator::visit(Break const &_node)
 {
-    LOGI("Generator in %s", "Break");
+    LOGT("Generator in %s", "Break");
     return true;
 }
 
 bool Generator::visit(Return const &_node)
 {
-    LOGI("Generator in %s", "Return");
+    LOGT("Generator in %s", "Return");
     return true;
 }
 
 bool Generator::visit(Throw const &_node)
 {
-    LOGI("Generator in %s", "Throw");
+    LOGT("Generator in %s", "Throw");
     return true;
 }
 
 bool Generator::visit(EmitStatement const &_node)
 {
-    LOGI("Generator in %s", "EmitStatement");
+    LOGT("Generator in %s", "EmitStatement");
     return true;
 }
 
 bool Generator::visit(RevertStatement const &_node)
 {
-    LOGI("Generator in %s", "RevertStatement");
+    LOGT("Generator in %s", "RevertStatement");
     return true;
 }
 
 bool Generator::visit(VariableDeclarationStatement const &_node)
 {
-    LOGI("Generator in %s", "VariableDeclarationStatement");
+    LOGT("Generator in %s", "VariableDeclarationStatement");
     return true;
 }
 
 bool Generator::visit(ExpressionStatement const &_node)
 {
-    LOGI("Generator in %s", "ExpressionStatement");
+    LOGT("Generator in %s", "ExpressionStatement");
     return true;
 }
 
 bool Generator::visit(Conditional const &_node)
 {
-    LOGI("Generator in %s", "Conditional");
+    LOGT("Generator in %s", "Conditional");
     return true;
 }
 
 bool Generator::visit(Assignment const &_node)
 {
-    LOGI("Generator in %s", "Assignment");
+    LOGT("Generator in %s", "Assignment");
     return true;
 }
 
@@ -528,19 +528,19 @@ void Generator::endVisit(Assignment const &_node)
 
 bool Generator::visit(TupleExpression const &_node)
 {
-    LOGI("Generator in %s", "TupleExpression");
+    LOGT("Generator in %s", "TupleExpression");
     return true;
 }
 
 bool Generator::visit(UnaryOperation const &_node)
 {
-    LOGI("Generator in %s", "UnaryOperation");
+    LOGT("Generator in %s", "UnaryOperation");
     return true;
 }
 
 bool Generator::visit(BinaryOperation const &_node)
 {
-    LOGI("Generator in %s", "BinaryOperation");
+    LOGT("Generator in %s", "BinaryOperation");
     return true;
 }
 
@@ -581,43 +581,48 @@ void Generator::endVisit(BinaryOperation const &_node)
 
 bool Generator::visit(FunctionCall const &_node)
 {
-    LOGI("Generator in %s", "FunctionCall");
+    LOGT("Generator in %s", "FunctionCall");
+    return true;
+}
+
+void Generator::endVisit(FunctionCall const &_node)
+{
     return true;
 }
 
 bool Generator::visit(FunctionCallOptions const &_node)
 {
-    LOGI("Generator in %s", "FunctionCallOptions");
+    LOGT("Generator in %s", "FunctionCallOptions");
     return true;
 }
 
 bool Generator::visit(NewExpression const &_node)
 {
-    LOGI("Generator in %s", "NewExpression");
+    LOGT("Generator in %s", "NewExpression");
     return true;
 }
 
 bool Generator::visit(MemberAccess const &_node)
 {
-    LOGI("Generator in %s", "MemberAccess");
+    LOGT("Generator in %s", "MemberAccess");
     return true;
 }
 
 bool Generator::visit(IndexAccess const &_node)
 {
-    LOGI("Generator in %s", "IndexAccess");
+    LOGT("Generator in %s", "IndexAccess");
     return true;
 }
 
 bool Generator::visit(IndexRangeAccess const &_node)
 {
-    LOGI("Generator in %s", "IndexRangeAccess");
+    LOGT("Generator in %s", "IndexRangeAccess");
     return true;
 }
 
 bool Generator::visit(Identifier const &_node)
 {
-    LOGI("Generator in %s", "Identifier");
+    LOGT("Generator in %s", "Identifier");
 
     // search for local var
     auto place = network_->getPlaceByName(scope() + _node.name());
@@ -654,19 +659,19 @@ bool Generator::visit(Identifier const &_node)
 
 bool Generator::visit(ElementaryTypeNameExpression const &_node)
 {
-    LOGI("Generator in %s", "ElementaryTypeNameExpression");
+    LOGT("Generator in %s", "ElementaryTypeNameExpression");
     return true;
 }
 
 bool Generator::visit(Literal const &_node)
 {
-    LOGI("Generator in %s", "Literal");
+    LOGT("Generator in %s", "Literal");
     return true;
 }
 
 bool Generator::visit(StructuredDocumentation const &_node)
 {
-    LOGI("Generator in %s", "StructuredDocumentation");
+    LOGT("Generator in %s", "StructuredDocumentation");
     return true;
 }
 
@@ -675,19 +680,19 @@ void Generator::dump() const
     // places
     for (auto const &place : network_->places())
     {
-        LOGI("Place: %s, type: %s", place->name().c_str(), place->color().c_str());
+        LOGT("Place: %s, type: %s", place->name().c_str(), place->color().c_str());
     }
 
     // transitions
     for (auto const &transition : network_->transitions())
     {
-        LOGI("Transition: %s", transition->name().c_str());
+        LOGT("Transition: %s", transition->name().c_str());
     }
 
     // arcs
     for (auto const &arc : network_->arcs())
     {
-        LOGI("Arc trans: %s, place: %s", arc->place()->name().c_str(), arc->transition()->name().c_str());
+        LOGT("Arc trans: %s, place: %s", arc->place()->name().c_str(), arc->transition()->name().c_str());
     }
 }
 
