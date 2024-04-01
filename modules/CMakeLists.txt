@@ -53,4 +53,5 @@ target_link_libraries(${TARGET} PUBLIC
     Boost::boost
     Boost::filesystem
     Boost::program_options
+    Boost::graph
 )

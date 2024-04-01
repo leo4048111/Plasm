@@ -20,7 +20,7 @@ set(PSM_THIRD_PARTY_DIR ${PSM_ROOT_DIR}/third_party)
 list(APPEND CMAKE_MODULE_PATH ${PSM_ROOT_DIR}/cmake)
 
 # boost
-set(BOOST_COMPONENTS "filesystem;program_options;system")
+set(BOOST_COMPONENTS "filesystem;program_options;system;graph")
 
 if (WIN32)
 	# Boost 1.77 fixes a bug that causes crashes on Windows for some relative paths in --allow-paths.
