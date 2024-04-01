@@ -7,9 +7,16 @@
 
 _START_PSM_NM_
 
+void Logger::SetLevel(LogLevel level)
+{
+    level_ = level;
+}
+
 void Logger::PrintLog(LogLevel level, const char *file,
                       const char *function, int line, const char *fmt, ...)
 {
+    if(level < level_) return;
+
     va_list ap;
     va_start(ap, fmt);
     PrintLogV(level, file, function, line, fmt, ap);
@@ -27,7 +34,7 @@ void Logger::PrintLogV(LogLevel level, const char *file, const char *function, i
         "\033[93m", // Yellow for WARN
         "\033[91m"  // Red for ERROR
     };
-    static const char* RESET = "\033[0m";
+    static const char *RESET = "\033[0m";
     char *formattedStr = nullptr;
     if (vasprintf(&formattedStr, fmt, ap) >= 0 && formattedStr)
     {

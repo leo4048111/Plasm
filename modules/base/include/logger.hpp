@@ -34,6 +34,10 @@ public:
     void PrintLogV(LogLevel level, const char *file,
                           const char *function, int line, const char *fmt,
                           va_list ap);
+    void SetLevel(LogLevel level);
+
+private:
+    LogLevel level_{LogLevel::LInfo};
 };
 
 _END_PSM_NM_
