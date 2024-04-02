@@ -15,12 +15,16 @@ void Visualizer::Draw(::std::shared_ptr<cpn::Network> network) const
     Graph g;
 
     std::unordered_map<std::string, boost::graph_traits<Graph>::vertex_descriptor> vertexMap;
+    std::unordered_map<boost::graph_traits<Graph>::vertex_descriptor, std::string> vertexTypeMap;
+    std::unordered_map<boost::graph_traits<Graph>::vertex_descriptor, std::string> vertexNameMap;
 
     // add places
     for (const auto& place : network->places()) {
         auto v = boost::add_vertex(g);
         boost::put(boost::vertex_name, g, v, place->name());
         vertexMap[place->name()] = v;
+        vertexTypeMap[vertexMap[place->name()]] = "place";
+        vertexNameMap[vertexMap[place->name()]] = place->name();
     }
 
     // add transitions
@@ -28,6 +32,8 @@ void Visualizer::Draw(::std::shared_ptr<cpn::Network> network) const
         auto v = boost::add_vertex(g);
         boost::put(boost::vertex_name, g, v, transition->name());
         vertexMap[transition->name()] = v;
+        vertexTypeMap[vertexMap[transition->name()]] = "transition";
+        vertexNameMap[vertexMap[transition->name()]] = transition->name();
     }
 
     // add arcs
@@ -50,7 +56,8 @@ void Visualizer::Draw(::std::shared_ptr<cpn::Network> network) const
 
     // dump
     std::ofstream dotFile("cpn_network.dot");
-    boost::write_graphviz(dotFile, g, boost::make_label_writer(boost::get(boost::vertex_name, g)));
+    boost::write_graphviz(dotFile, g,
+                          vertex_property_writer<decltype(vertexTypeMap), decltype(vertexNameMap)>(vertexTypeMap, vertexNameMap));
 }
 
 _END_PSM_NM_

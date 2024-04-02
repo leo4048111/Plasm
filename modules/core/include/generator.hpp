@@ -19,6 +19,8 @@ public:
 
     void dump() const;
 
+	::std::shared_ptr<cpn::Network> getNetwork() { return network_; };
+
 	bool visit(solidity::frontend::SourceUnit const &_node) override;
 	bool visit(solidity::frontend::PragmaDirective const &_node) override;
 	bool visit(solidity::frontend::ImportDirective const &_node) override;
@@ -87,6 +89,7 @@ public:
 	void endVisit(solidity::frontend::VariableDeclarationStatement const &_node) override;
 	void endVisit(solidity::frontend::ExpressionStatement const &_node) override;
 	void endVisit(solidity::frontend::Return const &_node) override;
+	void endVisit(solidity::frontend::Literal const &_node) override;
 
 private:
 	::std::string scope() const { return sscope_.top(); };
@@ -100,7 +103,7 @@ private:
 	static constexpr const char *VAR_MSG = "msg";
 	static constexpr const char *VAR_THIS = "this";
 	static constexpr const char *TYPE_STRUCT = "struct";
-	::std::unique_ptr<cpn::Network> network_;
+	::std::shared_ptr<cpn::Network> network_;
 	::std::stack<::std::string> sscope_;
 	::std::map<::std::string, ::std::vector<::std::string>> functionParams_;
 };

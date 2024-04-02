@@ -9,7 +9,7 @@ using namespace solidity::frontend;
 
 Generator::Generator()
 {
-    network_ = ::std::make_unique<cpn::Network>();
+    network_ = ::std::make_shared<cpn::Network>();
 };
 
 void Generator::toCPN(solidity::frontend::ASTNode const &_node)
@@ -286,7 +286,7 @@ void Generator::endVisit(Block const &_node)
 
     // connect last statementoutplace with block outplace
     auto lastStmtOutPlace = network_->getPlaceByName(::std::to_string(_node.statements().back()->id()) + ".out");
-    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con" + ::std::to_string(_node.statements().size() - 1));
+    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con" + ".last");
     ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(lastStmtOutPlace, con1, cpn::Arc::Orientation::P2T);
     ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(outPlace, con1, cpn::Arc::Orientation::T2P);
     network_->addTransition(con1);
@@ -867,6 +867,29 @@ bool Generator::visit(Literal const &_node)
 {
     LOGT("Generator in %s", "Literal");
     return true;
+}
+
+void Generator::endVisit(Literal const &_node)
+{
+    // create inout control places
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    network_->addPlace(inPlace);
+    network_->addPlace(outPlace);
+
+    // create ifstatement transitions
+    ::std::shared_ptr<cpn::Transition> transition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()));
+    network_->addTransition(transition);
+
+    // add result place for literal(literal value in default token value)
+    ::std::shared_ptr<cpn::Place> resultPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".result", _node.annotation().type->toString());
+    network_->addPlace(resultPlace);
+
+    // create arcs
+    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, transition, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, transition, cpn::Arc::Orientation::T2P);
+    network_->addArc(arc1);
+    network_->addArc(arc2);
 }
 
 bool Generator::visit(StructuredDocumentation const &_node)

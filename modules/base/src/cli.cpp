@@ -268,7 +268,7 @@ void CLI::CompileAndGenerate()
         // get pointer to cpn
         auto network = generator.getNetwork();
 
-        // dump csv 
+        // dump csv
         // #ifdef DEBUG
         Visualizer::GetInstance().Draw(network);
         // #endif
