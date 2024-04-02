@@ -47,17 +47,6 @@ bool Generator::visit(ContractDefinition const &_node)
     LOGT("Generator in %s", "ContractDefinition");
     pushScope(SCOPE_GLOB);
 
-    // register global vars to place
-    for (auto const &var : _node.stateVariables())
-    {
-        auto name = var->name();
-        auto type = var->typeName().annotation().type->toString();
-
-        // create places
-        ::std::shared_ptr<cpn::Place> place = ::std::make_shared<cpn::Place>(scope() + name, type);
-        network_->addPlace(place);
-    }
-
     // register global msg
     ::std::shared_ptr<cpn::Place> msgPlace = ::std::make_shared<cpn::Place>(scope() + VAR_MSG, TYPE_STRUCT);
     network_->addPlace(msgPlace);
