@@ -663,20 +663,20 @@ void Generator::endVisit(ExpressionStatement const &_node)
     network_->addPlace(outPlace);
 
     // create VariableDeclarationStatement transition
-    ::std::shared_ptr<cpn::Transition> transitionIn = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()));
-    network_->addTransition(transitionIn);
-    ::std::shared_ptr<cpn::Transition> transitionOut = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".out");
-    network_->addTransition(transitionOut);
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    network_->addTransition(con0);
+    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con1");
+    network_->addTransition(con1);
 
     // get expression io place
     auto exprInPlace = network_->getPlaceByName(::std::to_string(_node.expression().id()) + ".in");
     auto exprOutPlace = network_->getPlaceByName(::std::to_string(_node.expression().id()) + ".out");
 
     // connect
-    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, transitionIn, cpn::Arc::Orientation::P2T);
-    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(exprInPlace, transitionIn, cpn::Arc::Orientation::T2P);
-    ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(exprOutPlace, transitionOut, cpn::Arc::Orientation::P2T);
-    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(outPlace, transitionOut, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(exprInPlace, con0, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(exprOutPlace, con1, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(outPlace, con1, cpn::Arc::Orientation::T2P);
     network_->addArc(arc1);
     network_->addArc(arc2);
     network_->addArc(arc3);
