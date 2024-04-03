@@ -364,56 +364,59 @@ void Generator::endVisit(IfStatement const &_node)
     network_->addPlace(outPlace);
 
     // create ifstatement transitions
-    ::std::shared_ptr<cpn::Transition> ifstmtTransition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()));
-    network_->addTransition(ifstmtTransition);
-    // create endif transition for true body
-    ::std::shared_ptr<cpn::Transition> endifTrueTransition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".endif.true");
-    network_->addTransition(endifTrueTransition);
-    ::std::shared_ptr<cpn::Transition> judgeTransition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".judge");
-    network_->addTransition(judgeTransition);
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    network_->addTransition(con0);
+    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con1");
+    network_->addTransition(con1);
+    ::std::shared_ptr<cpn::Transition> con2 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con2");
+    network_->addTransition(con2);
 
     // get condition places
     auto conditionResultPlace = network_->getPlaceByName(::std::to_string(_node.condition().id()) + ".result");
     auto conditionInPlace = network_->getPlaceByName(::std::to_string(_node.condition().id()) + ".in");
+    auto conditionOutPlace = network_->getPlaceByName(::std::to_string(_node.condition().id()) + ".out");
 
     // connect condition places
-    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(conditionInPlace, ifstmtTransition, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(conditionInPlace, con0, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(conditionOutPlace, con1, cpn::Arc::Orientation::P2T);
+    network_->addArc(arc1);
+    network_->addArc(arc2);
+    network_->addArc(arc3);
 
     // get if body io place
     auto ifBodyInPlace = network_->getPlaceByName(::std::to_string(_node.trueStatement().id()) + ".in");
     auto ifBodyOutPlace = network_->getPlaceByName(::std::to_string(_node.trueStatement().id()) + ".out");
 
     // create arcs
-    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(inPlace, ifstmtTransition, cpn::Arc::Orientation::P2T);
-    ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(conditionResultPlace, judgeTransition, cpn::Arc::Orientation::P2T);
-    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(ifBodyInPlace, judgeTransition, cpn::Arc::Orientation::T2P);
-    ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(ifBodyOutPlace, endifTrueTransition, cpn::Arc::Orientation::P2T);
-    ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(outPlace, endifTrueTransition, cpn::Arc::Orientation::T2P);
-    network_->addArc(arc2);
-    network_->addArc(arc3);
+    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(conditionResultPlace, con1, cpn::Arc::Orientation::BD);
+    ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(ifBodyInPlace, con1, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(ifBodyOutPlace, con2, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc7 = ::std::make_shared<cpn::Arc>(outPlace, con2, cpn::Arc::Orientation::T2P);
     network_->addArc(arc4);
     network_->addArc(arc5);
     network_->addArc(arc6);
+    network_->addArc(arc7);
 
     // create arcs for false body
     if (_node.falseStatement())
     {
-        ::std::shared_ptr<cpn::Transition> endifFalseTransition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".endif.false");
-        network_->addTransition(endifFalseTransition);
+        ::std::shared_ptr<cpn::Transition> con3 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con3");
+        network_->addTransition(con3);
         auto ifFalseBodyInPlace = network_->getPlaceByName(::std::to_string(_node.falseStatement()->id()) + ".in");
         auto ifFalseBodyOutPlace = network_->getPlaceByName(::std::to_string(_node.falseStatement()->id()) + ".out");
 
-        ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::Arc>(ifFalseBodyInPlace, judgeTransition, cpn::Arc::Orientation::T2P);
-        ::std::shared_ptr<cpn::Arc> arc9 = ::std::make_shared<cpn::Arc>(ifFalseBodyOutPlace, endifFalseTransition, cpn::Arc::Orientation::P2T);
-        ::std::shared_ptr<cpn::Arc> arc10 = ::std::make_shared<cpn::Arc>(outPlace, endifFalseTransition, cpn::Arc::Orientation::T2P);
+        ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::Arc>(ifFalseBodyInPlace, con1, cpn::Arc::Orientation::T2P);
+        ::std::shared_ptr<cpn::Arc> arc9 = ::std::make_shared<cpn::Arc>(ifFalseBodyOutPlace, con3, cpn::Arc::Orientation::P2T);
+        ::std::shared_ptr<cpn::Arc> arc10 = ::std::make_shared<cpn::Arc>(outPlace, con3, cpn::Arc::Orientation::T2P);
         network_->addArc(arc8);
         network_->addArc(arc9);
         network_->addArc(arc10);
     }
     else
     {
-        ::std::shared_ptr<cpn::Arc> arc11 = ::std::make_shared<cpn::Arc>(outPlace, judgeTransition, cpn::Arc::Orientation::T2P);
-        network_->addArc(arc11);
+        ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::Arc>(outPlace, con1, cpn::Arc::Orientation::T2P);
+        network_->addArc(arc8);
     }
 }
 
