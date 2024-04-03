@@ -154,11 +154,6 @@ bool Generator::visit(FunctionDefinition const &_node)
         paramNames.push_back(name);
     }
 
-    // create return place
-    // FIXME: color type should be determined by return type
-    ::std::shared_ptr<cpn::Place> retPlace = ::std::make_shared<cpn::Place>(scope() + SCOPE_RET, TYPE_STRUCT);
-    network_->addPlace(retPlace);
-
     functionParams_.insert(::std::make_pair(_node.name(), paramNames));
 
     nodeTypes_.insert(::std::make_pair(_node.id(), "FunctionDefinition"));
@@ -173,6 +168,18 @@ void Generator::endVisit(FunctionDefinition const &_node)
 
     network_->alias(blockInPlace, scope() + "in");
     network_->alias(blockOutPlace, scope() + "out");
+
+    // check return
+    if (_node.returnParameters().size())
+    {
+        auto retPlace = network_->getPlaceByName(scope() + SCOPE_RET);
+
+        if (retPlace == nullptr)
+        {
+            retPlace = network_->getPlaceByName(scope() + SCOPE_PARAM + _node.returnParameters().front()->name());
+            network_->alias(retPlace, scope() + SCOPE_RET);
+        }
+    }
 
     popScope();
 }
@@ -521,7 +528,10 @@ void Generator::endVisit(Return const &_node)
 
     // get function return place
     auto expr = _node.expression();
-    auto retPlace = network_->getPlaceByName(scope() + SCOPE_RET);
+
+    // create ret place
+    ::std::shared_ptr<cpn::Place> retPlace = ::std::make_shared<cpn::Place>(scope() + SCOPE_RET, "unknown");
+    network_->addPlace(retPlace);
 
     if (expr == nullptr)
     {
@@ -869,7 +879,7 @@ void Generator::endVisit(FunctionCall const &_node)
     // alias return value(if function has return value)
     auto funcRetPlace = network_->getPlaceByName(callee + "." + SCOPE_RET);
 
-    if(funcRetPlace)
+    if (funcRetPlace)
         network_->alias(funcRetPlace, ::std::to_string(_node.id()) + ".result");
 }
 
