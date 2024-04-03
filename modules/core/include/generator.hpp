@@ -17,9 +17,11 @@ public:
 
 	void toCPN(solidity::frontend::ASTNode const &_node);
 
-    void dump() const;
+	void dump() const;
 
 	::std::shared_ptr<cpn::Network> getNetwork() { return network_; };
+
+	::std::map<int64_t, ::std::string> getNodeTypes() const { return nodeTypes_; };
 
 	bool visit(solidity::frontend::SourceUnit const &_node) override;
 	bool visit(solidity::frontend::PragmaDirective const &_node) override;
@@ -94,10 +96,14 @@ public:
 private:
 	::std::string scope() const { return sscope_.top(); };
 	void pushScope(::std::string scope) { sscope_.push(scope); };
-	void popScope() { if(!sscope_.empty()) sscope_.pop(); };
+	void popScope()
+	{
+		if (!sscope_.empty())
+			sscope_.pop();
+	};
 
 private:
-    static constexpr const char *SCOPE_GLOB = "global.";
+	static constexpr const char *SCOPE_GLOB = "global.";
 	static constexpr const char *SCOPE_PARAM = "param.";
 	static constexpr const char *SCOPE_RET = "ret.";
 	static constexpr const char *VAR_MSG = "msg";
@@ -106,6 +112,7 @@ private:
 	::std::shared_ptr<cpn::Network> network_;
 	::std::stack<::std::string> sscope_;
 	::std::map<::std::string, ::std::vector<::std::string>> functionParams_;
+	::std::map<int64_t, ::std::string> nodeTypes_;
 };
 
 _END_PSM_NM_

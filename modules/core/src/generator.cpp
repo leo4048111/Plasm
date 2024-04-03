@@ -21,6 +21,7 @@ bool Generator::visit(SourceUnit const &_node)
 {
     LOGT("Generator in %s", "SourceUnit");
     pushScope(SCOPE_GLOB);
+    nodeTypes_.insert(::std::make_pair(_node.id(), "SourceUnit"));
     return true;
 }
 
@@ -32,12 +33,14 @@ void Generator::endVisit(SourceUnit const &_node)
 bool Generator::visit(PragmaDirective const &_node)
 {
     LOGT("Generator in %s", "PragmaDirective");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "PragmaDirective"));
     return true;
 }
 
 bool Generator::visit(ImportDirective const &_node)
 {
     LOGT("Generator in %s", "ImportDirective");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "ImportDirective"));
     return true;
 }
 
@@ -54,6 +57,7 @@ bool Generator::visit(ContractDefinition const &_node)
     // register global this
     ::std::shared_ptr<cpn::Place> thisPlace = ::std::make_shared<cpn::Place>(scope() + VAR_THIS, TYPE_STRUCT);
     network_->addPlace(thisPlace);
+    nodeTypes_.insert(::std::make_pair(_node.id(), "ContractDefinition"));
     return true;
 }
 
@@ -65,42 +69,49 @@ void Generator::endVisit(ContractDefinition const &_node)
 bool Generator::visit(IdentifierPath const &_node)
 {
     LOGT("Generator in %s", "IdentifierPath");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "IdentifierPath"));
     return true;
 }
 
 bool Generator::visit(InheritanceSpecifier const &_node)
 {
     LOGT("Generator in %s", "InheritanceSpecifier");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "InheritanceSpecifier"));
     return true;
 }
 
 bool Generator::visit(UsingForDirective const &_node)
 {
     LOGT("Generator in %s", "UsingForDirective");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "UsingForDirective"));
     return true;
 }
 
 bool Generator::visit(StructDefinition const &_node)
 {
     LOGT("Generator in %s", "StructDefinition");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "StructDefinition"));
     return true;
 }
 
 bool Generator::visit(EnumDefinition const &_node)
 {
     LOGT("Generator in %s", "EnumDefinition");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "EnumDefinition"));
     return true;
 }
 
 bool Generator::visit(EnumValue const &_node)
 {
     LOGT("Generator in %s", "EnumValue");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "EnumValue"));
     return true;
 }
 
 bool Generator::visit(UserDefinedValueTypeDefinition const &_node)
 {
     LOGT("Generator in %s", "UserDefinedValueTypeDefinition");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "UserDefinedValueTypeDefinition"));
     return true;
 }
 
@@ -114,6 +125,7 @@ bool Generator::visit(ParameterList const &_node)
 bool Generator::visit(OverrideSpecifier const &_node)
 {
     LOGT("Generator in %s", "OverrideSpecifier");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "OverrideSpecifier"));
     return true;
 }
 
@@ -157,6 +169,7 @@ bool Generator::visit(FunctionDefinition const &_node)
         network_->addPlace(place);
     }
 
+    nodeTypes_.insert(::std::make_pair(_node.id(), "FunctionDefinition"));
     return true;
 }
 
@@ -179,7 +192,7 @@ bool Generator::visit(VariableDeclaration const &_node)
     // check if has value
     auto expr = _node.value();
 
-    if(expr)
+    if (expr)
     {
         auto exprInPlace = network_->getPlaceByName(::std::to_string(expr->id()) + ".in");
         auto exprOutPlace = network_->getPlaceByName(::std::to_string(expr->id()) + ".in");
@@ -189,7 +202,9 @@ bool Generator::visit(VariableDeclaration const &_node)
         network_->alias(exprResultPlace, scope() + _node.name());
         network_->alias(exprInPlace, ::std::to_string(_node.id()) + ".in");
         network_->alias(exprInPlace, ::std::to_string(_node.id()) + ".out");
-    } else {
+    }
+    else
+    {
         auto name = _node.name();
         auto type = _node.typeName().annotation().type->toString();
 
@@ -197,72 +212,84 @@ bool Generator::visit(VariableDeclaration const &_node)
         ::std::shared_ptr<cpn::Place> place = ::std::make_shared<cpn::Place>(scope() + name, type);
         network_->addPlace(place);
     }
+    nodeTypes_.insert(::std::make_pair(_node.id(), "VariableDeclaration"));
     return true;
 }
 
 bool Generator::visit(ModifierDefinition const &_node)
 {
     LOGT("Generator in %s", "ModifierDefinition");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "ModifierDefinition"));
     return true;
 }
 
 bool Generator::visit(ModifierInvocation const &_node)
 {
     LOGT("Generator in %s", "ModifierInvocation");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "ModifierInvocation"));
     return true;
 }
 
 bool Generator::visit(EventDefinition const &_node)
 {
     LOGT("Generator in %s", "EventDefinition");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "EventDefinition"));
     return true;
 }
 
 bool Generator::visit(ErrorDefinition const &_node)
 {
     LOGT("Generator in %s", "ErrorDefinition");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "ErrorDefinition"));
     return true;
 }
 
 bool Generator::visit(ElementaryTypeName const &_node)
 {
     LOGT("Generator in %s", "ErrorDefinition");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "ErrorDefinition"));
     return true;
 }
 
 bool Generator::visit(UserDefinedTypeName const &_node)
 {
     LOGT("Generator in %s", "UserDefinedTypeName");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "UserDefinedTypeName"));
     return true;
 }
 
 bool Generator::visit(FunctionTypeName const &_node)
 {
     LOGT("Generator in %s", "FunctionTypeName");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "FunctionTypeName"));
     return true;
 }
 
 bool Generator::visit(Mapping const &_node)
 {
     LOGT("Generator in %s", "Mapping");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "Mapping"));
     return true;
 }
 
 bool Generator::visit(ArrayTypeName const &_node)
 {
     LOGT("Generator in %s", "ArrayTypeName");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "ArrayTypeName"));
     return true;
 }
 
 bool Generator::visit(InlineAssembly const &_node)
 {
     LOGT("Generator in %s", "InlineAssembly");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "InlineAssembly"));
     return true;
 }
 
 bool Generator::visit(Block const &_node)
 {
     LOGT("Generator in %s", "Block");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "Block"));
     return true;
 }
 
@@ -316,12 +343,14 @@ void Generator::endVisit(Block const &_node)
 bool Generator::visit(PlaceholderStatement const &_node)
 {
     LOGT("Generator in %s", "PlaceholderStatement");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "PlaceholderStatement"));
     return true;
 }
 
 bool Generator::visit(IfStatement const &_node)
 {
     LOGT("Generator in %s", "IfStatement");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "IfStatement"));
     return true;
 }
 
@@ -379,7 +408,9 @@ void Generator::endVisit(IfStatement const &_node)
         network_->addArc(arc8);
         network_->addArc(arc9);
         network_->addArc(arc10);
-    } else {
+    }
+    else
+    {
         ::std::shared_ptr<cpn::Arc> arc11 = ::std::make_shared<cpn::Arc>(outPlace, judgeTransition, cpn::Arc::Orientation::T2P);
         network_->addArc(arc11);
     }
@@ -388,18 +419,21 @@ void Generator::endVisit(IfStatement const &_node)
 bool Generator::visit(TryCatchClause const &_node)
 {
     LOGT("Generator in %s", "TryCatchClause");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "TryCatchClause"));
     return true;
 }
 
 bool Generator::visit(TryStatement const &_node)
 {
     LOGT("Generator in %s", "TryStatement");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "TryStatement"));
     return true;
 }
 
 bool Generator::visit(WhileStatement const &_node)
 {
     LOGT("Generator in %s", "WhileStatement");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "WhileStatement"));
     return true;
 }
 
@@ -454,24 +488,28 @@ void Generator::endVisit(WhileStatement const &_node)
 bool Generator::visit(ForStatement const &_node)
 {
     LOGT("Generator in %s", "ForStatement");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "ForStatement"));
     return true;
 }
 
 bool Generator::visit(Continue const &_node)
 {
     LOGT("Generator in %s", "Continue");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "Continue"));
     return true;
 }
 
 bool Generator::visit(Break const &_node)
 {
     LOGT("Generator in %s", "Break");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "Break"));
     return true;
 }
 
 bool Generator::visit(Return const &_node)
 {
     LOGT("Generator in %s", "Return");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "Return"));
     return true;
 }
 
@@ -491,12 +529,15 @@ void Generator::endVisit(Return const &_node)
     auto expr = _node.expression();
     auto retPlace = network_->getPlaceByName(scope() + SCOPE_RET);
 
-    if(expr == nullptr) {
+    if (expr == nullptr)
+    {
         ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, transition, cpn::Arc::Orientation::P2T);
         ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, transition, cpn::Arc::Orientation::T2P);
         network_->addArc(arc1);
         network_->addArc(arc2);
-    } else {
+    }
+    else
+    {
         // create ret transition
         ::std::shared_ptr<cpn::Transition> transitionRet = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + SCOPE_RET);
         network_->addTransition(transitionRet);
@@ -526,24 +567,28 @@ void Generator::endVisit(Return const &_node)
 bool Generator::visit(Throw const &_node)
 {
     LOGT("Generator in %s", "Throw");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "Throw"));
     return true;
 }
 
 bool Generator::visit(EmitStatement const &_node)
 {
     LOGT("Generator in %s", "EmitStatement");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "EmitStatement"));
     return true;
 }
 
 bool Generator::visit(RevertStatement const &_node)
 {
     LOGT("Generator in %s", "RevertStatement");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "RevertStatement"));
     return true;
 }
 
 bool Generator::visit(VariableDeclarationStatement const &_node)
 {
     LOGT("Generator in %s", "VariableDeclarationStatement");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "VariableDeclarationStatement"));
     return true;
 }
 
@@ -562,7 +607,8 @@ void Generator::endVisit(VariableDeclarationStatement const &_node)
     // check if has value
     auto expr = _node.initialValue();
 
-    if(expr) {
+    if (expr)
+    {
         // get expression io place
         auto exprInPlace = network_->getPlaceByName(::std::to_string(expr->id()) + ".in");
         auto exprOutPlace = network_->getPlaceByName(::std::to_string(expr->id()) + ".out");
@@ -588,7 +634,9 @@ void Generator::endVisit(VariableDeclarationStatement const &_node)
         network_->addArc(arc4);
         network_->addArc(arc5);
         network_->addArc(arc6);
-    } else {
+    }
+    else
+    {
         // connect
         ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, transition, cpn::Arc::Orientation::P2T);
         ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, transition, cpn::Arc::Orientation::T2P);
@@ -600,6 +648,7 @@ void Generator::endVisit(VariableDeclarationStatement const &_node)
 bool Generator::visit(ExpressionStatement const &_node)
 {
     LOGT("Generator in %s", "ExpressionStatement");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "ExpressionStatement"));
     return true;
 }
 
@@ -635,12 +684,14 @@ void Generator::endVisit(ExpressionStatement const &_node)
 bool Generator::visit(Conditional const &_node)
 {
     LOGT("Generator in %s", "Conditional");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "Conditional"));
     return true;
 }
 
 bool Generator::visit(Assignment const &_node)
 {
     LOGT("Generator in %s", "Assignment");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "Assignment"));
     return true;
 }
 
@@ -687,18 +738,21 @@ void Generator::endVisit(Assignment const &_node)
 bool Generator::visit(TupleExpression const &_node)
 {
     LOGT("Generator in %s", "TupleExpression");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "TupleExpression"));
     return true;
 }
 
 bool Generator::visit(UnaryOperation const &_node)
 {
     LOGT("Generator in %s", "UnaryOperation");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "UnaryOperation"));
     return true;
 }
 
 bool Generator::visit(BinaryOperation const &_node)
 {
     LOGT("Generator in %s", "BinaryOperation");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "BinaryOperation"));
     return true;
 }
 
@@ -726,9 +780,9 @@ void Generator::endVisit(BinaryOperation const &_node)
     auto lhsPlace = network_->getPlaceByName(::std::to_string(_node.leftExpression().id()) + ".result");
     auto rhsPlace = network_->getPlaceByName(::std::to_string(_node.rightExpression().id()) + ".result");
     auto lhsInPlace = network_->getPlaceByName(::std::to_string(_node.leftExpression().id()) + ".in");
-    auto rhsInPlace =  network_->getPlaceByName(::std::to_string(_node.rightExpression().id()) + ".in");
+    auto rhsInPlace = network_->getPlaceByName(::std::to_string(_node.rightExpression().id()) + ".in");
     auto lhsOutPlace = network_->getPlaceByName(::std::to_string(_node.leftExpression().id()) + ".out");
-    auto rhsOutPlace =  network_->getPlaceByName(::std::to_string(_node.rightExpression().id()) + ".out");
+    auto rhsOutPlace = network_->getPlaceByName(::std::to_string(_node.rightExpression().id()) + ".out");
 
     // create arcs
     ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
@@ -756,6 +810,7 @@ void Generator::endVisit(BinaryOperation const &_node)
 bool Generator::visit(FunctionCall const &_node)
 {
     LOGT("Generator in %s", "FunctionCall");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "FunctionCall"));
     return true;
 }
 
@@ -820,30 +875,35 @@ void Generator::endVisit(FunctionCall const &_node)
 bool Generator::visit(FunctionCallOptions const &_node)
 {
     LOGT("Generator in %s", "FunctionCallOptions");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "FunctionCallOptions"));
     return true;
 }
 
 bool Generator::visit(NewExpression const &_node)
 {
     LOGT("Generator in %s", "NewExpression");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "NewExpression"));
     return true;
 }
 
 bool Generator::visit(MemberAccess const &_node)
 {
     LOGT("Generator in %s", "MemberAccess");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "MemberAccess"));
     return true;
 }
 
 bool Generator::visit(IndexAccess const &_node)
 {
     LOGT("Generator in %s", "IndexAccess");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "IndexAccess"));
     return true;
 }
 
 bool Generator::visit(IndexRangeAccess const &_node)
 {
     LOGT("Generator in %s", "IndexRangeAccess");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "IndexRangeAccess"));
     return true;
 }
 
@@ -912,18 +972,21 @@ bool Generator::visit(Identifier const &_node)
     network_->addArc(arc3);
     network_->addArc(arc4);
 
+    nodeTypes_.insert(::std::make_pair(_node.id(), "Identifier"));
     return true;
 }
 
 bool Generator::visit(ElementaryTypeNameExpression const &_node)
 {
     LOGT("Generator in %s", "ElementaryTypeNameExpression");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "ElementaryTypeNameExpression"));
     return true;
 }
 
 bool Generator::visit(Literal const &_node)
 {
     LOGT("Generator in %s", "Literal");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "Literal"));
     return true;
 }
 
@@ -953,6 +1016,7 @@ void Generator::endVisit(Literal const &_node)
 bool Generator::visit(StructuredDocumentation const &_node)
 {
     LOGT("Generator in %s", "StructuredDocumentation");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "StructuredDocumentation"));
     return true;
 }
 

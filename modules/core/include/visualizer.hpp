@@ -16,7 +16,7 @@ class Visualizer
     PSM_SINGLETON(Visualizer)
 
 public:
-    void Draw(::std::shared_ptr<cpn::Network> network) const;
+    void Draw(::std::shared_ptr<cpn::Network> network, ::std::map<int64_t, ::std::string> nodeTypes) const;
 
 private:
     template <typename VertexTypeMap, typename VertexNameMap>
