@@ -723,7 +723,7 @@ void Generator::endVisit(Assignment const &_node)
     // create arcs
     ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
     ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(rhsInPlace, con0, cpn::Arc::Orientation::T2P);
-    ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(rhsOutPlace, con1, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(rhsOutPlace, con1, cpn::Arc::Orientation::P2T);
     ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(lhsPlace, con1, cpn::Arc::Orientation::T2P);
     ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(rhsResultPlace, con1, cpn::Arc::Orientation::P2T);
     ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(outPlace, con1, cpn::Arc::Orientation::BD);
@@ -954,23 +954,17 @@ bool Generator::visit(Identifier const &_node)
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
 
-    // create result place
-    ::std::shared_ptr<cpn::Place> resultPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".result", place->color());
-    network_->addPlace(resultPlace);
-
-    // create ifstatement transitions
-    ::std::shared_ptr<cpn::Transition> transition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()));
-    network_->addTransition(transition);
+    // create transitions
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    network_->addTransition(con0);
 
     // create arcs
-    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, transition, cpn::Arc::Orientation::P2T);
-    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, transition, cpn::Arc::Orientation::T2P);
-    ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(place, transition, cpn::Arc::Orientation::BD);
-    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(resultPlace, transition, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
     network_->addArc(arc1);
     network_->addArc(arc2);
-    network_->addArc(arc3);
-    network_->addArc(arc4);
+
+    network_->alias(place, ::std::to_string(_node.id()) + ".result");
 
     nodeTypes_.insert(::std::make_pair(_node.id(), "Identifier"));
     return true;
