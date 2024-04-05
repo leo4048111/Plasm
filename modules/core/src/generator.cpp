@@ -200,7 +200,7 @@ bool Generator::visit(VariableDeclaration const &_node)
         // create alias
         network_->alias(exprResultPlace, scope() + _node.name());
         network_->alias(exprInPlace, ::std::to_string(_node.id()) + ".in");
-        network_->alias(exprInPlace, ::std::to_string(_node.id()) + ".out");
+        network_->alias(exprOutPlace, ::std::to_string(_node.id()) + ".out");
     }
     else
     {
