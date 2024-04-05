@@ -93,6 +93,7 @@ public:
 	void endVisit(solidity::frontend::Return const &_node) override;
 	void endVisit(solidity::frontend::Literal const &_node) override;
 	void endVisit(solidity::frontend::ParameterList const &_node) override;
+	void endVisit(solidity::frontend::VariableDeclaration const &_node) override;
 
 private:
 	::std::string scope() const { return sscope_.top(); };
@@ -102,6 +103,7 @@ private:
 		if (!sscope_.empty())
 			sscope_.pop();
 	};
+	void declareRequire();
 
 private:
 	static constexpr const char *SCOPE_GLOB = "global.";

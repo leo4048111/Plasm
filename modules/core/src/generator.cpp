@@ -17,6 +17,43 @@ void Generator::toCPN(solidity::frontend::ASTNode const &_node)
     _node.accept(*this);
 }
 
+void Generator::declareRequire()
+{
+    // create inout control places
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>("require.in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>("require.out", cpn::CTRL_COLOR);
+    network_->addPlace(inPlace);
+    network_->addPlace(outPlace);
+
+    // create deadend
+    ::std::shared_ptr<cpn::Place> deadend = ::std::make_shared<cpn::Place>("require.deadend", cpn::CTRL_COLOR);
+    network_->addPlace(deadend);
+
+    // create function call transition and call ret transition
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>("require.con0");
+    network_->addTransition(con0);
+
+    // register function parameters
+    ::std::vector<::std::string> paramNames = {"condition", "message"};
+    functionParams_.insert(::std::make_pair("require", paramNames));
+
+    // create function parameter places
+    ::std::shared_ptr<cpn::Place> conditionPlace = ::std::make_shared<cpn::Place>(::std::string("require.") + SCOPE_PARAM + "condition", "bool");
+    ::std::shared_ptr<cpn::Place> messagePlace = ::std::make_shared<cpn::Place>(::std::string("require.") + SCOPE_PARAM + "message", "string");
+    network_->addPlace(conditionPlace);
+    network_->addPlace(messagePlace);
+
+    // create arcs
+    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(deadend, con0, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(conditionPlace, con0, cpn::Arc::Orientation::BD);
+    network_->addArc(arc1);
+    network_->addArc(arc2);
+    network_->addArc(arc3);
+    network_->addArc(arc4);
+}
+
 bool Generator::visit(SourceUnit const &_node)
 {
     LOGT("Generator in %s", "SourceUnit");
@@ -58,6 +95,9 @@ bool Generator::visit(ContractDefinition const &_node)
     ::std::shared_ptr<cpn::Place> thisPlace = ::std::make_shared<cpn::Place>(scope() + VAR_THIS, TYPE_STRUCT);
     network_->addPlace(thisPlace);
     nodeTypes_.insert(::std::make_pair(_node.id(), "ContractDefinition"));
+
+    // declare global function require(condition, msg)
+	declareRequire();
     return true;
 }
 
@@ -187,14 +227,19 @@ void Generator::endVisit(FunctionDefinition const &_node)
 bool Generator::visit(VariableDeclaration const &_node)
 {
     LOGT("Generator in %s", "VariableDeclaration");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "VariableDeclaration"));
+    return true;
+}
 
+void Generator::endVisit(VariableDeclaration const &_node)
+{
     // check if has value
     auto expr = _node.value();
 
     if (expr)
     {
         auto exprInPlace = network_->getPlaceByName(::std::to_string(expr->id()) + ".in");
-        auto exprOutPlace = network_->getPlaceByName(::std::to_string(expr->id()) + ".in");
+        auto exprOutPlace = network_->getPlaceByName(::std::to_string(expr->id()) + ".out");
         auto exprResultPlace = network_->getPlaceByName(::std::to_string(expr->id()) + ".result");
 
         // create alias
@@ -211,8 +256,6 @@ bool Generator::visit(VariableDeclaration const &_node)
         ::std::shared_ptr<cpn::Place> place = ::std::make_shared<cpn::Place>(scope() + name, type);
         network_->addPlace(place);
     }
-    nodeTypes_.insert(::std::make_pair(_node.id(), "VariableDeclaration"));
-    return true;
 }
 
 bool Generator::visit(ModifierDefinition const &_node)
@@ -854,6 +897,11 @@ void Generator::endVisit(FunctionCall const &_node)
     }
     auto funcInPlace = network_->getPlaceByName(callee + ".in");
     auto funcOutPlace = network_->getPlaceByName(callee + ".out");
+
+    if(funcInPlace == nullptr || funcOutPlace == nullptr) {
+        LOGE("Function %s not found", callee.c_str());
+        return;
+    }
 
     // connect function call transition with in place
     ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, callTransition, cpn::Arc::Orientation::P2T);
