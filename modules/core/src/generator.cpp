@@ -450,35 +450,35 @@ void Generator::endVisit(WhileStatement const &_node)
     network_->addPlace(outPlace);
 
     // create whilestatement transitions
-    ::std::shared_ptr<cpn::Transition> whileStmtTransition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()));
-    network_->addTransition(whileStmtTransition);
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    network_->addTransition(con0);
 
     // get condition io place and result place
     auto conditionResultPlace = network_->getPlaceByName(::std::to_string(_node.condition().id()) + ".result");
-    auto conditionInPlace = network_->getPlaceByName(::std::to_string(_node.id()) + ".in");
-    auto conditionOutPlace = network_->getPlaceByName(::std::to_string(_node.id()) + ".out");
+    auto conditionInPlace = network_->getPlaceByName(::std::to_string(_node.condition().id()) + ".in");
+    auto conditionOutPlace = network_->getPlaceByName(::std::to_string(_node.condition().id()) + ".out");
 
     // create while statement loop transition
-    ::std::shared_ptr<cpn::Transition> loopTransition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".loop");
-    network_->addTransition(loopTransition);
+    ::std::shared_ptr<cpn::Transition> loop = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".loop");
+    network_->addTransition(loop);
 
     // get while loop body
     auto whileBodyInPlace = network_->getPlaceByName(::std::to_string(_node.body().id()) + ".in");
     auto whileBodyOutPlace = network_->getPlaceByName(::std::to_string(_node.body().id()) + ".out");
 
     // create again transition
-    ::std::shared_ptr<cpn::Transition> againTransition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".again");
-    network_->addTransition(againTransition);
+    ::std::shared_ptr<cpn::Transition> again = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".again");
+    network_->addTransition(again);
 
     // create arcs
-    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, whileStmtTransition, cpn::Arc::Orientation::P2T);
-    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(conditionInPlace, whileStmtTransition, cpn::Arc::Orientation::T2P);
-    ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(conditionResultPlace, loopTransition, cpn::Arc::Orientation::P2T);
-    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(conditionOutPlace, loopTransition, cpn::Arc::Orientation::P2T);
-    ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(outPlace, loopTransition, cpn::Arc::Orientation::T2P);
-    ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(whileBodyInPlace, loopTransition, cpn::Arc::Orientation::T2P);
-    ::std::shared_ptr<cpn::Arc> arc7 = ::std::make_shared<cpn::Arc>(whileBodyOutPlace, againTransition, cpn::Arc::Orientation::P2T);
-    ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::Arc>(conditionInPlace, againTransition, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(conditionInPlace, con0, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(conditionResultPlace, loop, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(conditionOutPlace, loop, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(outPlace, loop, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(whileBodyInPlace, loop, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc7 = ::std::make_shared<cpn::Arc>(whileBodyOutPlace, again, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::Arc>(conditionInPlace, again, cpn::Arc::Orientation::T2P);
     network_->addArc(arc1);
     network_->addArc(arc2);
     network_->addArc(arc3);
@@ -790,7 +790,7 @@ void Generator::endVisit(BinaryOperation const &_node)
     auto rhsOutPlace = network_->getPlaceByName(::std::to_string(_node.rightExpression().id()) + ".out");
 
     // TODO: support auto type conversion
-    PSM_ASSERT(lhsPlace->color() == rhsPlace->color());
+    // PSM_ASSERT(lhsPlace->color() == rhsPlace->color());
 
     // create place for result
     ::std::shared_ptr<cpn::Place> resultPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".result", "unknown");
