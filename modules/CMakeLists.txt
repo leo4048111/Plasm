@@ -22,6 +22,7 @@ set(PSM_MODULE_HDR
     ${PSM_MODULE_CORE_INCLUDE_DIR}/generator.hpp
     ${PSM_MODULE_CORE_INCLUDE_DIR}/cpn.hpp
     ${PSM_MODULE_CORE_INCLUDE_DIR}/visualizer.hpp
+    ${PSM_MODULE_CORE_INCLUDE_DIR}/simulator.hpp
 )
 
 set(PSM_MODULE_SRC
@@ -35,6 +36,7 @@ set(PSM_MODULE_SRC
     ${PSM_MODULE_CORE_SRC_DIR}/generator.cpp
     ${PSM_MODULE_CORE_SRC_DIR}/cpn.cpp
     ${PSM_MODULE_CORE_SRC_DIR}/visualizer.cpp
+    ${PSM_MODULE_CORE_SRC_DIR}/simulator.cpp
 )
 
 # target

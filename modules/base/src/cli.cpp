@@ -10,6 +10,7 @@
 #include "cpnidegenerator.hpp"
 #include "generator.hpp"
 #include "visualizer.hpp"
+#include "simulator.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -270,9 +271,10 @@ void CLI::CompileAndGenerate()
         auto nodeTypes = generator.getNodeTypes();
 
         // dump csv
-        // #ifdef DEBUG
         Visualizer::GetInstance().Draw(network, nodeTypes);
-        // #endif
+
+        // simulate
+        Simulator::GetInstance().Simulate(network);
     }
 
     compiler_->reset();
