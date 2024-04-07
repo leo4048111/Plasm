@@ -65,10 +65,15 @@ namespace cpn
             return color_ == CTRL_COLOR;
         }
 
+        const ::std::vector<Token> &tokens() const
+        {
+            return tokens_;
+        }
+
     private:
         ::std::string name_;
         ::std::string color_;
-        ::std::vector<Token> markings_;
+        ::std::vector<Token> tokens_;
     };
 
     class Transition
