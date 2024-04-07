@@ -104,6 +104,7 @@ private:
 			sscope_.pop();
 	};
 	void declareRequire();
+	void declareTransfer();
 
 private:
 	static constexpr const char *SCOPE_GLOB = "global.";

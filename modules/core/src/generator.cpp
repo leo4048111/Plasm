@@ -54,6 +54,11 @@ void Generator::declareRequire()
     network_->addArc(arc4);
 }
 
+void Generator::declareTransfer()
+{
+
+}
+
 bool Generator::visit(SourceUnit const &_node)
 {
     LOGT("Generator in %s", "SourceUnit");
