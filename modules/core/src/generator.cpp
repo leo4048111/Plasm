@@ -363,7 +363,16 @@ void Generator::endVisit(Block const &_node)
     network_->addPlace(outPlace);
 
     // connect statement io places
-    PSM_ASSERT(_node.statements().size());
+    if(!_node.statements().size())
+    {
+        ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+        network_->addTransition(con0);
+        ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+        ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
+        network_->addArc(arc1);
+        network_->addArc(arc2);
+        return;
+    }
 
     // connect first statementinplace with block inplace
     int cnt = 0;
