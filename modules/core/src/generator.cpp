@@ -56,7 +56,12 @@ void Generator::declareRequire()
 
 void Generator::declareTransfer()
 {
+}
 
+void Generator::declareMsg()
+{
+    ::std::shared_ptr<cpn::Place> msgPlace = ::std::make_shared<cpn::Place>(::std::string(SCOPE_GLOB) + "msg", "t_magic_message");
+    network_->addPlace(msgPlace);
 }
 
 bool Generator::visit(SourceUnit const &_node)
@@ -102,7 +107,10 @@ bool Generator::visit(ContractDefinition const &_node)
     nodeTypes_.insert(::std::make_pair(_node.id(), "ContractDefinition"));
 
     // declare global function require(condition, msg)
-	declareRequire();
+    declareRequire();
+
+    // declare global variable msg
+    declareMsg();
     return true;
 }
 
@@ -903,7 +911,8 @@ void Generator::endVisit(FunctionCall const &_node)
     auto funcInPlace = network_->getPlaceByName(callee + ".in");
     auto funcOutPlace = network_->getPlaceByName(callee + ".out");
 
-    if(funcInPlace == nullptr || funcOutPlace == nullptr) {
+    if (funcInPlace == nullptr || funcOutPlace == nullptr)
+    {
         LOGE("Function %s not found", callee.c_str());
         return;
     }
@@ -958,6 +967,17 @@ bool Generator::visit(MemberAccess const &_node)
     LOGT("Generator in %s", "MemberAccess");
     nodeTypes_.insert(::std::make_pair(_node.id(), "MemberAccess"));
     return true;
+}
+
+void Generator::endVisit(MemberAccess const &_node)
+{
+    auto exprPlace = network_->getPlaceByName(::std::to_string(_node.expression().id()) + ".result");
+    auto exprInPlace = network_->getPlaceByName(::std::to_string(_node.expression().id()) + ".in");
+    auto exprOutPlace = network_->getPlaceByName(::std::to_string(_node.expression().id()) + ".out");
+
+    network_->alias(exprPlace, ::std::to_string(_node.id()) + ".result");
+    network_->alias(exprInPlace, ::std::to_string(_node.id()) + ".in");
+    network_->alias(exprOutPlace, ::std::to_string(_node.id()) + ".out");
 }
 
 bool Generator::visit(IndexAccess const &_node)
@@ -1083,7 +1103,8 @@ bool Generator::visit(StructuredDocumentation const &_node)
 
 void Generator::dump() const
 {
-    if (!network_) {
+    if (!network_)
+    {
         LOGI("Generator::dump - Network is null");
         return;
     }
@@ -1092,30 +1113,41 @@ void Generator::dump() const
 
     // Dump Places
     LOGI("Places:");
-    for (const auto& place : network_->places()) {
+    for (const auto &place : network_->places())
+    {
         LOGI("\tPlace Name: %s, Color: %s", place->name().c_str(), place->color().c_str());
     }
 
     // Dump Transitions
     LOGI("Transitions:");
-    for (const auto& transition : network_->transitions()) {
+    for (const auto &transition : network_->transitions())
+    {
         LOGI("\tTransition Name: %s", transition->name().c_str());
     }
 
     // Dump Arcs
     LOGI("Arcs:");
     int cnt = 0;
-    for (const auto& arc : network_->arcs()) {
+    for (const auto &arc : network_->arcs())
+    {
         cnt++;
-        if(arc->place() == nullptr || arc->transition() == nullptr) {
+        if (arc->place() == nullptr || arc->transition() == nullptr)
+        {
             LOGW("Arc %d Place or Transition is null", cnt);
             continue;
         }
         std::string orientation;
-        switch (arc->orientation()) {
-            case cpn::Arc::Orientation::P2T: orientation = "Place to Transition"; break;
-            case cpn::Arc::Orientation::T2P: orientation = "Transition to Place"; break;
-            case cpn::Arc::Orientation::BD: orientation = "Bidirectional"; break;
+        switch (arc->orientation())
+        {
+        case cpn::Arc::Orientation::P2T:
+            orientation = "Place to Transition";
+            break;
+        case cpn::Arc::Orientation::T2P:
+            orientation = "Transition to Place";
+            break;
+        case cpn::Arc::Orientation::BD:
+            orientation = "Bidirectional";
+            break;
         }
         LOGI("\tArc: Place: %s, Transition: %s, Orientation: %s",
              arc->place()->name().c_str(),
