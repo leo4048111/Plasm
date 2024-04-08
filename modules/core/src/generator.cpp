@@ -645,11 +645,6 @@ bool Generator::visit(RevertStatement const &_node)
 {
     LOGT("Generator in %s", "RevertStatement");
     nodeTypes_.insert(::std::make_pair(_node.id(), "RevertStatement"));
-    return true;
-}
-
-void Generator::endVisit(RevertStatement const &_node)
-{
     // Does literally nothing...
     // create inout control places
     ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
@@ -666,6 +661,12 @@ void Generator::endVisit(RevertStatement const &_node)
     ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
     network_->addArc(arc1);
     network_->addArc(arc2);
+    return false;
+}
+
+void Generator::endVisit(RevertStatement const &_node)
+{
+    // Does nothing...
 }
 
 bool Generator::visit(VariableDeclarationStatement const &_node)
@@ -911,10 +912,10 @@ void Generator::endVisit(FunctionCall const &_node)
     network_->addPlace(outPlace);
 
     // create function call transition and call ret transition
-    ::std::shared_ptr<cpn::Transition> callTransition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".call");
-    network_->addTransition(callTransition);
-    ::std::shared_ptr<cpn::Transition> callRetTransition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".call.ret");
-    network_->addTransition(callRetTransition);
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    network_->addTransition(con0);
+    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con1");
+    network_->addTransition(con1);
 
     // get function in place
     Expression *exp = const_cast<Expression *>(&_node.expression());
@@ -938,14 +939,14 @@ void Generator::endVisit(FunctionCall const &_node)
     }
 
     // connect function call transition with in place
-    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, callTransition, cpn::Arc::Orientation::P2T);
-    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(funcInPlace, callTransition, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(funcInPlace, con0, cpn::Arc::Orientation::T2P);
     network_->addArc(arc1);
     network_->addArc(arc2);
 
     // connect function call ret transition with out place
-    ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(funcOutPlace, callRetTransition, cpn::Arc::Orientation::P2T);
-    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(outPlace, callRetTransition, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(funcOutPlace, con1, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(outPlace, con1, cpn::Arc::Orientation::T2P);
     network_->addArc(arc3);
     network_->addArc(arc4);
 
@@ -955,8 +956,8 @@ void Generator::endVisit(FunctionCall const &_node)
     {
         auto paramResultPlace = network_->getPlaceByName(::std::to_string(param->id()) + ".result");
         auto functionParamPlace = network_->getPlaceByName(callee + "." + SCOPE_PARAM + functionParams_[callee][cnt++]);
-        ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(paramResultPlace, callTransition, cpn::Arc::Orientation::BD);
-        ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(functionParamPlace, callTransition, cpn::Arc::Orientation::BD);
+        ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(paramResultPlace, con0, cpn::Arc::Orientation::BD);
+        ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(functionParamPlace, con0, cpn::Arc::Orientation::BD);
         network_->addArc(arc5);
         network_->addArc(arc6);
     }
