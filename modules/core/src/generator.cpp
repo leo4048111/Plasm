@@ -1083,23 +1083,47 @@ bool Generator::visit(StructuredDocumentation const &_node)
 
 void Generator::dump() const
 {
-    // places
-    for (auto const &place : network_->places())
-    {
-        LOGI("Place: %s, type: %s", place->name().c_str(), place->color().c_str());
+    if (!network_) {
+        LOGI("Generator::dump - Network is null");
+        return;
     }
 
-    // transitions
-    for (auto const &transition : network_->transitions())
-    {
-        LOGI("Transition: %s", transition->name().c_str());
+    LOGI("=== CPN Network Dump Start ===");
+
+    // Dump Places
+    LOGI("Places:");
+    for (const auto& place : network_->places()) {
+        LOGI("\tPlace Name: %s, Color: %s", place->name().c_str(), place->color().c_str());
     }
 
-    // arcs
-    for (auto const &arc : network_->arcs())
-    {
-        LOGI("Arc trans: %s, place: %s", arc->place()->name().c_str(), arc->transition()->name().c_str());
+    // Dump Transitions
+    LOGI("Transitions:");
+    for (const auto& transition : network_->transitions()) {
+        LOGI("\tTransition Name: %s", transition->name().c_str());
     }
+
+    // Dump Arcs
+    LOGI("Arcs:");
+    int cnt = 0;
+    for (const auto& arc : network_->arcs()) {
+        cnt++;
+        if(arc->place() == nullptr || arc->transition() == nullptr) {
+            LOGW("Arc %d Place or Transition is null", cnt);
+            continue;
+        }
+        std::string orientation;
+        switch (arc->orientation()) {
+            case cpn::Arc::Orientation::P2T: orientation = "Place to Transition"; break;
+            case cpn::Arc::Orientation::T2P: orientation = "Transition to Place"; break;
+            case cpn::Arc::Orientation::BD: orientation = "Bidirectional"; break;
+        }
+        LOGI("\tArc: Place: %s, Transition: %s, Orientation: %s",
+             arc->place()->name().c_str(),
+             arc->transition()->name().c_str(),
+             orientation.c_str());
+    }
+
+    LOGI("=== CPN Network Dump End ===");
 }
 
 _END_PSM_NM_

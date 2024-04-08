@@ -56,6 +56,9 @@ void Visualizer::Draw(::std::shared_ptr<cpn::Network> network, ::std::map<int64_
     // add arcs
     for (const auto &arc : network->arcs())
     {
+        // check nullptr
+        if (arc->place() == nullptr || arc->transition() == nullptr)
+            continue;
         if (arc->orientation() == cpn::Arc::Orientation::BD)
         {
             std::string sourceName = arc->place()->name();
