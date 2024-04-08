@@ -648,6 +648,26 @@ bool Generator::visit(RevertStatement const &_node)
     return true;
 }
 
+void Generator::endVisit(RevertStatement const &_node)
+{
+    // Does literally nothing...
+    // create inout control places
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    network_->addPlace(inPlace);
+    network_->addPlace(outPlace);
+
+    // create VariableDeclarationStatement transition
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    network_->addTransition(con0);
+
+    // create arcs
+    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
+    network_->addArc(arc1);
+    network_->addArc(arc2);
+}
+
 bool Generator::visit(VariableDeclarationStatement const &_node)
 {
     LOGT("Generator in %s", "VariableDeclarationStatement");
@@ -664,8 +684,8 @@ void Generator::endVisit(VariableDeclarationStatement const &_node)
     network_->addPlace(outPlace);
 
     // create VariableDeclarationStatement transition
-    ::std::shared_ptr<cpn::Transition> transition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()));
-    network_->addTransition(transition);
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    network_->addTransition(con0);
 
     // check if has value
     auto expr = _node.initialValue();
@@ -681,16 +701,16 @@ void Generator::endVisit(VariableDeclarationStatement const &_node)
         auto varPlace = network_->getPlaceByName(scope() + _node.declarations().front()->name());
 
         // create out transition
-        ::std::shared_ptr<cpn::Transition> exprOutTransition = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".valueout");
-        network_->addTransition(exprOutTransition);
+        ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con1");
+        network_->addTransition(con1);
 
         // connect
-        ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, transition, cpn::Arc::Orientation::P2T);
-        ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(exprInPlace, transition, cpn::Arc::Orientation::T2P);
-        ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(exprOutPlace, exprOutTransition, cpn::Arc::Orientation::P2T);
-        ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(outPlace, exprOutTransition, cpn::Arc::Orientation::T2P);
-        ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(exprResultPlace, exprOutTransition, cpn::Arc::Orientation::BD);
-        ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(varPlace, exprOutTransition, cpn::Arc::Orientation::BD);
+        ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+        ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(exprInPlace, con0, cpn::Arc::Orientation::T2P);
+        ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(exprOutPlace, con1, cpn::Arc::Orientation::P2T);
+        ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(outPlace, con1, cpn::Arc::Orientation::T2P);
+        ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(exprResultPlace, con1, cpn::Arc::Orientation::BD);
+        ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(varPlace, con1, cpn::Arc::Orientation::BD);
         network_->addArc(arc1);
         network_->addArc(arc2);
         network_->addArc(arc3);
@@ -701,8 +721,8 @@ void Generator::endVisit(VariableDeclarationStatement const &_node)
     else
     {
         // connect
-        ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, transition, cpn::Arc::Orientation::P2T);
-        ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, transition, cpn::Arc::Orientation::T2P);
+        ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+        ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
         network_->addArc(arc1);
         network_->addArc(arc2);
     }

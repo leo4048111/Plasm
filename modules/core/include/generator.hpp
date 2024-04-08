@@ -95,7 +95,7 @@ public:
 	void endVisit(solidity::frontend::ParameterList const &_node) override;
 	void endVisit(solidity::frontend::VariableDeclaration const &_node) override;
 	void endVisit(solidity::frontend::MemberAccess const &_node) override;
-
+	void endVisit(solidity::frontend::RevertStatement const &_node) override;
 
 private:
 	::std::string scope() const { return sscope_.top(); };
