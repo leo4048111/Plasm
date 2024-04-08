@@ -295,8 +295,14 @@ bool Generator::visit(EventDefinition const &_node)
 bool Generator::visit(ErrorDefinition const &_node)
 {
     LOGT("Generator in %s", "ErrorDefinition");
+    pushScope(_node.name() + ".");
     nodeTypes_.insert(::std::make_pair(_node.id(), "ErrorDefinition"));
     return true;
+}
+
+void Generator::endVisit(ErrorDefinition const &_node)
+{
+    popScope();
 }
 
 bool Generator::visit(ElementaryTypeName const &_node)
@@ -905,6 +911,35 @@ bool Generator::visit(FunctionCall const &_node)
 
 void Generator::endVisit(FunctionCall const &_node)
 {
+    // get function in place
+    Expression *exp = const_cast<Expression *>(&_node.expression());
+    ::std::string callee = "";
+    // Normal function call
+    if (auto identifier = dynamic_cast<Identifier *>(exp))
+    {
+        callee = identifier->name();
+    }
+    else if (auto elementTypenameExpression = dynamic_cast<ElementaryTypeNameExpression *>(exp))
+    {
+        callee = "typeConversion";
+        auto inPlace = network_->getPlaceByName(::std::to_string(elementTypenameExpression->id()) + ".in");
+        auto outPlace = network_->getPlaceByName(::std::to_string(elementTypenameExpression->id()) + ".out");
+        auto resultPlace = network_->getPlaceByName(::std::to_string(elementTypenameExpression->id()) + ".result");
+        network_->alias(inPlace, ::std::to_string(_node.id()) + ".in");
+        network_->alias(outPlace, ::std::to_string(_node.id()) + ".out");
+        for (auto const &param : _node.arguments())
+        {
+            auto paramResultPlace = network_->getPlaceByName(::std::to_string(param->id()) + ".result");
+            network_->alias(paramResultPlace, ::std::to_string(_node.id()) + ".result");
+        }
+        return;
+    }
+    else
+    {
+        LOGE("FunctionCall callee not found");
+        return;
+    }
+
     // create inout control places
     ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
     ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
@@ -916,19 +951,6 @@ void Generator::endVisit(FunctionCall const &_node)
     network_->addTransition(con0);
     ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con1");
     network_->addTransition(con1);
-
-    // get function in place
-    Expression *exp = const_cast<Expression *>(&_node.expression());
-    ::std::string callee = "";
-    if (auto identifier = dynamic_cast<Identifier *>(exp))
-    {
-        callee = identifier->name();
-    }
-    else
-    {
-        LOGE("FunctionCall callee not found");
-        return;
-    }
     auto funcInPlace = network_->getPlaceByName(callee + ".in");
     auto funcOutPlace = network_->getPlaceByName(callee + ".out");
 
@@ -1083,6 +1105,26 @@ bool Generator::visit(ElementaryTypeNameExpression const &_node)
     LOGT("Generator in %s", "ElementaryTypeNameExpression");
     nodeTypes_.insert(::std::make_pair(_node.id(), "ElementaryTypeNameExpression"));
     return true;
+}
+
+void Generator::endVisit(ElementaryTypeNameExpression const &_node)
+{
+    // Does literally nothing...
+    // create inout control places
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    network_->addPlace(inPlace);
+    network_->addPlace(outPlace);
+
+    // create VariableDeclarationStatement transition
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    network_->addTransition(con0);
+
+    // create arcs
+    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
+    network_->addArc(arc1);
+    network_->addArc(arc2);
 }
 
 bool Generator::visit(Literal const &_node)
