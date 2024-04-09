@@ -70,6 +70,21 @@ namespace cpn
             return tokens_;
         }
 
+        void addToken(Token token)
+        {
+            tokens_.push_back(token);
+        }
+
+        Token getToken(int idx)
+        {
+            return tokens_[idx];
+        }
+
+        void removeToken(int idx)
+        {
+            tokens_.erase(tokens_.begin() + idx);
+        }
+
     private:
         ::std::string name_;
         ::std::string color_;
@@ -184,6 +199,9 @@ namespace cpn
 
         ::std::map<::std::string, ::std::shared_ptr<Place>> place_map_; // mapping place name to place
         ::std::map<::std::string, ::std::shared_ptr<Transition>> transition_map_; // mapping place name to place
+
+        ::std::map<::std::shared_ptr<Place>, ::std::vector<::std::shared_ptr<Transition>>> p2t_map_; // mapping place to transition
+        ::std::map<::std::shared_ptr<Transition>, ::std::vector<::std::shared_ptr<Place>>> t2p_map_; // mapping transition to place
     };
 }
 

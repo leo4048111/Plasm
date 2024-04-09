@@ -53,6 +53,8 @@ namespace cpn
     void Network::addArc(::std::shared_ptr<Arc> arc)
     {
         arcs_.push_back(arc);
+        p2t_map_[arc->place()].push_back(arc->transition());
+        t2p_map_[arc->transition()].push_back(arc->place());
     }
 }
 

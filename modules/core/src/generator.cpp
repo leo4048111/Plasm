@@ -207,6 +207,9 @@ bool Generator::visit(FunctionDefinition const &_node)
         paramNames.push_back(name);
     }
 
+    // add function name
+    functions_.push_back(_node.name());
+
     functionParams_.insert(::std::make_pair(_node.name(), paramNames));
 
     nodeTypes_.insert(::std::make_pair(_node.id(), "FunctionDefinition"));

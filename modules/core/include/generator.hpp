@@ -23,6 +23,8 @@ public:
 
 	::std::map<int64_t, ::std::string> getNodeTypes() const { return nodeTypes_; };
 
+	::std::vector<::std::string> getFunctions() const { return functions_; };
+
 	bool visit(solidity::frontend::SourceUnit const &_node) override;
 	bool visit(solidity::frontend::PragmaDirective const &_node) override;
 	bool visit(solidity::frontend::ImportDirective const &_node) override;
@@ -122,6 +124,7 @@ private:
 	::std::stack<::std::string> sscope_;
 	::std::map<::std::string, ::std::vector<::std::string>> functionParams_;
 	::std::map<int64_t, ::std::string> nodeTypes_;
+	::std::vector<::std::string> functions_;
 };
 
 _END_PSM_NM_
