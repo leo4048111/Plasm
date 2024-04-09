@@ -225,6 +225,9 @@ void Generator::endVisit(FunctionDefinition const &_node)
     network_->alias(blockInPlace, scope() + "in");
     network_->alias(blockOutPlace, scope() + "out");
 
+    // set entry points
+    blockInPlace->setEntryPoint(true);
+
     // check return
     if (_node.returnParameters().size())
     {

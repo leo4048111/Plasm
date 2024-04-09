@@ -6,12 +6,6 @@ _START_PSM_NM_
 
 namespace cpn
 {
-    template <typename T>
-    Token::Token(::std::string color, T value)
-        : color_(color), value_(value)
-    {
-    }
-
     Place::Place(::std::string name, ::std::string color)
         : name_(name), color_(color)
     {
@@ -53,8 +47,33 @@ namespace cpn
     void Network::addArc(::std::shared_ptr<Arc> arc)
     {
         arcs_.push_back(arc);
-        p2t_map_[arc->place()].push_back(arc->transition());
-        t2p_map_[arc->transition()].push_back(arc->place());
+
+        if (arc->orientation() == Arc::Orientation::P2T)
+        {
+            trans_in_degree_map_[arc->transition()].push_back(arc->place());
+        }
+        else
+        {
+            trans_out_degree_map_[arc->transition()].push_back(arc->place());
+        }
+    }
+
+    bool Network::fire(::std::shared_ptr<Transition> transition)
+    {
+        for (auto& place : trans_in_degree_map_[transition])
+        {
+            if(!place->tokens().size()) return false;
+        }
+
+        for (auto& place : trans_in_degree_map_[transition])
+        {
+            place->removeToken(0);
+        }
+
+        for(auto& place: trans_out_degree_map_[transition])
+        {
+            place->addToken(Token("Unknown", "Unknown"));
+        }
     }
 }
 

@@ -18,7 +18,7 @@ namespace cpn
     {
     public:
         template <typename T>
-        Token(::std::string color, T value);
+        Token(::std::string color, T value) : color_(color), value_(value){};
         ~Token() = default;
 
         template <typename T>
@@ -85,10 +85,21 @@ namespace cpn
             tokens_.erase(tokens_.begin() + idx);
         }
 
+        bool entryPoint() const
+        {
+            return entryPoint_;
+        }
+
+        void setEntryPoint(bool entryPoint)
+        {
+            entryPoint_ = entryPoint;
+        }
+
     private:
         ::std::string name_;
         ::std::string color_;
         ::std::vector<Token> tokens_;
+        bool entryPoint_{false};
     };
 
     class Transition
@@ -153,6 +164,8 @@ namespace cpn
         void addTransition(::std::shared_ptr<Transition> transition);
         void addArc(::std::shared_ptr<Arc> arc);
 
+        bool fire(::std::shared_ptr<Transition> transition);
+
         const ::std::vector<::std::shared_ptr<Place>> &places() const
         {
             return places_;
@@ -170,7 +183,7 @@ namespace cpn
 
         ::std::shared_ptr<Place> getPlaceByName(const ::std::string &name) const
         {
-            if(place_map_.find(name) != place_map_.end())
+            if (place_map_.find(name) != place_map_.end())
             {
                 return place_map_.at(name);
             }
@@ -180,7 +193,7 @@ namespace cpn
 
         ::std::shared_ptr<Transition> getTransitionByName(const ::std::string &name) const
         {
-            if(transition_map_.find(name) != transition_map_.end())
+            if (transition_map_.find(name) != transition_map_.end())
             {
                 return transition_map_.at(name);
             }
@@ -197,11 +210,11 @@ namespace cpn
         ::std::vector<::std::shared_ptr<Transition>> transitions_;
         ::std::vector<::std::shared_ptr<Arc>> arcs_;
 
-        ::std::map<::std::string, ::std::shared_ptr<Place>> place_map_; // mapping place name to place
+        ::std::map<::std::string, ::std::shared_ptr<Place>> place_map_;           // mapping place name to place
         ::std::map<::std::string, ::std::shared_ptr<Transition>> transition_map_; // mapping place name to place
 
-        ::std::map<::std::shared_ptr<Place>, ::std::vector<::std::shared_ptr<Transition>>> p2t_map_; // mapping place to transition
-        ::std::map<::std::shared_ptr<Transition>, ::std::vector<::std::shared_ptr<Place>>> t2p_map_; // mapping transition to place
+        ::std::map<::std::shared_ptr<Transition>, ::std::vector<::std::shared_ptr<Place>>> trans_out_degree_map_; // mapping transition out degrees
+        ::std::map<::std::shared_ptr<Transition>, ::std::vector<::std::shared_ptr<Place>>> trans_in_degree_map_; // mapping transition in degrees
     };
 }
 
