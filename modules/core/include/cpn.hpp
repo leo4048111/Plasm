@@ -167,6 +167,8 @@ namespace cpn
         bool fire(::std::shared_ptr<Transition> transition);
         bool revert(::std::shared_ptr<Transition> transition);
 
+        ::std::string hash() const;
+
         const ::std::vector<::std::shared_ptr<Place>> &places() const
         {
             return places_;

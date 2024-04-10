@@ -100,6 +100,23 @@ namespace cpn
 
         return true;
     }
+
+    ::std::string Network::hash() const
+    {
+        ::std::string hash = "";
+
+        for (auto &place : places_)
+        {
+            for(auto &token : place->tokens())
+            {
+                hash += token.value<::std::string>();
+            }
+        }
+
+        hash = ::std::to_string(std::hash<::std::string>{}(hash));
+
+        return hash;
+    }
 }
 
 _END_PSM_NM_
