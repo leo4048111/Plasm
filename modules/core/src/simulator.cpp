@@ -26,27 +26,23 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
         }
     }
 
-    cpn::Token ctrl(cpn::CTRL_COLOR, "");
-    for (auto &entry : entryPoints)
+    // traverse all permutations
+    do
     {
         LOGI("==================================================");
-        LOGI("Entry from: %s", entry->name().c_str());
-        entry->addToken(ctrl);
-        dfs(entry);
-        LOGI("Entry out: %s", entry->name().c_str());
+        LOGI("Initial hash: %s", network_->hash().c_str());
+        cpn::Token ctrl(cpn::CTRL_COLOR, "");
+        for (auto &entry : entryPoints)
+        {
+            LOGI("Entry from: %s", entry->name().c_str());
+            entry->addToken(ctrl);
+            dfs(entry);
+            LOGI("Entry out: %s", entry->name().c_str());
+        }
+        LOGI("Final hash: %s", network_->hash().c_str());
         LOGI("==================================================");
-    }
-
-    // LOGI("Simulation completed. Total firings: %d", totalFirings);
-    // for (const auto& [transitionName, firings] : transitionFirings)
-    // {
-    //     LOGI("Transition %s fired %d times.", transitionName.c_str(), firings);
-    // }
-
-    // if (!simulationRunning && totalFirings == 0)
-    // {
-    //     LOGI("No transitions fired. Possible initial deadlock.");
-    // }
+    } while (std::next_permutation(entryPoints.begin(), entryPoints.end(), [](const std::shared_ptr<cpn::Place> &a, const std::shared_ptr<cpn::Place> &b)
+                                   { return a->name() < b->name(); }));
 }
 
 void Simulator::dfs(std::shared_ptr<cpn::Place> place)
@@ -64,7 +60,7 @@ void Simulator::dfs(std::shared_ptr<cpn::Place> place)
             {
                 dfs(place);
             }
-            result = network_->revert(transition);
+            // result = network_->revert(transition);
         }
     }
 };
