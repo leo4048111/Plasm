@@ -25,12 +25,14 @@ static std::string const g_strOutputDir = "output-dir";
 static std::string const g_strEVMVersion = "evm-version";
 static std::string const g_strInputFile = "input-file";
 static std::string const g_strIgnoreMissingFiles = "ignore-missing";
+static std::string const g_strSimulate = "simulate";
 
 enum class CLIMode {
 	Help = 0,
 	License,
 	Version,
-	NetGen
+	NetGen,
+    Simulate
 };
 
 struct CLIOptions {
@@ -78,7 +80,7 @@ private:
 
     void ProcessInput();
 
-    void CompileAndGenerate();
+    void CompileAndGenerate(bool simulate = false);
 
     void PrintHelp() const;
 
@@ -86,7 +88,7 @@ private:
 
     static boost::program_options::options_description GetOptionsDescription();
 
-    static boost::program_options::positional_options_description GetPositionalOptionsDescription(); 
+    static boost::program_options::positional_options_description GetPositionalOptionsDescription();
 
 private:
     CLIOptions options_;

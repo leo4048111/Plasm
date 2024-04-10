@@ -70,6 +70,8 @@ void CLI::ProcessArgs()
         options_.input.mode = CLIMode::License;
     else if (args_.count(g_strVersion) > 0)
         options_.input.mode = CLIMode::Version;
+    else if(args_.count(g_strSimulate) > 0)
+        options_.input.mode = CLIMode::Simulate;
     else
         options_.input.mode = CLIMode::NetGen;
 
@@ -202,6 +204,9 @@ void CLI::ProcessInput()
         break;
     case CLIMode::Version:
         break;
+    case CLIMode::Simulate:
+        CompileAndGenerate(true);
+        break;
     case CLIMode::NetGen:
         CompileAndGenerate();
         break;
@@ -238,7 +243,7 @@ void CLI::PrintLicense() const
     LOGI(wtfplLicenseText);
 }
 
-void CLI::CompileAndGenerate()
+void CLI::CompileAndGenerate(bool simulate)
 {
     compiler_ = ::std::make_unique<solidity::frontend::CompilerStack>();
     compiler_->setMetadataFormat(solidity::frontend::CompilerStack::MetadataFormat::NoMetadata);
@@ -274,7 +279,8 @@ void CLI::CompileAndGenerate()
         Visualizer::GetInstance().Draw(network, nodeTypes);
 
         // simulate
-        Simulator::GetInstance().Simulate(network);
+        if(simulate)
+            Simulator::GetInstance().Simulate(network);
     }
 
     compiler_->reset();
