@@ -165,6 +165,7 @@ namespace cpn
         void addArc(::std::shared_ptr<Arc> arc);
 
         bool fire(::std::shared_ptr<Transition> transition);
+        bool revert(::std::shared_ptr<Transition> transition);
 
         const ::std::vector<::std::shared_ptr<Place>> &places() const
         {
@@ -201,6 +202,9 @@ namespace cpn
             return nullptr;
         }
 
+        ::std::vector<::std::shared_ptr<Transition>> getPlaceOutDegree(::std::shared_ptr<Place> place) { return place_out_degree_map_[place->name()]; };
+        ::std::vector<::std::shared_ptr<Place>> getTransitionOutDegree(::std::shared_ptr<Transition> place) { return trans_out_degree_map_[place->name()]; };
+
         void alias(::std::shared_ptr<Place> place, ::std::string alias);
 
         void alias(::std::shared_ptr<Transition> transition, ::std::string alias);
@@ -213,8 +217,9 @@ namespace cpn
         ::std::map<::std::string, ::std::shared_ptr<Place>> place_map_;           // mapping place name to place
         ::std::map<::std::string, ::std::shared_ptr<Transition>> transition_map_; // mapping place name to place
 
-        ::std::map<::std::shared_ptr<Transition>, ::std::vector<::std::shared_ptr<Place>>> trans_out_degree_map_; // mapping transition out degrees
-        ::std::map<::std::shared_ptr<Transition>, ::std::vector<::std::shared_ptr<Place>>> trans_in_degree_map_; // mapping transition in degrees
+        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Place>>> trans_out_degree_map_; // mapping transition out degrees
+        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Place>>> trans_in_degree_map_; // mapping transition in degrees
+        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Transition>>> place_out_degree_map_; // mapping place out degrees
     };
 }
 

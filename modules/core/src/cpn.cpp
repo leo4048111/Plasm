@@ -50,30 +50,55 @@ namespace cpn
 
         if (arc->orientation() == Arc::Orientation::P2T)
         {
-            trans_in_degree_map_[arc->transition()].push_back(arc->place());
+            trans_in_degree_map_[arc->transition()->name()].push_back(arc->place());
+            place_out_degree_map_[arc->place()->name()].push_back(arc->transition());
         }
         else
         {
-            trans_out_degree_map_[arc->transition()].push_back(arc->place());
+            trans_out_degree_map_[arc->transition()->name()].push_back(arc->place());
         }
     }
 
     bool Network::fire(::std::shared_ptr<Transition> transition)
     {
-        for (auto& place : trans_in_degree_map_[transition])
+        for (auto &place : trans_in_degree_map_[transition->name()])
         {
-            if(!place->tokens().size()) return false;
+            if (!place->tokens().size())
+                return false;
         }
 
-        for (auto& place : trans_in_degree_map_[transition])
+        for (auto &place : trans_in_degree_map_[transition->name()])
         {
             place->removeToken(0);
         }
 
-        for(auto& place: trans_out_degree_map_[transition])
+        for (auto &place : trans_out_degree_map_[transition->name()])
         {
             place->addToken(Token("Unknown", "Unknown"));
         }
+
+        return true;
+    }
+
+    bool Network::revert(::std::shared_ptr<Transition> transition)
+    {
+        for (auto &place : trans_out_degree_map_[transition->name()])
+        {
+            if (!place->tokens().size())
+                return false;
+        }
+
+        for (auto &place : trans_in_degree_map_[transition->name()])
+        {
+            place->addToken(Token("Unknown", "Unknown"));
+        }
+
+        for (auto &place : trans_out_degree_map_[transition->name()])
+        {
+            place->removeToken(0);
+        }
+
+        return true;
     }
 }
 

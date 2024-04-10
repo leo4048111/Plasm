@@ -2,70 +2,71 @@
 
 #include "logger.hpp"
 
+#include <functional>
+
 _START_PSM_NM_
 
 void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
 {
     LOGI("Starting simulation...");
 
+    network_ = network;
+
     int totalFirings = 0;
     std::map<std::string, int> transitionFirings;
     bool simulationRunning = true;
 
-    while(simulationRunning)
+    // get entry points
+    ::std::vector<::std::shared_ptr<cpn::Place>> entryPoints;
+    for (auto &place : network->places())
     {
-        simulationRunning = false;
-        bool deadlock = true;
-
-        for (auto& transition : network->transitions())
+        if (place->entryPoint())
         {
-            bool canFire = true;
-
-            for (auto& arc : network->arcs())
-            {
-                if(arc->place() == nullptr || arc->transition() == nullptr) {
-                    canFire = false;
-                    continue;
-                }
-                if (arc->transition() == transition && arc->orientation() == cpn::Arc::Orientation::P2T)
-                {
-                    auto place = arc->place();
-                    if (place->tokens().empty())
-                    {
-                        canFire = false;
-                        break;
-                    }
-                }
-            }
-
-            if (canFire)
-            {
-                transitionFirings[transition->name()] += 1;
-                totalFirings++;
-                simulationRunning = true;
-                deadlock = false;
-                LOGI("Transition fired: %s", transition->name().c_str());
-                break;
-            }
-        }
-
-        if (deadlock)
-        {
-            LOGI("Deadlock detected.");
-            break;
+            entryPoints.push_back(place);
         }
     }
 
-    LOGI("Simulation completed. Total firings: %d", totalFirings);
-    for (const auto& [transitionName, firings] : transitionFirings)
+    cpn::Token ctrl(cpn::CTRL_COLOR, "");
+    for (auto &entry : entryPoints)
     {
-        LOGI("Transition %s fired %d times.", transitionName.c_str(), firings);
+        LOGI("==================================================");
+        LOGI("Entry from: %s", entry->name().c_str());
+        entry->addToken(ctrl);
+        dfs(entry);
+        LOGI("Entry out: %s", entry->name().c_str());
+        LOGI("==================================================");
     }
 
-    if (!simulationRunning && totalFirings == 0)
-    {
-        LOGI("No transitions fired. Possible initial deadlock.");
-    }
+    // LOGI("Simulation completed. Total firings: %d", totalFirings);
+    // for (const auto& [transitionName, firings] : transitionFirings)
+    // {
+    //     LOGI("Transition %s fired %d times.", transitionName.c_str(), firings);
+    // }
+
+    // if (!simulationRunning && totalFirings == 0)
+    // {
+    //     LOGI("No transitions fired. Possible initial deadlock.");
+    // }
 }
+
+void Simulator::dfs(std::shared_ptr<cpn::Place> place)
+{
+    LOGI("In Place: %s", place->name().c_str());
+    auto transitions = network_->getPlaceOutDegree(place);
+    for (auto transition : transitions)
+    {
+        bool result = network_->fire(transition);
+
+        if (result)
+        {
+            LOGI("Transition %s fired.", transition->name().c_str());
+            for (auto place : network_->getTransitionOutDegree(transition))
+            {
+                dfs(place);
+            }
+            result = network_->revert(transition);
+        }
+    }
+};
 
 _END_PSM_NM_
