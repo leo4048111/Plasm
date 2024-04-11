@@ -297,7 +297,7 @@ po::positional_options_description CLI::GetPositionalOptionsDescription()
 po::options_description CLI::GetOptionsDescription()
 {
     // Declare the supported options.
-    po::options_description desc("FUck any smart contract you like...",
+    po::options_description desc("A automated solidity to CPN and simulation tool...",
                                  po::options_description::m_default_line_length,
                                  po::options_description::m_default_line_length - 23);
     desc.add_options()(g_strHelp.c_str(), "Show help message and exit.")(g_strVersion.c_str(), "Show version and exit.")(g_strLicense.c_str(), "Show licensing information and exit.");
