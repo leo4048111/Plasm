@@ -2,6 +2,8 @@
 
 #include "logger.hpp"
 
+#include <sstream>
+
 _START_PSM_NM_
 
 namespace cpn
@@ -109,13 +111,13 @@ namespace cpn
         {
             for(auto &token : place->tokens())
             {
-                hash += token.value<::std::string>();
+                hash += token.value();
             }
         }
 
-        hash = ::std::to_string(std::hash<::std::string>{}(hash));
-
-        return hash;
+        ::std::stringstream ss;
+        ss << "0x" << ::std::hex << ::std::hash<::std::string>{}(hash);
+        return ss.str();
     }
 }
 

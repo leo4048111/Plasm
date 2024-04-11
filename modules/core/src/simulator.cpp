@@ -27,11 +27,12 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
     }
 
     // traverse all permutations
+    ::std::string lastHash = "";
     do
     {
         LOGI("==================================================");
         LOGI("Initial hash: %s", network_->hash().c_str());
-        cpn::Token ctrl(cpn::CTRL_COLOR, "");
+        cpn::Token ctrl(cpn::CTRL_COLOR, "()");
         for (auto &entry : entryPoints)
         {
             LOGI("Entry from: %s", entry->name().c_str());
@@ -40,7 +41,20 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
             LOGI("Entry out: %s", entry->name().c_str());
         }
         LOGI("Final hash: %s", network_->hash().c_str());
+        ::std::string curHash = network_->hash();
+        if(lastHash != "") {
+            if(lastHash != curHash) LOGE("Hash mismatch: %s != %s", lastHash.c_str(), curHash.c_str());
+        }
+        lastHash = network_->hash().c_str();
         LOGI("==================================================");
+
+        // revert all states
+        while (!revertStack_.empty())
+        {
+            auto transition = revertStack_.top();
+            revertStack_.pop();
+            network_->revert(transition);
+        }
     } while (std::next_permutation(entryPoints.begin(), entryPoints.end(), [](const std::shared_ptr<cpn::Place> &a, const std::shared_ptr<cpn::Place> &b)
                                    { return a->name() < b->name(); }));
 }
@@ -49,14 +63,15 @@ void Simulator::dfs(std::shared_ptr<cpn::Place> place)
 {
     LOGI("In Place: %s", place->name().c_str());
     auto transitions = network_->getPlaceOutDegree(place);
-    for (auto transition : transitions)
+    for (auto& transition : transitions)
     {
         bool result = network_->fire(transition);
 
         if (result)
         {
             LOGI("Transition %s fired.", transition->name().c_str());
-            for (auto place : network_->getTransitionOutDegree(transition))
+            revertStack_.push(transition);
+            for (auto& place : network_->getTransitionOutDegree(transition))
             {
                 dfs(place);
             }

@@ -17,21 +17,12 @@ namespace cpn
     class Token
     {
     public:
-        template <typename T>
-        Token(::std::string color, T value) : color_(color), value_(value){};
+        Token(::std::string color, ::std::string value) : color_(color), value_(value){};
         ~Token() = default;
 
-        template <typename T>
-        T value() const
+        ::std::string value() const
         {
-            try
-            {
-                return std::any_cast<T>(value_);
-            }
-            catch (const std::bad_any_cast &e)
-            {
-                throw;
-            }
+            return value_;
         }
 
         bool control() const
@@ -41,7 +32,7 @@ namespace cpn
 
     private:
         ::std::string color_;
-        ::std::any value_;
+        ::std::string value_;
     };
 
     class Place

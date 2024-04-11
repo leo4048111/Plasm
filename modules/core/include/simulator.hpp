@@ -6,6 +6,7 @@
 #include "cpn.hpp"
 
 #include <memory>
+#include <stack>
 
 _START_PSM_NM_
 
@@ -21,6 +22,7 @@ private:
 
 private:
     ::std::shared_ptr<cpn::Network> network_;
+    ::std::stack<::std::shared_ptr<cpn::Transition>> revertStack_;
 };
 
 _END_PSM_NM_

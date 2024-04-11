@@ -328,6 +328,7 @@ po::options_description CLI::GetOptionsDescription()
     desc.add(outputOptions);
 
     desc.add_options()(g_strInputFile.c_str(), po::value<std::vector<std::string>>(), "input file");
+    desc.add_options()(g_strSimulate.c_str(), "run simulation");
     return desc;
 }
 
