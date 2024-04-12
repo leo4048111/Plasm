@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 BUILD_DIR=build
 BUILD_TYPE=Debug
