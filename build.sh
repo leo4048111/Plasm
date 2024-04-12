@@ -1,9 +1,9 @@
 #!/bin/bash
-
+set -e
 BUILD_DIR=build
 BUILD_TYPE=Debug
-CLANG=$(command -v clang)
-CLANGXX=$(command -v clang++)
+CLANG=$(command -v clang) || true
+CLANGXX=$(command -v clang++) || true
 CMAKE_C_COMPILER=cc
 CMAKE_CXX_COMPILER=c++
 
