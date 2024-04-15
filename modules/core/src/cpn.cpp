@@ -27,8 +27,8 @@ namespace cpn
     ExpressionArc::ExpressionArc(::std::shared_ptr<Place> place,
                                  ::std::shared_ptr<Transition> transition,
                                  Orientation orientation,
-                                 ArcExpression expression,
-                                 ::std::vector<::std::string> arguments)
+                                 ::std::vector<::std::string> arguments,
+                                 ArcExpression expression)
         : Arc(place, transition, orientation), expression_(expression), arguments_(arguments) {}
 
     void Network::addPlace(::std::shared_ptr<Place> place)
@@ -125,7 +125,8 @@ namespace cpn
         {
             for (auto &token : place->tokens())
             {
-                hash += token.value();
+                if(token.type() == typeid(::std::string))
+                    hash += ::std::any_cast<::std::string>(token.value());
             }
         }
 

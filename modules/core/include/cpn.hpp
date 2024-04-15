@@ -18,10 +18,10 @@ namespace cpn
     class Token
     {
     public:
-        Token(::std::string color, ::std::string value) : color_(color), value_(value){};
+        Token(::std::string color, ::std::any value) : color_(color), value_(value){};
         ~Token() = default;
 
-        ::std::string value() const
+        ::std::any value() const
         {
             return value_;
         }
@@ -31,9 +31,11 @@ namespace cpn
             return color_ == CTRL_COLOR;
         }
 
+        const ::std::type_info& type() const { return value_.type(); }
+
     private:
         ::std::string color_;
-        ::std::string value_;
+        ::std::any value_;
     };
 
     class Place
@@ -169,8 +171,8 @@ namespace cpn
         ExpressionArc(::std::shared_ptr<Place> place,
                       ::std::shared_ptr<Transition> transition,
                       Orientation orientation,
-                      ArcExpression expression = nullptr,
-                      ::std::vector<::std::string> arguments = {});
+                      ::std::vector<::std::string> arguments = {},
+                      ArcExpression expression = nullptr);
 
         Type type() const override
         {

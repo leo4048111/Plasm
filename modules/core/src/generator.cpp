@@ -226,7 +226,7 @@ void Generator::endVisit(FunctionDefinition const &_node)
     network_->alias(blockOutPlace, scope() + "out");
 
     // set entry points
-    if(_node.visibility() == Visibility::Public)
+    if (_node.visibility() == Visibility::Public)
         blockInPlace->setEntryPoint(true);
 
     // check return
@@ -370,7 +370,7 @@ void Generator::endVisit(Block const &_node)
     network_->addPlace(outPlace);
 
     // connect statement io places
-    if(!_node.statements().size())
+    if (!_node.statements().size())
     {
         ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
         network_->addTransition(con0);
@@ -881,8 +881,8 @@ void Generator::endVisit(BinaryOperation const &_node)
     network_->addTransition(con1);
 
     // get lhs and rhs places
-    auto lhsPlace = network_->getPlaceByName(::std::to_string(_node.leftExpression().id()) + ".result");
-    auto rhsPlace = network_->getPlaceByName(::std::to_string(_node.rightExpression().id()) + ".result");
+    auto lhsResultPlace = network_->getPlaceByName(::std::to_string(_node.leftExpression().id()) + ".result");
+    auto rhsResultPlace = network_->getPlaceByName(::std::to_string(_node.rightExpression().id()) + ".result");
     auto lhsInPlace = network_->getPlaceByName(::std::to_string(_node.leftExpression().id()) + ".in");
     auto rhsInPlace = network_->getPlaceByName(::std::to_string(_node.rightExpression().id()) + ".in");
     auto lhsOutPlace = network_->getPlaceByName(::std::to_string(_node.leftExpression().id()) + ".out");
@@ -902,10 +902,59 @@ void Generator::endVisit(BinaryOperation const &_node)
     ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::ExpressionArc>(rhsInPlace, con1, cpn::Arc::Orientation::T2P);
     ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::ExpressionArc>(rhsOutPlace, op, cpn::Arc::Orientation::P2T);
     ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::ExpressionArc>(outPlace, op, cpn::Arc::Orientation::T2P);
-    ::std::shared_ptr<cpn::Arc> arc7 = ::std::make_shared<cpn::ExpressionArc>(lhsPlace, op, cpn::Arc::Orientation::BD);
-    ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::ExpressionArc>(rhsPlace, op, cpn::Arc::Orientation::BD);
-    ::std::shared_ptr<cpn::Arc> arc9 = ::std::make_shared<cpn::ExpressionArc>(resultPlace, op, cpn::Arc::Orientation::T2P);
-    ::std::shared_ptr<cpn::Arc> arc10 = ::std::make_shared<cpn::ExpressionArc>(resultPlace, op, cpn::Arc::Orientation::P2T);
+    // get lhs value
+    ::std::shared_ptr<cpn::Arc> arc7 = ::std::make_shared<cpn::ExpressionArc>(
+        lhsResultPlace,
+        op,
+        cpn::Arc::Orientation::BD,
+        ::std::vector<::std::string>({"x"}),
+        [](::std::vector<::std::any> params) -> cpn::Token
+        {
+            PSM_ASSERT(params.size() == 1);
+            return cpn::Token("int", params[0]);
+        });
+
+    // get rhs value
+    ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::ExpressionArc>(
+        rhsResultPlace,
+        op,
+        cpn::Arc::Orientation::BD,
+        ::std::vector<::std::string>({"y"}),
+        [](::std::vector<::std::any> params) -> cpn::Token
+        {
+            PSM_ASSERT(params.size() == 1);
+            return cpn::Token("int", params[0]);
+        });
+
+    // remove old result value and send new value
+    ::std::shared_ptr<cpn::Arc> arc9 = ::std::make_shared<cpn::ExpressionArc>(
+        resultPlace,
+        op,
+        cpn::Arc::Orientation::T2P,
+        ::std::vector<::std::string>({"x", "y"}),
+        [&](::std::vector<::std::any> params) -> cpn::Token
+        {
+            PSM_ASSERT(params.size() == 2);
+            // FIXME: any types
+            int val1 = ::std::any_cast<int>(params[0]);
+            int val2 = ::std::any_cast<int>(params[1]);
+            // FIXME: correct op based on node type
+            return cpn::Token("int", val1 + val2);
+        });
+    ::std::shared_ptr<cpn::Arc> arc10 = ::std::make_shared<cpn::ExpressionArc>(
+        resultPlace,
+        op, 
+        cpn::Arc::Orientation::P2T,
+        ::std::vector<::std::string>({"z"}),
+        [](::std::vector<::std::any> params) -> cpn::Token
+        {
+            PSM_ASSERT(params.size() == 1);
+            // FIXME: any types
+            // FIXME: correct op based on node type
+            return cpn::Token("int", params[0]);
+        }
+        );
+
     network_->addArc(arc1);
     network_->addArc(arc2);
     network_->addArc(arc3);
