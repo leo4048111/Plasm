@@ -125,11 +125,19 @@ namespace cpn
             BD   // bidirectional
         };
 
+        enum class Type
+        {
+            EXPRESSION,
+            CONDITIONAL
+        };
+
         Arc(::std::shared_ptr<Place> place,
             ::std::shared_ptr<Transition> transition,
             Orientation orientation);
 
         ~Arc() = default;
+
+        virtual Type type() const = 0;
 
         ::std::shared_ptr<Place> place() const
         {
@@ -150,6 +158,33 @@ namespace cpn
         ::std::shared_ptr<Place> place_;
         ::std::shared_ptr<Transition> transition_;
         Orientation orientation_;
+    };
+
+    class ExpressionArc : public Arc
+    {
+    public:
+        ExpressionArc(::std::shared_ptr<Place> place,
+                      ::std::shared_ptr<Transition> transition,
+                      Orientation orientation);
+
+        Type type() const override
+        {
+            return Type::EXPRESSION;
+        }
+    };
+
+    class ConditionalArc : public Arc
+    {
+    public:
+        ConditionalArc(::std::shared_ptr<Place> place,
+                       ::std::shared_ptr<Transition> transition,
+                       Orientation orientation)
+            : Arc(place, transition, orientation) {}
+
+        Type type() const override
+        {
+            return Type::CONDITIONAL;
+        }
     };
 
     class Network
@@ -217,10 +252,10 @@ namespace cpn
         ::std::map<::std::string, ::std::shared_ptr<Place>> place_map_;           // mapping place name to place
         ::std::map<::std::string, ::std::shared_ptr<Transition>> transition_map_; // mapping place name to place
 
-        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> trans_out_degree_map_;      // mapping transition out degrees
-        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> trans_in_degree_map_;       // mapping transition in degrees
-        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> place_out_degree_map_;      // mapping place out degrees
-        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> place_in_degree_map_;       // mapping place in degrees
+        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> trans_out_degree_map_; // mapping transition out degrees
+        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> trans_in_degree_map_;  // mapping transition in degrees
+        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> place_out_degree_map_; // mapping place out degrees
+        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> place_in_degree_map_;  // mapping place in degrees
     };
 }
 

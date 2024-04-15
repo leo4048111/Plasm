@@ -24,6 +24,11 @@ namespace cpn
     {
     }
 
+    ExpressionArc::ExpressionArc(::std::shared_ptr<Place> place,
+                                 ::std::shared_ptr<Transition> transition,
+                                 Orientation orientation)
+        : Arc(place, transition, orientation) {}
+
     void Network::addPlace(::std::shared_ptr<Place> place)
     {
         places_.push_back(place);
@@ -116,7 +121,7 @@ namespace cpn
 
         for (auto &place : places_)
         {
-            for(auto &token : place->tokens())
+            for (auto &token : place->tokens())
             {
                 hash += token.value();
             }
