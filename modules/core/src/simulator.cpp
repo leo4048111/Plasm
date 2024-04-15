@@ -14,7 +14,7 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
 
     int totalFirings = 0;
     std::map<std::string, int> transitionFirings;
-    bool simulationRunning = true;
+    bool passed = true;
 
     // get entry points
     ::std::vector<::std::shared_ptr<cpn::Place>> entryPoints;
@@ -28,7 +28,7 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
 
     // add control tokens for entry points
             cpn::Token ctrl(cpn::CTRL_COLOR, "()");
-        for(auto& entry : entryPoints) entry->addToken(ctrl);
+        for(auto& entry : entryPoints) entry->push(ctrl);
 
     // traverse all permutations
     ::std::string lastHash = "";
@@ -45,7 +45,10 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
         LOGI("Final hash: %s", network_->hash().c_str());
         ::std::string curHash = network_->hash();
         if(lastHash != "") {
-            if(lastHash != curHash) LOGE("Hash mismatch: %s != %s", lastHash.c_str(), curHash.c_str());
+            if(lastHash != curHash) {
+                passed = false;
+                LOGE("Hash mismatch: %s != %s", lastHash.c_str(), curHash.c_str());
+            }
         }
         lastHash = network_->hash().c_str();
         LOGI("==================================================");
@@ -59,22 +62,29 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
         }
     } while (std::next_permutation(entryPoints.begin(), entryPoints.end(), [](const std::shared_ptr<cpn::Place> &a, const std::shared_ptr<cpn::Place> &b)
                                    { return a->name() < b->name(); }));
+
+    if(passed) {
+        LOGI("Simulation passed, no TOD vulnerabilities found...");
+    }
 }
 
 void Simulator::dfs(std::shared_ptr<cpn::Place> place)
 {
     LOGI("In Place: %s", place->name().c_str());
-    auto transitions = network_->getPlaceOutDegree(place);
-    for (auto& transition : transitions)
+    auto arcs = network_->getPlaceOutDegree(place);
+    for (auto& arc : arcs)
     {
+        auto transition = arc->transition();
         bool result = network_->fire(transition);
 
         if (result)
         {
             LOGI("Transition %s fired.", transition->name().c_str());
             revertStack_.push(transition);
-            for (auto& place : network_->getTransitionOutDegree(transition))
+            auto arcs2 = network_->getTransitionOutDegree(transition);
+            for (auto& arc2 : arcs2)
             {
+                auto place = arc2->place();
                 dfs(place);
             }
             // result = network_->revert(transition);

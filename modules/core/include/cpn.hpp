@@ -56,24 +56,31 @@ namespace cpn
             return color_ == CTRL_COLOR;
         }
 
-        const ::std::vector<Token> &tokens() const
+        bool empty() const
         {
-            return tokens_;
+            return tokens_.empty();
         }
 
-        void addToken(Token token)
+        size_t size() const
+        {
+            return tokens_.size();
+        }
+
+        void push(Token token)
         {
             tokens_.push_back(token);
         }
 
-        Token getToken(int idx)
+        const ::std::vector<Token> &tokens() const { return tokens_; };
+
+        const Token &front()
         {
-            return tokens_[idx];
+            return tokens_.front();
         }
 
-        void removeToken(int idx)
+        void pop()
         {
-            tokens_.erase(tokens_.begin() + idx);
+            tokens_.erase(tokens_.begin());
         }
 
         bool entryPoint() const
@@ -195,8 +202,8 @@ namespace cpn
             return nullptr;
         }
 
-        ::std::vector<::std::shared_ptr<Transition>> getPlaceOutDegree(::std::shared_ptr<Place> place) { return place_out_degree_map_[place->name()]; };
-        ::std::vector<::std::shared_ptr<Place>> getTransitionOutDegree(::std::shared_ptr<Transition> place) { return trans_out_degree_map_[place->name()]; };
+        ::std::vector<::std::shared_ptr<Arc>> getPlaceOutDegree(::std::shared_ptr<Place> place) { return place_out_degree_map_[place->name()]; };
+        ::std::vector<::std::shared_ptr<Arc>> getTransitionOutDegree(::std::shared_ptr<Transition> transition) { return trans_out_degree_map_[transition->name()]; };
 
         void alias(::std::shared_ptr<Place> place, ::std::string alias);
 
@@ -210,9 +217,10 @@ namespace cpn
         ::std::map<::std::string, ::std::shared_ptr<Place>> place_map_;           // mapping place name to place
         ::std::map<::std::string, ::std::shared_ptr<Transition>> transition_map_; // mapping place name to place
 
-        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Place>>> trans_out_degree_map_; // mapping transition out degrees
-        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Place>>> trans_in_degree_map_; // mapping transition in degrees
-        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Transition>>> place_out_degree_map_; // mapping place out degrees
+        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> trans_out_degree_map_;      // mapping transition out degrees
+        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> trans_in_degree_map_;       // mapping transition in degrees
+        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> place_out_degree_map_;      // mapping place out degrees
+        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> place_in_degree_map_;       // mapping place in degrees
     };
 }
 
