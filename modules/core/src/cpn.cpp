@@ -76,7 +76,7 @@ namespace cpn
 
         for (auto &place : trans_out_degree_map_[transition->name()])
         {
-            place->addToken(Token("Unknown", "Unknown"));
+            place->addToken(Token(cpn::CTRL_COLOR, "()"));
         }
 
         return true;
@@ -90,14 +90,14 @@ namespace cpn
                 return false;
         }
 
-        for (auto &place : trans_in_degree_map_[transition->name()])
-        {
-            place->addToken(Token("Unknown", "Unknown"));
-        }
-
         for (auto &place : trans_out_degree_map_[transition->name()])
         {
             place->removeToken(0);
+        }
+
+        for (auto &place : trans_in_degree_map_[transition->name()])
+        {
+            place->addToken(Token(cpn::CTRL_COLOR, "()"));
         }
 
         return true;

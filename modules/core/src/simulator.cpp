@@ -26,17 +26,19 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
         }
     }
 
+    // add control tokens for entry points
+            cpn::Token ctrl(cpn::CTRL_COLOR, "()");
+        for(auto& entry : entryPoints) entry->addToken(ctrl);
+
     // traverse all permutations
     ::std::string lastHash = "";
     do
     {
         LOGI("==================================================");
         LOGI("Initial hash: %s", network_->hash().c_str());
-        cpn::Token ctrl(cpn::CTRL_COLOR, "()");
         for (auto &entry : entryPoints)
         {
             LOGI("Entry from: %s", entry->name().c_str());
-            entry->addToken(ctrl);
             dfs(entry);
             LOGI("Entry out: %s", entry->name().c_str());
         }
