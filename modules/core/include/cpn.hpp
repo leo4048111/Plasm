@@ -7,6 +7,7 @@
 #include <string>
 #include <any>
 #include <map>
+#include <functional>
 
 _START_PSM_NM_
 
@@ -163,14 +164,27 @@ namespace cpn
     class ExpressionArc : public Arc
     {
     public:
+        using ArcExpression = ::std::function<Token(::std::vector<::std::any>)>;
+
         ExpressionArc(::std::shared_ptr<Place> place,
                       ::std::shared_ptr<Transition> transition,
-                      Orientation orientation);
+                      Orientation orientation,
+                      ArcExpression expression = nullptr,
+                      ::std::vector<::std::string> arguments = {});
 
         Type type() const override
         {
             return Type::EXPRESSION;
         }
+
+        const ::std::vector<::std::string> &arguments() const
+        {
+            return arguments_;
+        }
+
+    private:
+        ::std::vector<::std::string> arguments_;
+        ArcExpression expression_;
     };
 
     class ConditionalArc : public Arc

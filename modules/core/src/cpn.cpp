@@ -26,8 +26,10 @@ namespace cpn
 
     ExpressionArc::ExpressionArc(::std::shared_ptr<Place> place,
                                  ::std::shared_ptr<Transition> transition,
-                                 Orientation orientation)
-        : Arc(place, transition, orientation) {}
+                                 Orientation orientation,
+                                 ArcExpression expression,
+                                 ::std::vector<::std::string> arguments)
+        : Arc(place, transition, orientation), expression_(expression), arguments_(arguments) {}
 
     void Network::addPlace(::std::shared_ptr<Place> place)
     {
