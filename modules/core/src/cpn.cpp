@@ -29,7 +29,17 @@ namespace cpn
                                  Orientation orientation,
                                  ::std::vector<::std::string> arguments,
                                  ArcExpression expression)
-        : Arc(place, transition, orientation), expression_(expression), arguments_(arguments) {}
+        : Arc(place, transition, orientation)
+        {
+            if(expression == nullptr) {
+            expression_ = [](::std::vector<::std::any>) -> Token
+            {
+                return Token(cpn::CTRL_COLOR, "()");
+            };
+            }
+            if(arguments.empty())
+                arguments_ = {"()"};
+        }
 
     void Network::addPlace(::std::shared_ptr<Place> place)
     {
@@ -71,6 +81,7 @@ namespace cpn
 
     bool Network::fire(::std::shared_ptr<Transition> transition)
     {
+        // check tokens
         for (auto &arc : trans_in_degree_map_[transition->name()])
         {
             auto place = arc->place();
@@ -78,16 +89,44 @@ namespace cpn
                 return false;
         }
 
+        // mapping variable names to token value
+        ::std::map<::std::string, Token> symbols;
         for (auto &arc : trans_in_degree_map_[transition->name()])
         {
             auto place = arc->place();
-            place->pop();
+            auto token = place->front();
+
+            if(auto exprArc = ::std::dynamic_pointer_cast<cpn::ExpressionArc>(arc))
+            {
+                auto arguments = exprArc->arguments();
+
+                for(auto& symbol : arguments) 
+                {
+                    symbols[symbol] = token;
+                    place->pop();
+                }
+            }
         }
 
+        // check arc annotations
         for (auto &arc : trans_out_degree_map_[transition->name()])
         {
             auto place = arc->place();
-            place->push(Token(cpn::CTRL_COLOR, "()"));
+            if(auto exprArc = ::std::dynamic_pointer_cast<cpn::ExpressionArc>(arc))
+            {
+            ::std::vector<::std::any> arguments;
+            auto requiredArguments = exprArc->arguments();
+            for(auto& requiredArgumentName : requiredArguments)
+            {
+                if(symbols.count(requiredArgumentName) == 0)
+                    return false;
+                
+                arguments.push_back(symbols[requiredArgumentName]);
+            }
+
+            auto outToken = exprArc->parse(arguments);
+            place->push(outToken);
+            }
         }
 
         return true;
@@ -127,6 +166,8 @@ namespace cpn
             {
                 if(token.type() == typeid(::std::string))
                     hash += ::std::any_cast<::std::string>(token.value());
+                else if(token.type() == typeid(int))
+                    hash += ::std::any_cast<int>(token.value());
             }
         }
 

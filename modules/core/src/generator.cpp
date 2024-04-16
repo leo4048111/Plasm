@@ -941,20 +941,7 @@ void Generator::endVisit(BinaryOperation const &_node)
             // FIXME: correct op based on node type
             return cpn::Token("int", val1 + val2);
         });
-    ::std::shared_ptr<cpn::Arc> arc10 = ::std::make_shared<cpn::ExpressionArc>(
-        resultPlace,
-        op, 
-        cpn::Arc::Orientation::P2T,
-        ::std::vector<::std::string>({"z"}),
-        [](::std::vector<::std::any> params) -> cpn::Token
-        {
-            PSM_ASSERT(params.size() == 1);
-            // FIXME: any types
-            // FIXME: correct op based on node type
-            return cpn::Token("int", params[0]);
-        }
-        );
-
+        
     network_->addArc(arc1);
     network_->addArc(arc2);
     network_->addArc(arc3);
@@ -964,7 +951,6 @@ void Generator::endVisit(BinaryOperation const &_node)
     network_->addArc(arc7);
     network_->addArc(arc8);
     network_->addArc(arc9);
-    network_->addArc(arc10);
 }
 
 bool Generator::visit(FunctionCall const &_node)

@@ -19,6 +19,7 @@ namespace cpn
     {
     public:
         Token(::std::string color, ::std::any value) : color_(color), value_(value){};
+        Token() = default;
         ~Token() = default;
 
         ::std::any value() const
@@ -177,6 +178,11 @@ namespace cpn
         Type type() const override
         {
             return Type::EXPRESSION;
+        }
+
+        Token parse(::std::vector<::std::any> arguments)
+        {
+            return expression_(arguments);
         }
 
         const ::std::vector<::std::string> &arguments() const
