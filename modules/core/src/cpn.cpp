@@ -36,9 +36,10 @@ namespace cpn
             {
                 return Token(cpn::CTRL_COLOR, "()");
             };
-            }
+            } else expression_ = expression;
             if(arguments.empty())
                 arguments_ = {"()"};
+            else arguments_ = arguments;
         }
 
     void Network::addPlace(::std::shared_ptr<Place> place)
