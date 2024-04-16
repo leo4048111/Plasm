@@ -73,10 +73,17 @@ namespace cpn
             trans_in_degree_map_[arc->transition()->name()].push_back(arc);
             place_out_degree_map_[arc->place()->name()].push_back(arc);
         }
-        else
+        else if(arc->orientation() == Arc::Orientation::T2P)
         {
             trans_out_degree_map_[arc->transition()->name()].push_back(arc);
             place_in_degree_map_[arc->place()->name()].push_back(arc);
+        }
+        else if(arc->orientation() == Arc::Orientation::BD)
+        {
+            trans_out_degree_map_[arc->transition()->name()].push_back(arc);
+            place_in_degree_map_[arc->place()->name()].push_back(arc);
+            trans_in_degree_map_[arc->transition()->name()].push_back(arc);
+            place_out_degree_map_[arc->place()->name()].push_back(arc);
         }
     }
 
@@ -122,7 +129,7 @@ namespace cpn
                 if(symbols.count(requiredArgumentName) == 0)
                     return false;
                 
-                arguments.push_back(symbols[requiredArgumentName]);
+                arguments.push_back(symbols[requiredArgumentName].value());
             }
 
             auto outToken = exprArc->parse(arguments);

@@ -225,9 +225,19 @@ void Generator::endVisit(FunctionDefinition const &_node)
     network_->alias(blockInPlace, scope() + "in");
     network_->alias(blockOutPlace, scope() + "out");
 
-    // set entry points
+    // check entry point
     if (_node.visibility() == Visibility::Public)
-        blockInPlace->setEntryPoint(true);
+    {
+        ::std::vector<::std::shared_ptr<cpn::Place>> requiredParams;
+        for (auto const &param : _node.parameters())
+        {
+            auto name = scope() + SCOPE_PARAM + param->name();
+            auto paramPlace = network_->getPlaceByName(name);
+            requiredParams.push_back(paramPlace);
+        }
+
+        network_->addEntryPoint(blockInPlace, requiredParams);
+    }
 
     // check return
     if (_node.returnParameters().size())
@@ -941,7 +951,7 @@ void Generator::endVisit(BinaryOperation const &_node)
             // FIXME: correct op based on node type
             return cpn::Token("int", val1 + val2);
         });
-        
+
     network_->addArc(arc1);
     network_->addArc(arc2);
     network_->addArc(arc3);

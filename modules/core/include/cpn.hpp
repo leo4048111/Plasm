@@ -32,7 +32,7 @@ namespace cpn
             return color_ == CTRL_COLOR;
         }
 
-        const ::std::type_info& type() const { return value_.type(); }
+        const ::std::type_info &type() const { return value_.type(); }
 
     private:
         ::std::string color_;
@@ -87,21 +87,10 @@ namespace cpn
             tokens_.erase(tokens_.begin());
         }
 
-        bool entryPoint() const
-        {
-            return entryPoint_;
-        }
-
-        void setEntryPoint(bool entryPoint)
-        {
-            entryPoint_ = entryPoint;
-        }
-
     private:
         ::std::string name_;
         ::std::string color_;
         ::std::vector<Token> tokens_;
-        bool entryPoint_{false};
     };
 
     class Transition
@@ -224,6 +213,11 @@ namespace cpn
 
         ::std::string hash() const;
 
+        void addEntryPoint(::std::shared_ptr<Place> place, ::std::vector<::std::shared_ptr<Place>> requiredParams)
+        {
+            entry_points_info_.insert(::std::make_pair(place->name(), requiredParams));
+        }
+
         const ::std::vector<::std::shared_ptr<Place>> &places() const
         {
             return places_;
@@ -259,6 +253,7 @@ namespace cpn
             return nullptr;
         }
 
+        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Place>>> getEntryPointsInfo() const { return entry_points_info_; };
         ::std::vector<::std::shared_ptr<Arc>> getPlaceOutDegree(::std::shared_ptr<Place> place) { return place_out_degree_map_[place->name()]; };
         ::std::vector<::std::shared_ptr<Arc>> getTransitionOutDegree(::std::shared_ptr<Transition> transition) { return trans_out_degree_map_[transition->name()]; };
 
@@ -271,8 +266,9 @@ namespace cpn
         ::std::vector<::std::shared_ptr<Transition>> transitions_;
         ::std::vector<::std::shared_ptr<Arc>> arcs_;
 
-        ::std::map<::std::string, ::std::shared_ptr<Place>> place_map_;           // mapping place name to place
-        ::std::map<::std::string, ::std::shared_ptr<Transition>> transition_map_; // mapping place name to place
+        ::std::map<::std::string, ::std::shared_ptr<Place>> place_map_;                        // mapping place name to place
+        ::std::map<::std::string, ::std::shared_ptr<Transition>> transition_map_;              // mapping place name to place
+        ::std::map<::std::string, ::std::vector<::std::shared_ptr<Place>>> entry_points_info_; // network entry points and required params
 
         ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> trans_out_degree_map_; // mapping transition out degrees
         ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> trans_in_degree_map_;  // mapping transition in degrees

@@ -16,19 +16,19 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
     std::map<std::string, int> transitionFirings;
     bool passed = true;
 
-    // get entry points
+    // get entry points and initialize tokens
+    cpn::Token ctrl(cpn::CTRL_COLOR, "()");
     ::std::vector<::std::shared_ptr<cpn::Place>> entryPoints;
-    for (auto &place : network->places())
+    for (auto &entry : network->getEntryPointsInfo())
     {
-        if (place->entryPoint())
-        {
-            entryPoints.push_back(place);
+        auto place = network->getPlaceByName(entry.first);
+        entryPoints.push_back(place);
+        place->push(ctrl);
+
+        for(auto & paramPlace : entry.second) {
+            paramPlace->push(cpn::Token("int", 1));
         }
     }
-
-    // add control tokens for entry points
-            cpn::Token ctrl(cpn::CTRL_COLOR, "()");
-        for(auto& entry : entryPoints) entry->push(ctrl);
 
     // traverse all permutations
     ::std::string lastHash = "";
