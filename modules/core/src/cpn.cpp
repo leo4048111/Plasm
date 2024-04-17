@@ -18,23 +18,27 @@ namespace cpn
     {
     }
 
-        Arc::Arc(::std::shared_ptr<Place> place,
-                                 ::std::shared_ptr<Transition> transition,
-                                 Orientation orientation,
-                                 ::std::vector<::std::string> arguments,
-                                 ArcExpression expression)
+    Arc::Arc(::std::shared_ptr<Place> place,
+             ::std::shared_ptr<Transition> transition,
+             Orientation orientation,
+             ::std::vector<::std::string> arguments,
+             ArcExpression expression)
         : place_(place), transition_(transition), orientation_(orientation)
+    {
+        if (expression == nullptr)
         {
-            if(expression == nullptr) {
             expression_ = [](::std::vector<::std::any>) -> ::std::optional<Token>
             {
                 return Token(cpn::CTRL_COLOR, "()");
             };
-            } else expression_ = expression;
-            if(arguments.empty())
-                arguments_ = {"()"};
-            else arguments_ = arguments;
         }
+        else
+            expression_ = expression;
+        if (arguments.empty())
+            arguments_ = {"()"};
+        else
+            arguments_ = arguments;
+    }
 
     void Network::addPlace(::std::shared_ptr<Place> place)
     {
@@ -67,12 +71,12 @@ namespace cpn
             trans_in_degree_map_[arc->transition()->name()].push_back(arc);
             place_out_degree_map_[arc->place()->name()].push_back(arc);
         }
-        else if(arc->orientation() == Arc::Orientation::T2P)
+        else if (arc->orientation() == Arc::Orientation::T2P)
         {
             trans_out_degree_map_[arc->transition()->name()].push_back(arc);
             place_in_degree_map_[arc->place()->name()].push_back(arc);
         }
-        else if(arc->orientation() == Arc::Orientation::BD)
+        else if (arc->orientation() == Arc::Orientation::BD)
         {
             trans_out_degree_map_[arc->transition()->name()].push_back(arc);
             place_in_degree_map_[arc->place()->name()].push_back(arc);
@@ -98,14 +102,13 @@ namespace cpn
             auto place = arc->place();
             auto token = place->front();
 
+            auto arguments = arc->arguments();
 
-                auto arguments = arc->arguments();
-
-                for(auto& symbol : arguments) 
-                {
-                    symbols[symbol] = token;
-                    place->pop();
-                }
+            for (auto &symbol : arguments)
+            {
+                symbols[symbol] = token;
+                place->pop();
+            }
         }
 
         // check arc annotations
@@ -115,16 +118,16 @@ namespace cpn
 
             ::std::vector<::std::any> arguments;
             auto requiredArguments = arc->arguments();
-            for(auto& requiredArgumentName : requiredArguments)
+            for (auto &requiredArgumentName : requiredArguments)
             {
-                if(symbols.count(requiredArgumentName) == 0)
+                if (symbols.count(requiredArgumentName) == 0)
                     return false;
-                
+
                 arguments.push_back(symbols[requiredArgumentName].value());
             }
 
             auto outToken = arc->parse(arguments);
-            if(outToken)
+            if (outToken)
                 place->push(outToken.value());
         }
 
@@ -137,6 +140,15 @@ namespace cpn
         {
             place->clear();
         }
+
+        for (auto &markings : initial_markings_)
+        {
+            auto place = place_map_[markings.first];
+            for (auto &token : markings.second)
+            {
+                place->push(token);
+            }
+        }
     }
 
     ::std::string Network::hash() const
@@ -147,9 +159,9 @@ namespace cpn
         {
             for (auto &token : place->tokens())
             {
-                if(token.type() == typeid(::std::string))
+                if (token.type() == typeid(::std::string))
                     hash += ::std::any_cast<::std::string>(token.value());
-                else if(token.type() == typeid(int))
+                else if (token.type() == typeid(int))
                     hash += ::std::any_cast<int>(token.value());
             }
         }

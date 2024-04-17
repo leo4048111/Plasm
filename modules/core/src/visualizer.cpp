@@ -107,7 +107,7 @@ void Visualizer::Draw(::std::shared_ptr<cpn::Network> network, ::std::map<int64_
                         }
                         addArc(g, arc2);
                     }
-                addArc(g, arc);
+                    addArc(g, arc);
                 }
             }
         };

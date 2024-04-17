@@ -192,6 +192,11 @@ namespace cpn
             entry_points_info_.insert(::std::make_pair(place->name(), requiredParams));
         }
 
+        void addInitialMarking(::std::shared_ptr<Place> place, Token token)
+        {
+            initial_markings_[place->name()].push_back(token);
+        }
+
         const ::std::vector<::std::shared_ptr<Place>> &places() const
         {
             return places_;
@@ -250,6 +255,8 @@ namespace cpn
         ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> trans_in_degree_map_;  // mapping transition in degrees
         ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> place_out_degree_map_; // mapping place out degrees
         ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> place_in_degree_map_;  // mapping place in degrees
+
+        ::std::map<::std::string, ::std::vector<Token>> initial_markings_;
     };
 }
 

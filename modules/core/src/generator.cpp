@@ -1291,6 +1291,9 @@ void Generator::endVisit(Literal const &_node)
     ::std::shared_ptr<cpn::Place> resultPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".result", _node.annotation().type->toString());
     network_->addPlace(resultPlace);
 
+    // add literal token
+    network_->addInitialMarking(resultPlace, cpn::Token(_node.annotation().type->toString(), _node.value()));
+
     // create arcs
     ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
     ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
