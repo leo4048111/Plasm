@@ -116,6 +116,8 @@ namespace cpn
     class Arc
     {
     public:
+        using ArcExpression = ::std::function<Token(::std::vector<::std::any>)>;
+
         enum class Orientation
         {
             P2T, // place to transition
@@ -130,12 +132,12 @@ namespace cpn
         };
 
         Arc(::std::shared_ptr<Place> place,
-            ::std::shared_ptr<Transition> transition,
-            Orientation orientation);
+                      ::std::shared_ptr<Transition> transition,
+                      Orientation orientation,
+                      ::std::vector<::std::string> arguments = {},
+                      ArcExpression expression = nullptr);
 
         ~Arc() = default;
-
-        virtual Type type() const = 0;
 
         ::std::shared_ptr<Place> place() const
         {
@@ -152,29 +154,7 @@ namespace cpn
             return orientation_;
         }
 
-    private:
-        ::std::shared_ptr<Place> place_;
-        ::std::shared_ptr<Transition> transition_;
-        Orientation orientation_;
-    };
-
-    class ExpressionArc : public Arc
-    {
-    public:
-        using ArcExpression = ::std::function<Token(::std::vector<::std::any>)>;
-
-        ExpressionArc(::std::shared_ptr<Place> place,
-                      ::std::shared_ptr<Transition> transition,
-                      Orientation orientation,
-                      ::std::vector<::std::string> arguments = {},
-                      ArcExpression expression = nullptr);
-
-        Type type() const override
-        {
-            return Type::EXPRESSION;
-        }
-
-        Token parse(::std::vector<::std::any> arguments)
+                Token parse(::std::vector<::std::any> arguments)
         {
             return expression_(arguments);
         }
@@ -185,22 +165,11 @@ namespace cpn
         }
 
     private:
+        ::std::shared_ptr<Place> place_;
+        ::std::shared_ptr<Transition> transition_;
+        Orientation orientation_;
         ::std::vector<::std::string> arguments_;
         ArcExpression expression_;
-    };
-
-    class ConditionalArc : public Arc
-    {
-    public:
-        ConditionalArc(::std::shared_ptr<Place> place,
-                       ::std::shared_ptr<Transition> transition,
-                       Orientation orientation)
-            : Arc(place, transition, orientation) {}
-
-        Type type() const override
-        {
-            return Type::CONDITIONAL;
-        }
     };
 
     class Network

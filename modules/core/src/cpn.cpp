@@ -18,18 +18,12 @@ namespace cpn
     {
     }
 
-    Arc::Arc(::std::shared_ptr<Place> place,
-             ::std::shared_ptr<Transition> transition,
-             Orientation orientation) : place_(place), transition_(transition), orientation_(orientation)
-    {
-    }
-
-    ExpressionArc::ExpressionArc(::std::shared_ptr<Place> place,
+        Arc::Arc(::std::shared_ptr<Place> place,
                                  ::std::shared_ptr<Transition> transition,
                                  Orientation orientation,
                                  ::std::vector<::std::string> arguments,
                                  ArcExpression expression)
-        : Arc(place, transition, orientation)
+        : place_(place), transition_(transition), orientation_(orientation)
         {
             if(expression == nullptr) {
             expression_ = [](::std::vector<::std::any>) -> Token
@@ -104,26 +98,23 @@ namespace cpn
             auto place = arc->place();
             auto token = place->front();
 
-            if(auto exprArc = ::std::dynamic_pointer_cast<cpn::ExpressionArc>(arc))
-            {
-                auto arguments = exprArc->arguments();
+
+                auto arguments = arc->arguments();
 
                 for(auto& symbol : arguments) 
                 {
                     symbols[symbol] = token;
                     place->pop();
                 }
-            }
         }
 
         // check arc annotations
         for (auto &arc : trans_out_degree_map_[transition->name()])
         {
             auto place = arc->place();
-            if(auto exprArc = ::std::dynamic_pointer_cast<cpn::ExpressionArc>(arc))
-            {
+
             ::std::vector<::std::any> arguments;
-            auto requiredArguments = exprArc->arguments();
+            auto requiredArguments = arc->arguments();
             for(auto& requiredArgumentName : requiredArguments)
             {
                 if(symbols.count(requiredArgumentName) == 0)
@@ -132,9 +123,8 @@ namespace cpn
                 arguments.push_back(symbols[requiredArgumentName].value());
             }
 
-            auto outToken = exprArc->parse(arguments);
+            auto outToken = arc->parse(arguments);
             place->push(outToken);
-            }
         }
 
         return true;
