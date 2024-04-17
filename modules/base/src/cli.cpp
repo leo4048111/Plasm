@@ -276,7 +276,7 @@ void CLI::CompileAndGenerate(bool simulate)
         auto nodeTypes = generator.getNodeTypes();
 
         // dump csv
-        Visualizer::GetInstance().Draw(network, nodeTypes);
+        Visualizer::GetInstance().Draw(network, nodeTypes, args_.count(g_strVerbose));
 
         // simulate
         if(simulate)
@@ -329,6 +329,7 @@ po::options_description CLI::GetOptionsDescription()
 
     desc.add_options()(g_strInputFile.c_str(), po::value<std::vector<std::string>>(), "input file");
     desc.add_options()(g_strSimulate.c_str(), "run simulation");
+    desc.add_options()(g_strVerbose.c_str(), "dump unused places and transitions");
     return desc;
 }
 

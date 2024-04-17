@@ -6,82 +6,125 @@
 
 _START_PSM_NM_
 
-void Visualizer::Draw(::std::shared_ptr<cpn::Network> network, ::std::map<int64_t, ::std::string> nodeTypes) const
+void Visualizer::addArc(Graph &g, ::std::shared_ptr<cpn::Arc> arc)
 {
-    typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS,
-                                  boost::property<boost::vertex_name_t, std::string>,
-                                  boost::property<boost::edge_name_t, std::string>>
-        Graph;
+    if (arc->orientation() == cpn::Arc::Orientation::BD)
+    {
+        std::string sourceName = arc->place()->name();
+        std::string targetName = arc->transition()->name();
+        auto source = vertexMap_[sourceName];
+        auto target = vertexMap_[targetName];
+        boost::add_edge(source, target, g);
+        boost::add_edge(target, source, g);
+    }
+    else
+    {
+        std::string sourceName = arc->orientation() == cpn::Arc::Orientation::P2T ? arc->place()->name() : arc->transition()->name();
+        std::string targetName = arc->orientation() == cpn::Arc::Orientation::T2P ? arc->place()->name() : arc->transition()->name();
+        auto source = vertexMap_[sourceName];
+        auto target = vertexMap_[targetName];
+        boost::add_edge(source, target, g);
+    }
+}
 
+void Visualizer::addPlace(Graph &g, ::std::shared_ptr<cpn::Place> place, ::std::map<int64_t, ::std::string> &nodeTypes)
+{
+    auto v = boost::add_vertex(g);
+    auto name = place->name();
+    size_t pos = name.find('.');
+    if (pos != std::string::npos)
+    {
+        auto idStr = name.substr(0, pos);
+        if (idStr[0] >= '0' && idStr[0] <= '9')
+            name = nodeTypes[std::stoull(idStr)] + "." + name;
+    }
+    vertexMap_[place->name()] = v;
+    vertexTypeMap_[vertexMap_[place->name()]] = "place";
+    vertexNameMap_[vertexMap_[place->name()]] = name;
+}
+
+void Visualizer::addTransition(Graph &g, ::std::shared_ptr<cpn::Transition> transition, ::std::map<int64_t, ::std::string> &nodeTypes)
+{
+    auto v = boost::add_vertex(g);
+    auto name = transition->name();
+    size_t pos = name.find('.');
+    if (pos != std::string::npos)
+    {
+        auto idStr = name.substr(0, pos);
+        if (idStr[0] >= '0' && idStr[0] <= '9')
+            name = nodeTypes[std::stoull(idStr)] + "." + name;
+    }
+    vertexMap_[transition->name()] = v;
+    vertexTypeMap_[vertexMap_[transition->name()]] = "transition";
+    vertexNameMap_[vertexMap_[transition->name()]] = name;
+}
+
+void Visualizer::Draw(::std::shared_ptr<cpn::Network> network, ::std::map<int64_t, ::std::string> nodeTypes, bool verbose)
+{
     Graph g;
+    vertexMap_.clear();
+    vertexTypeMap_.clear();
+    vertexNameMap_.clear();
 
-    std::unordered_map<std::string, boost::graph_traits<Graph>::vertex_descriptor> vertexMap;
-    std::unordered_map<boost::graph_traits<Graph>::vertex_descriptor, std::string> vertexTypeMap;
-    std::unordered_map<boost::graph_traits<Graph>::vertex_descriptor, std::string> vertexNameMap;
-
-    // add places
-    for (const auto &place : network->places())
+    if (verbose)
     {
-        auto v = boost::add_vertex(g);
-        auto name = place->name();
-        size_t pos = name.find('.');
-        if (pos != std::string::npos)
+        // add places
+        for (const auto &place : network->places())
         {
-            auto idStr = name.substr(0, pos);
-            if (idStr[0] >= '0' && idStr[0] <= '9')
-                name = nodeTypes[std::stoull(idStr)] + "." + name;
+            addPlace(g, place, nodeTypes);
         }
-        vertexMap[place->name()] = v;
-        vertexTypeMap[vertexMap[place->name()]] = "place";
-        vertexNameMap[vertexMap[place->name()]] = name;
+
+        // add transitions
+        for (const auto &transition : network->transitions())
+        {
+            addTransition(g, transition, nodeTypes);
+        }
+
+        // add arcs
+        for (const auto &arc : network->arcs())
+        {
+            addArc(g, arc);
+        }
     }
-
-    // add transitions
-    for (const auto &transition : network->transitions())
+    else // remove unused
     {
-        auto v = boost::add_vertex(g);
-        auto name = transition->name();
-        size_t pos = name.find('.');
-        if (pos != std::string::npos)
+        auto dfs = [&](::std::shared_ptr<cpn::Place> place, auto &dfs) -> void
         {
-            auto idStr = name.substr(0, pos);
-            if (idStr[0] >= '0' && idStr[0] <= '9')
-                name = nodeTypes[std::stoull(idStr)] + "." + name;
-        }
-        vertexMap[transition->name()] = v;
-        vertexTypeMap[vertexMap[transition->name()]] = "transition";
-        vertexNameMap[vertexMap[transition->name()]] = name;
-    }
+            auto arcs = network->getPlaceOutDegree(place);
+            for (auto &arc : arcs)
+            {
+                auto transition = arc->transition();
+                if (vertexMap_.find(transition->name()) == vertexMap_.end())
+                {
+                    addTransition(g, transition, nodeTypes);
+                    for (auto &arc2 : network->getTransitionOutDegree(transition))
+                    {
+                        auto place = arc2->place();
+                        if (vertexMap_.find(place->name()) == vertexMap_.end())
+                        {
+                            addPlace(g, place, nodeTypes);
+                            dfs(place, dfs);
+                        }
+                        addArc(g, arc2);
+                    }
+                addArc(g, arc);
+                }
+            }
+        };
 
-    // add arcs
-    for (const auto &arc : network->arcs())
-    {
-        // check nullptr
-        if (arc->place() == nullptr || arc->transition() == nullptr)
-            continue;
-        if (arc->orientation() == cpn::Arc::Orientation::BD)
+        auto entryPointInfo = network->getEntryPointsInfo();
+        for (auto &info : entryPointInfo)
         {
-            std::string sourceName = arc->place()->name();
-            std::string targetName = arc->transition()->name();
-            auto source = vertexMap[sourceName];
-            auto target = vertexMap[targetName];
-            boost::add_edge(source, target, g);
-            boost::add_edge(target, source, g);
-        }
-        else
-        {
-            std::string sourceName = arc->orientation() == cpn::Arc::Orientation::P2T ? arc->place()->name() : arc->transition()->name();
-            std::string targetName = arc->orientation() == cpn::Arc::Orientation::T2P ? arc->place()->name() : arc->transition()->name();
-            auto source = vertexMap[sourceName];
-            auto target = vertexMap[targetName];
-            boost::add_edge(source, target, g);
+            auto place = network->getPlaceByName(info.first);
+            addPlace(g, place, nodeTypes);
+            dfs(place, dfs);
         }
     }
 
     // dump
     std::ofstream dotFile("cpn_network.dot");
     boost::write_graphviz(dotFile, g,
-                          vertex_property_writer<decltype(vertexTypeMap), decltype(vertexNameMap)>(vertexTypeMap, vertexNameMap));
+                          vertex_property_writer<decltype(vertexTypeMap_), decltype(vertexNameMap_)>(vertexTypeMap_, vertexNameMap_));
 }
 
 _END_PSM_NM_

@@ -26,6 +26,7 @@ static std::string const g_strEVMVersion = "evm-version";
 static std::string const g_strInputFile = "input-file";
 static std::string const g_strIgnoreMissingFiles = "ignore-missing";
 static std::string const g_strSimulate = "simulate";
+static std::string const g_strVerbose = "verbose";
 
 enum class CLIMode {
 	Help = 0,

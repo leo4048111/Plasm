@@ -22,7 +22,6 @@ private:
 
 private:
     ::std::shared_ptr<cpn::Network> network_;
-    ::std::stack<::std::shared_ptr<cpn::Transition>> revertStack_;
 };
 
 _END_PSM_NM_

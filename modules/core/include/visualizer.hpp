@@ -16,15 +16,22 @@ class Visualizer
     PSM_SINGLETON(Visualizer)
 
 public:
-    void Draw(::std::shared_ptr<cpn::Network> network, ::std::map<int64_t, ::std::string> nodeTypes) const;
+    using Graph = boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS,
+                                        boost::property<boost::vertex_name_t, std::string>,
+                                        boost::property<boost::edge_name_t, std::string>>;
+    void Draw(::std::shared_ptr<cpn::Network> network, ::std::map<int64_t, ::std::string> nodeTypes, bool verbose = false);
 
 private:
+    void addArc(Graph &g, ::std::shared_ptr<cpn::Arc> arc);
+    void addPlace(Graph &g, ::std::shared_ptr<cpn::Place> place, ::std::map<int64_t, ::std::string> &nodeTypes);
+    void addTransition(Graph &g, ::std::shared_ptr<cpn::Transition> transition, ::std::map<int64_t, ::std::string> &nodeTypes);
+
     template <typename VertexTypeMap, typename VertexNameMap>
     class vertex_property_writer
     {
     public:
-        vertex_property_writer(const VertexTypeMap &vertexTypeMap, const VertexNameMap& vertexNameMap)
-        : vertexTypeMap_(vertexTypeMap), vertexNameMap_(vertexNameMap) {}
+        vertex_property_writer(const VertexTypeMap &vertexTypeMap, const VertexNameMap &vertexNameMap)
+            : vertexTypeMap_(vertexTypeMap), vertexNameMap_(vertexNameMap) {}
 
         template <class Vertex>
         void operator()(std::ostream &out, const Vertex &v) const
@@ -50,6 +57,11 @@ private:
         const VertexTypeMap &vertexTypeMap_;
         const VertexNameMap &vertexNameMap_;
     };
+
+private:
+    std::unordered_map<std::string, boost::graph_traits<Graph>::vertex_descriptor> vertexMap_;
+    std::unordered_map<boost::graph_traits<Graph>::vertex_descriptor, std::string> vertexTypeMap_;
+    std::unordered_map<boost::graph_traits<Graph>::vertex_descriptor, std::string> vertexNameMap_;
 };
 
 _END_PSM_NM_

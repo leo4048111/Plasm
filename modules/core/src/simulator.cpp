@@ -17,17 +17,11 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
     bool passed = true;
 
     // get entry points and initialize tokens
-    cpn::Token ctrl(cpn::CTRL_COLOR, "()");
     ::std::vector<::std::shared_ptr<cpn::Place>> entryPoints;
     for (auto &entry : network->getEntryPointsInfo())
     {
         auto place = network->getPlaceByName(entry.first);
         entryPoints.push_back(place);
-        place->push(ctrl);
-
-        for(auto & paramPlace : entry.second) {
-            paramPlace->push(cpn::Token("int", 1));
-        }
     }
 
     // traverse all permutations
@@ -35,6 +29,20 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
     do
     {
         LOGI("==================================================");
+        network_->reset();
+
+        cpn::Token ctrl(cpn::CTRL_COLOR, "()");
+
+        for (auto &entry : network->getEntryPointsInfo())
+        {
+            auto place = network->getPlaceByName(entry.first);
+            place->push(ctrl);
+
+            for (auto &paramPlace : entry.second)
+            {
+                paramPlace->push(cpn::Token("int", 1));
+            }
+        }
         LOGI("Initial hash: %s", network_->hash().c_str());
         for (auto &entry : entryPoints)
         {
@@ -44,26 +52,21 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
         }
         LOGI("Final hash: %s", network_->hash().c_str());
         ::std::string curHash = network_->hash();
-        if(lastHash != "") {
-            if(lastHash != curHash) {
+        if (lastHash != "")
+        {
+            if (lastHash != curHash)
+            {
                 passed = false;
                 LOGE("Hash mismatch: %s != %s", lastHash.c_str(), curHash.c_str());
             }
         }
         lastHash = network_->hash().c_str();
         LOGI("==================================================");
-
-        // revert all states
-        while (!revertStack_.empty())
-        {
-            auto transition = revertStack_.top();
-            revertStack_.pop();
-            network_->revert(transition);
-        }
     } while (std::next_permutation(entryPoints.begin(), entryPoints.end(), [](const std::shared_ptr<cpn::Place> &a, const std::shared_ptr<cpn::Place> &b)
                                    { return a->name() < b->name(); }));
 
-    if(passed) {
+    if (passed)
+    {
         LOGI("Simulation passed, no TOD vulnerabilities found...");
     }
 }
@@ -72,7 +75,7 @@ void Simulator::dfs(std::shared_ptr<cpn::Place> place)
 {
     LOGI("In Place: %s", place->name().c_str());
     auto arcs = network_->getPlaceOutDegree(place);
-    for (auto& arc : arcs)
+    for (auto &arc : arcs)
     {
         auto transition = arc->transition();
         bool result = network_->fire(transition);
@@ -80,14 +83,12 @@ void Simulator::dfs(std::shared_ptr<cpn::Place> place)
         if (result)
         {
             LOGI("Transition %s fired.", transition->name().c_str());
-            revertStack_.push(transition);
             auto arcs2 = network_->getTransitionOutDegree(transition);
-            for (auto& arc2 : arcs2)
+            for (auto &arc2 : arcs2)
             {
                 auto place = arc2->place();
                 dfs(place);
             }
-            // result = network_->revert(transition);
         }
     }
 };

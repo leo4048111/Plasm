@@ -140,28 +140,12 @@ namespace cpn
         return true;
     }
 
-    bool Network::revert(::std::shared_ptr<Transition> transition)
+    void Network::reset()
     {
-        for (auto &arc : trans_out_degree_map_[transition->name()])
+        for (auto &place : places_)
         {
-            auto place = arc->place();
-            if (place->empty())
-                return false;
+            place->clear();
         }
-
-        for (auto &arc : trans_out_degree_map_[transition->name()])
-        {
-            auto place = arc->place();
-            place->pop();
-        }
-
-        for (auto &arc : trans_in_degree_map_[transition->name()])
-        {
-            auto place = arc->place();
-            place->push(Token(cpn::CTRL_COLOR, "()"));
-        }
-
-        return true;
     }
 
     ::std::string Network::hash() const

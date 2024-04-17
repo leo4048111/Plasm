@@ -87,6 +87,11 @@ namespace cpn
             tokens_.erase(tokens_.begin());
         }
 
+        void clear()
+        {
+            tokens_.clear();
+        }
+
     private:
         ::std::string name_;
         ::std::string color_;
@@ -209,7 +214,6 @@ namespace cpn
         void addArc(::std::shared_ptr<Arc> arc);
 
         bool fire(::std::shared_ptr<Transition> transition);
-        bool revert(::std::shared_ptr<Transition> transition);
 
         ::std::string hash() const;
 
@@ -232,6 +236,8 @@ namespace cpn
         {
             return arcs_;
         }
+
+        void reset();
 
         ::std::shared_ptr<Place> getPlaceByName(const ::std::string &name) const
         {
