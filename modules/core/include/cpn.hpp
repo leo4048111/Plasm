@@ -8,6 +8,7 @@
 #include <any>
 #include <map>
 #include <functional>
+#include <optional>
 
 _START_PSM_NM_
 
@@ -116,7 +117,7 @@ namespace cpn
     class Arc
     {
     public:
-        using ArcExpression = ::std::function<Token(::std::vector<::std::any>)>;
+        using ArcExpression = ::std::function<::std::optional<Token>(::std::vector<::std::any>)>;
 
         enum class Orientation
         {
@@ -154,7 +155,7 @@ namespace cpn
             return orientation_;
         }
 
-                Token parse(::std::vector<::std::any> arguments)
+        ::std::optional<Token> parse(::std::vector<::std::any> arguments)
         {
             return expression_(arguments);
         }

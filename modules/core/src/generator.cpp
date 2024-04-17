@@ -476,9 +476,36 @@ void Generator::endVisit(IfStatement const &_node)
     auto ifBodyInPlace = network_->getPlaceByName(::std::to_string(_node.trueStatement().id()) + ".in");
     auto ifBodyOutPlace = network_->getPlaceByName(::std::to_string(_node.trueStatement().id()) + ".out");
 
-    // create arcs
-    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(conditionResultPlace, con1, cpn::Arc::Orientation::BD);
-    ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(ifBodyInPlace, con1, cpn::Arc::Orientation::T2P);
+    // get condition boolean value
+    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(
+        conditionResultPlace, 
+        con1, 
+        cpn::Arc::Orientation::BD,
+        ::std::vector<::std::string>({"condition"}),
+        [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+        {
+            PSM_ASSERT(params.size() == 1);
+            return cpn::Token("bool", params[0]);
+        }
+        );
+
+    // if condition is true, send control token to if body
+    ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(
+        ifBodyInPlace, 
+        con1, 
+        cpn::Arc::Orientation::T2P,
+        ::std::vector<::std::string>({"condition"}),
+        [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+        {
+            PSM_ASSERT(params.size() == 1);
+            // FIXME: should cast to bool value
+            int conditionValue = ::std::any_cast<int>(params[0]);
+            if(conditionValue)
+                return cpn::Token(cpn::CTRL_COLOR, "()");
+            else
+                return ::std::nullopt;
+        }
+        );
     ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(ifBodyOutPlace, con2, cpn::Arc::Orientation::P2T);
     ::std::shared_ptr<cpn::Arc> arc7 = ::std::make_shared<cpn::Arc>(outPlace, con2, cpn::Arc::Orientation::T2P);
     network_->addArc(arc4);
@@ -494,7 +521,23 @@ void Generator::endVisit(IfStatement const &_node)
         auto ifFalseBodyInPlace = network_->getPlaceByName(::std::to_string(_node.falseStatement()->id()) + ".in");
         auto ifFalseBodyOutPlace = network_->getPlaceByName(::std::to_string(_node.falseStatement()->id()) + ".out");
 
-        ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::Arc>(ifFalseBodyInPlace, con1, cpn::Arc::Orientation::T2P);
+        // trigger false body if condition is false
+        ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::Arc>(
+            ifFalseBodyInPlace,
+            con1, 
+            cpn::Arc::Orientation::T2P,
+            ::std::vector<::std::string>({"condition"}),
+            [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+            {
+                PSM_ASSERT(params.size() == 1);
+                                // FIXME: should cast to bool value
+                int conditionValue = ::std::any_cast<int>(params[0]);
+                if(!conditionValue)
+                    return cpn::Token(cpn::CTRL_COLOR, "()");
+                else
+                    return ::std::nullopt;
+            }
+        );
         ::std::shared_ptr<cpn::Arc> arc9 = ::std::make_shared<cpn::Arc>(ifFalseBodyOutPlace, con3, cpn::Arc::Orientation::P2T);
         ::std::shared_ptr<cpn::Arc> arc10 = ::std::make_shared<cpn::Arc>(outPlace, con3, cpn::Arc::Orientation::T2P);
         network_->addArc(arc8);
@@ -503,7 +546,22 @@ void Generator::endVisit(IfStatement const &_node)
     }
     else
     {
-        ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::Arc>(outPlace, con1, cpn::Arc::Orientation::T2P);
+        ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::Arc>(
+            outPlace, 
+            con1, 
+            cpn::Arc::Orientation::T2P,
+            ::std::vector<::std::string>({"condition"}),
+            [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+            {
+                PSM_ASSERT(params.size() == 1);
+                // FIXME: should cast to bool value
+                int conditionValue = ::std::any_cast<int>(params[0]);
+                if(!conditionValue)
+                    return cpn::Token(cpn::CTRL_COLOR, "()");
+                else
+                    return ::std::nullopt;
+            }
+        );
         network_->addArc(arc8);
     }
 }
@@ -918,7 +976,7 @@ void Generator::endVisit(BinaryOperation const &_node)
         op,
         cpn::Arc::Orientation::BD,
         ::std::vector<::std::string>({"x"}),
-        [](::std::vector<::std::any> params) -> cpn::Token
+        [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
         {
             PSM_ASSERT(params.size() == 1);
             return cpn::Token("int", params[0]);
@@ -930,7 +988,7 @@ void Generator::endVisit(BinaryOperation const &_node)
         op,
         cpn::Arc::Orientation::BD,
         ::std::vector<::std::string>({"y"}),
-        [](::std::vector<::std::any> params) -> cpn::Token
+        [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
         {
             PSM_ASSERT(params.size() == 1);
             return cpn::Token("int", params[0]);
@@ -942,7 +1000,7 @@ void Generator::endVisit(BinaryOperation const &_node)
         op,
         cpn::Arc::Orientation::T2P,
         ::std::vector<::std::string>({"x", "y"}),
-        [&](::std::vector<::std::any> params) -> cpn::Token
+        [&](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
         {
             PSM_ASSERT(params.size() == 2);
             // FIXME: any types

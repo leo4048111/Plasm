@@ -26,7 +26,7 @@ namespace cpn
         : place_(place), transition_(transition), orientation_(orientation)
         {
             if(expression == nullptr) {
-            expression_ = [](::std::vector<::std::any>) -> Token
+            expression_ = [](::std::vector<::std::any>) -> ::std::optional<Token>
             {
                 return Token(cpn::CTRL_COLOR, "()");
             };
@@ -124,7 +124,8 @@ namespace cpn
             }
 
             auto outToken = arc->parse(arguments);
-            place->push(outToken);
+            if(outToken)
+                place->push(outToken.value());
         }
 
         return true;
