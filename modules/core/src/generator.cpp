@@ -884,7 +884,7 @@ void Generator::endVisit(Assignment const &_node)
     network_->addTransition(con1);
 
     // get lhs storage places
-    auto lhsPlace = network_->getPlaceByName(::std::to_string(_node.leftHandSide().id()) + ".result");
+    auto lhsResultPlace = network_->getPlaceByName(::std::to_string(_node.leftHandSide().id()) + ".result");
 
     // get rhs io control places and storage place
     auto rhsResultPlace = network_->getPlaceByName(::std::to_string(_node.rightHandSide().id()) + ".result");
@@ -892,23 +892,45 @@ void Generator::endVisit(Assignment const &_node)
     auto rhsOutPlace = network_->getPlaceByName(::std::to_string(_node.rightHandSide().id()) + ".out");
 
     // create alias for result place
-    network_->alias(lhsPlace, ::std::to_string(_node.id()) + ".result");
+    network_->alias(lhsResultPlace, ::std::to_string(_node.id()) + ".result");
 
     // create arcs
     ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
     ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(rhsInPlace, con0, cpn::Arc::Orientation::T2P);
     ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(rhsOutPlace, con1, cpn::Arc::Orientation::P2T);
-    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(lhsPlace, con1, cpn::Arc::Orientation::T2P);
-    ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(lhsPlace, con1, cpn::Arc::Orientation::P2T);
-    ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(rhsResultPlace, con1, cpn::Arc::Orientation::BD);
-    ::std::shared_ptr<cpn::Arc> arc7 = ::std::make_shared<cpn::Arc>(outPlace, con1, cpn::Arc::Orientation::T2P);
+
+    // update lhs value
+    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(
+    lhsResultPlace, 
+    con1, 
+    cpn::Arc::Orientation::T2P,
+    ::std::vector<::std::string>({"x"}),
+    [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+    {
+        PSM_ASSERT(params.size() == 1);
+        return cpn::Token("int", params[0]);
+    }
+    );
+
+    // get rhs value
+    ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(
+        rhsResultPlace, 
+    con1, 
+    cpn::Arc::Orientation::BD,
+    ::std::vector<::std::string>({"x"}),
+    [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+    {
+        PSM_ASSERT(params.size() == 1);
+        return cpn::Token("int", params[0]);
+    });
+
+    ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(outPlace, con1, cpn::Arc::Orientation::T2P);
     network_->addArc(arc1);
     network_->addArc(arc2);
     network_->addArc(arc3);
     network_->addArc(arc4);
     network_->addArc(arc5);
     network_->addArc(arc6);
-    network_->addArc(arc7);
 }
 
 bool Generator::visit(TupleExpression const &_node)
