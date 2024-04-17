@@ -1292,7 +1292,7 @@ void Generator::endVisit(Literal const &_node)
     network_->addPlace(resultPlace);
 
     // add literal token
-    network_->addInitialMarking(resultPlace, cpn::Token(_node.annotation().type->toString(), _node.value()));
+    network_->addInitialMarking(resultPlace, cpn::Token(_node.annotation().type->toString(), ::std::stoi(_node.value())));
 
     // create arcs
     ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
