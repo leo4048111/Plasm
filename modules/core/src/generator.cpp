@@ -6,6 +6,7 @@
 _START_PSM_NM_
 
 using namespace solidity::frontend;
+using namespace solidity::langutil;
 
 Generator::Generator()
 {
@@ -478,21 +479,20 @@ void Generator::endVisit(IfStatement const &_node)
 
     // get condition boolean value
     ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(
-        conditionResultPlace, 
-        con1, 
+        conditionResultPlace,
+        con1,
         cpn::Arc::Orientation::BD,
         ::std::vector<::std::string>({"condition"}),
         [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
         {
             PSM_ASSERT(params.size() == 1);
             return cpn::Token("bool", params[0]);
-        }
-        );
+        });
 
     // if condition is true, send control token to if body
     ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(
-        ifBodyInPlace, 
-        con1, 
+        ifBodyInPlace,
+        con1,
         cpn::Arc::Orientation::T2P,
         ::std::vector<::std::string>({"condition"}),
         [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
@@ -500,12 +500,11 @@ void Generator::endVisit(IfStatement const &_node)
             PSM_ASSERT(params.size() == 1);
             // FIXME: should cast to bool value
             int conditionValue = ::std::any_cast<int>(params[0]);
-            if(conditionValue)
+            if (conditionValue)
                 return cpn::Token(cpn::CTRL_COLOR, "()");
             else
                 return ::std::nullopt;
-        }
-        );
+        });
     ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(ifBodyOutPlace, con2, cpn::Arc::Orientation::P2T);
     ::std::shared_ptr<cpn::Arc> arc7 = ::std::make_shared<cpn::Arc>(outPlace, con2, cpn::Arc::Orientation::T2P);
     network_->addArc(arc4);
@@ -524,20 +523,19 @@ void Generator::endVisit(IfStatement const &_node)
         // trigger false body if condition is false
         ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::Arc>(
             ifFalseBodyInPlace,
-            con1, 
+            con1,
             cpn::Arc::Orientation::T2P,
             ::std::vector<::std::string>({"condition"}),
             [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
             {
                 PSM_ASSERT(params.size() == 1);
-                                // FIXME: should cast to bool value
+                // FIXME: should cast to bool value
                 int conditionValue = ::std::any_cast<int>(params[0]);
-                if(!conditionValue)
+                if (!conditionValue)
                     return cpn::Token(cpn::CTRL_COLOR, "()");
                 else
                     return ::std::nullopt;
-            }
-        );
+            });
         ::std::shared_ptr<cpn::Arc> arc9 = ::std::make_shared<cpn::Arc>(ifFalseBodyOutPlace, con3, cpn::Arc::Orientation::P2T);
         ::std::shared_ptr<cpn::Arc> arc10 = ::std::make_shared<cpn::Arc>(outPlace, con3, cpn::Arc::Orientation::T2P);
         network_->addArc(arc8);
@@ -547,8 +545,8 @@ void Generator::endVisit(IfStatement const &_node)
     else
     {
         ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::Arc>(
-            outPlace, 
-            con1, 
+            outPlace,
+            con1,
             cpn::Arc::Orientation::T2P,
             ::std::vector<::std::string>({"condition"}),
             [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
@@ -556,12 +554,11 @@ void Generator::endVisit(IfStatement const &_node)
                 PSM_ASSERT(params.size() == 1);
                 // FIXME: should cast to bool value
                 int conditionValue = ::std::any_cast<int>(params[0]);
-                if(!conditionValue)
+                if (!conditionValue)
                     return cpn::Token(cpn::CTRL_COLOR, "()");
                 else
                     return ::std::nullopt;
-            }
-        );
+            });
         network_->addArc(arc8);
     }
 }
@@ -901,28 +898,27 @@ void Generator::endVisit(Assignment const &_node)
 
     // update lhs value
     ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(
-    lhsResultPlace, 
-    con1, 
-    cpn::Arc::Orientation::T2P,
-    ::std::vector<::std::string>({"x"}),
-    [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
-    {
-        PSM_ASSERT(params.size() == 1);
-        return cpn::Token("int", params[0]);
-    }
-    );
+        lhsResultPlace,
+        con1,
+        cpn::Arc::Orientation::T2P,
+        ::std::vector<::std::string>({"x"}),
+        [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+        {
+            PSM_ASSERT(params.size() == 1);
+            return cpn::Token("int", params[0]);
+        });
 
     // get rhs value
     ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(
-        rhsResultPlace, 
-    con1, 
-    cpn::Arc::Orientation::BD,
-    ::std::vector<::std::string>({"x"}),
-    [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
-    {
-        PSM_ASSERT(params.size() == 1);
-        return cpn::Token("int", params[0]);
-    });
+        rhsResultPlace,
+        con1,
+        cpn::Arc::Orientation::BD,
+        ::std::vector<::std::string>({"x"}),
+        [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+        {
+            PSM_ASSERT(params.size() == 1);
+            return cpn::Token("int", params[0]);
+        });
 
     ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(outPlace, con1, cpn::Arc::Orientation::T2P);
     network_->addArc(arc1);
@@ -1028,8 +1024,56 @@ void Generator::endVisit(BinaryOperation const &_node)
             // FIXME: any types
             int val1 = ::std::any_cast<int>(params[0]);
             int val2 = ::std::any_cast<int>(params[1]);
-            // FIXME: correct op based on node type
-            return cpn::Token("int", val1 + val2);
+            int result;
+            Token op = _node.getOperator();
+            switch (op) {
+                case Token::Add:
+                    result = val1 + val2;
+                    break;
+                case Token::Sub:
+                    result = val1 - val2;
+                    break;
+                case Token::Mul:
+                    result = val1 * val2;
+                    break;
+                case Token::Div:
+                    if (val2 == 0) {
+                        throw std::runtime_error("Division by zero");
+                    }
+                    result = val1 / val2;
+                    break;
+                case Token::Mod:
+                    result = val1 % val2;
+                    break;
+                case Token::And:
+                    result = val1 && val2; // Logical AND
+                    break;
+                case Token::Or:
+                    result = val1 || val2; // Logical OR
+                    break;
+                case Token::BitAnd:
+                    result = val1 & val2; // Bitwise AND
+                    break;
+                case Token::BitOr:
+                    result = val1 | val2; // Bitwise OR
+                    break;
+                case Token::BitXor:
+                    result = val1 ^ val2; // Bitwise XOR
+                    break;
+                case Token::SHL:
+                    result = val1 << val2; // Shift left
+                    break;
+                case Token::SHR:
+                    result = val1 >> val2; // Shift right
+                    break;
+                case Token::Equal:
+                    result = val1 == val2; // Equal
+                    break;
+                default:
+                    throw std::invalid_argument("Unsupported operation type");
+            }
+            
+            return cpn::Token("int", (int)result);
         });
 
     network_->addArc(arc1);
