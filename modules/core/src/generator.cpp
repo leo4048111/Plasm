@@ -98,6 +98,49 @@ bool Generator::visit(ContractDefinition const &_node)
     LOGT("Generator in %s", "ContractDefinition");
     pushScope(SCOPE_GLOB);
 
+    // register function definitions
+    for (auto const &functionDefinition : _node.definedFunctions())
+    {
+        // register symbols
+        // register function parameters
+        ::std::vector<::std::string> paramNames;
+        for (auto const &param : functionDefinition->parameters())
+        {
+            auto name = param->name();
+            paramNames.push_back(name);
+        }
+
+        // register function return values
+        for (auto const &ret : functionDefinition->returnParameters())
+        {
+            auto name = ret->name();
+            paramNames.push_back(name);
+        }
+
+        // add function name
+        functions_.push_back(functionDefinition->name());
+
+        functionParams_.insert(::std::make_pair(functionDefinition->name(), paramNames));
+
+        // make io places
+        ::std::shared_ptr<cpn::Place> functionInPlace = ::std::make_shared<cpn::Place>(functionDefinition->name() + ".in", cpn::CTRL_COLOR);
+        ::std::shared_ptr<cpn::Place> functionOutPlace = ::std::make_shared<cpn::Place>(functionDefinition->name() + ".out", cpn::CTRL_COLOR);
+        network_->addPlace(functionInPlace);
+        network_->addPlace(functionOutPlace);
+
+        for (auto const &param : functionDefinition->parameters())
+        {
+            // make param places
+            auto name = param->name();
+            ::std::shared_ptr<cpn::Place> paramPlace = ::std::make_shared<cpn::Place>(functionDefinition->name() + "." + SCOPE_PARAM + name, "int");
+            network_->addPlace(paramPlace);
+        }
+
+        // make return place
+        ::std::shared_ptr<cpn::Place> retPlace = ::std::make_shared<cpn::Place>(functionDefinition->name() + "." + SCOPE_RET, "int");
+        network_->addPlace(retPlace);
+    }
+
     // register global msg
     ::std::shared_ptr<cpn::Place> msgPlace = ::std::make_shared<cpn::Place>(scope() + VAR_MSG, TYPE_STRUCT);
     network_->addPlace(msgPlace);
@@ -192,27 +235,6 @@ bool Generator::visit(FunctionDefinition const &_node)
 {
     LOGT("Generator in %s", "FunctionDefinition");
     pushScope(_node.name() + ".");
-
-    // register function parameters
-    ::std::vector<::std::string> paramNames;
-    for (auto const &param : _node.parameters())
-    {
-        auto name = param->name();
-        paramNames.push_back(name);
-    }
-
-    // register function return values
-    for (auto const &ret : _node.returnParameters())
-    {
-        auto name = ret->name();
-        paramNames.push_back(name);
-    }
-
-    // add function name
-    functions_.push_back(_node.name());
-
-    functionParams_.insert(::std::make_pair(_node.name(), paramNames));
-
     nodeTypes_.insert(::std::make_pair(_node.id(), "FunctionDefinition"));
     return true;
 }
@@ -223,8 +245,24 @@ void Generator::endVisit(FunctionDefinition const &_node)
     auto blockInPlace = network_->getPlaceByName(::std::to_string(_node.body().id()) + ".in");
     auto blockOutPlace = network_->getPlaceByName(::std::to_string(_node.body().id()) + ".out");
 
-    network_->alias(blockInPlace, scope() + "in");
-    network_->alias(blockOutPlace, scope() + "out");
+    // get function io places
+    auto functionInPlace = network_->getPlaceByName(scope() + "in");
+    auto functionOutPlace = network_->getPlaceByName(scope() + "out");
+
+    // connect places
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con1");
+    network_->addTransition(con0);
+    network_->addTransition(con1);
+
+    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(functionInPlace, con0, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(blockInPlace, con0, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(blockOutPlace, con1, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(functionOutPlace, con1, cpn::Arc::Orientation::T2P);
+    network_->addArc(arc1);
+    network_->addArc(arc2);
+    network_->addArc(arc3);
+    network_->addArc(arc4);
 
     // check entry point
     if (_node.visibility() == Visibility::Public)
@@ -237,7 +275,7 @@ void Generator::endVisit(FunctionDefinition const &_node)
             requiredParams.push_back(paramPlace);
         }
 
-        network_->addEntryPoint(blockInPlace, requiredParams);
+        network_->addEntryPoint(functionInPlace, requiredParams);
     }
 
     // check return
@@ -280,12 +318,15 @@ void Generator::endVisit(VariableDeclaration const &_node)
     }
     else
     {
-        auto name = _node.name();
+        auto name = scope() + _node.name();
         auto type = _node.typeName().annotation().type->toString();
 
         // create places
-        ::std::shared_ptr<cpn::Place> place = ::std::make_shared<cpn::Place>(scope() + name, type);
-        network_->addPlace(place);
+        if (network_->getPlaceByName(name) == nullptr)
+        {
+            ::std::shared_ptr<cpn::Place> place = ::std::make_shared<cpn::Place>(name, type);
+            network_->addPlace(place);
+        }
     }
 }
 
@@ -675,9 +716,8 @@ void Generator::endVisit(Return const &_node)
     // get function return place
     auto expr = _node.expression();
 
-    // create ret place
-    ::std::shared_ptr<cpn::Place> retPlace = ::std::make_shared<cpn::Place>(scope() + SCOPE_RET, "unknown");
-    network_->addPlace(retPlace);
+    // get ret place
+    ::std::shared_ptr<cpn::Place> retPlace = network_->getPlaceByName(scope() + SCOPE_RET);
 
     if (expr == nullptr)
     {
@@ -1026,53 +1066,55 @@ void Generator::endVisit(BinaryOperation const &_node)
             int val2 = ::std::any_cast<int>(params[1]);
             int result;
             Token op = _node.getOperator();
-            switch (op) {
-                case Token::Add:
-                    result = val1 + val2;
-                    break;
-                case Token::Sub:
-                    result = val1 - val2;
-                    break;
-                case Token::Mul:
-                    result = val1 * val2;
-                    break;
-                case Token::Div:
-                    if (val2 == 0) {
-                        throw std::runtime_error("Division by zero");
-                    }
-                    result = val1 / val2;
-                    break;
-                case Token::Mod:
-                    result = val1 % val2;
-                    break;
-                case Token::And:
-                    result = val1 && val2; // Logical AND
-                    break;
-                case Token::Or:
-                    result = val1 || val2; // Logical OR
-                    break;
-                case Token::BitAnd:
-                    result = val1 & val2; // Bitwise AND
-                    break;
-                case Token::BitOr:
-                    result = val1 | val2; // Bitwise OR
-                    break;
-                case Token::BitXor:
-                    result = val1 ^ val2; // Bitwise XOR
-                    break;
-                case Token::SHL:
-                    result = val1 << val2; // Shift left
-                    break;
-                case Token::SHR:
-                    result = val1 >> val2; // Shift right
-                    break;
-                case Token::Equal:
-                    result = val1 == val2; // Equal
-                    break;
-                default:
-                    throw std::invalid_argument("Unsupported operation type");
+            switch (op)
+            {
+            case Token::Add:
+                result = val1 + val2;
+                break;
+            case Token::Sub:
+                result = val1 - val2;
+                break;
+            case Token::Mul:
+                result = val1 * val2;
+                break;
+            case Token::Div:
+                if (val2 == 0)
+                {
+                    throw std::runtime_error("Division by zero");
+                }
+                result = val1 / val2;
+                break;
+            case Token::Mod:
+                result = val1 % val2;
+                break;
+            case Token::And:
+                result = val1 && val2; // Logical AND
+                break;
+            case Token::Or:
+                result = val1 || val2; // Logical OR
+                break;
+            case Token::BitAnd:
+                result = val1 & val2; // Bitwise AND
+                break;
+            case Token::BitOr:
+                result = val1 | val2; // Bitwise OR
+                break;
+            case Token::BitXor:
+                result = val1 ^ val2; // Bitwise XOR
+                break;
+            case Token::SHL:
+                result = val1 << val2; // Shift left
+                break;
+            case Token::SHR:
+                result = val1 >> val2; // Shift right
+                break;
+            case Token::Equal:
+                result = val1 == val2; // Equal
+                break;
+            default:
+                throw std::invalid_argument("Unsupported operation type");
             }
-            
+
             return cpn::Token("int", (int)result);
         });
 
@@ -1336,8 +1378,14 @@ void Generator::endVisit(Literal const &_node)
     network_->addPlace(resultPlace);
 
     // add literal token
-    network_->addInitialMarking(resultPlace, cpn::Token(_node.annotation().type->toString(), ::std::stoi(_node.value())));
-
+    auto tokenValue = _node.value();
+    if (tokenValue.size())
+    {
+        if (tokenValue[0] >= '0' && tokenValue[0] <= '9')
+            network_->addInitialMarking(resultPlace, cpn::Token(_node.annotation().type->toString(), ::std::stoi(_node.value())));
+        else if (tokenValue[0] == 't') // "true"
+            network_->addInitialMarking(resultPlace, cpn::Token(_node.annotation().type->toString(), 1));
+    }
     // create arcs
     ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
     ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
