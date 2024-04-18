@@ -105,10 +105,11 @@ void Visualizer::Draw(::std::shared_ptr<cpn::Network> network, ::std::map<int64_
                             addPlace(g, place, nodeTypes);
                             dfs(place, dfs);
                         }
-                        addArc(g, arc2);
+                        if(arc2->orientation() != cpn::Arc::Orientation::BD)
+                            addArc(g, arc2);
                     }
-                    addArc(g, arc);
                 }
+                addArc(g, arc);
             }
         };
 
