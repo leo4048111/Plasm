@@ -21,7 +21,7 @@ pragma solidity >0.4.23;
  * conventional and does not conflict with the expectations of ERC-20
  * applications.
  */
-abstract contract ERC20{
+abstract contract ERC20 {
     uint256 private _balancesFrom;
     uint256 private _balancesTo;
 
@@ -38,7 +38,11 @@ abstract contract ERC20{
     error ERC20InvalidSpender(address spender);
     error ERC20InvalidReceiver(address receiver);
     error ERC20InsufficientBalance(address addr, uint256 val1, uint256 val2);
-    error ERC20InsufficientAllowance(address spender, uint256 currentAllownace, uint256 value);
+    error ERC20InsufficientAllowance(
+        address spender,
+        uint256 currentAllownace,
+        uint256 value
+    );
 
     // /**
     //  * @dev Moves a `value` amount of tokens from `from` to `to`.
@@ -84,18 +88,21 @@ abstract contract ERC20{
     //  *
     //  * - `spender` cannot be the zero address.
     //  */
-    function approve(address spender, uint256 value) public virtual returns (bool) {
+    function approve(
+        address spender,
+        uint256 value
+    ) public virtual returns (bool) {
         address owner = msg.sender;
         _approve(owner, spender, value);
         return true;
     }
 
-    // /**
-    //  * @dev See {IERC20-allowance}.
-    //  */
-    // function allowance(address owner, address spender) public view virtual returns (uint256) {
-    //     return _allowancesSpender;
-    // }
+    /**
+     * @dev See {IERC20-allowance}.
+     */
+    function allowance(address owner, address spender) public view virtual returns (uint256) {
+        return _allowancesSpender;
+    }
 
     // /**
     //  * @dev See {IERC20-transferFrom}.
@@ -120,39 +127,37 @@ abstract contract ERC20{
     //     return true;
     // }
 
-    // /**
-    //  * @dev Transfers a `value` amount of tokens from `from` to `to`, or alternatively mints (or burns) if `from`
-    //  * (or `to`) is the zero address. All customizations to transfers, mints, and burns should be done by overriding
-    //  * this function.
-    //  *
-    //  * Emits a {Transfer} event.
-    //  */
-    // function _update(address from, address to, uint256 value) internal virtual {
-    //     if (from == address(0)) {
-    //         // Overflow check required: The rest of the code assumes that totalSupply never overflows
-    //         _totalSupply += value;
-    //     } else {
-    //         uint256 fromBalance = _balancesFrom;
-    //         if (fromBalance < value) {
-    //             revert ERC20InsufficientBalance(from, fromBalance, value);
-    //         }
+    /**
+     * @dev Transfers a `value` amount of tokens from `from` to `to`, or alternatively mints (or burns) if `from`
+     * (or `to`) is the zero address. All customizations to transfers, mints, and burns should be done by overriding
+     * this function.
+     *
+     * Emits a {Transfer} event.
+     */
+    function _update(address from, address to, uint256 value) internal virtual {
+        if (from == address(0)) {
+            // Overflow check required: The rest of the code assumes that totalSupply never overflows
+            _totalSupply += value;
+        } else {
+            uint256 fromBalance = _balancesFrom;
+            if (fromBalance < value) {
+                revert ERC20InsufficientBalance(from, fromBalance, value);
+            }
 
-    //         // Overflow not possible: value <= fromBalance <= totalSupply.
-    //         _balancesFrom = fromBalance - value;
-    //     }
+            // Overflow not possible: value <= fromBalance <= totalSupply.
+            _balancesFrom = fromBalance - value;
+        }
 
-    //     if (to == address(0)) {
-    //         unchecked {
-    //             // Overflow not possible: value <= totalSupply or value <= fromBalance <= totalSupply.
-    //             _totalSupply -= value;
-    //         }
-    //     } else {
-    //         unchecked {
-    //             // Overflow not possible: balance + value is at most totalSupply, which we know fits into a uint256.
-    //             _balancesFrom += value;
-    //         }
-    //     }
-    // }
+        if (to == address(0)) {
+            unchecked {
+                // Overflow not possible: value <= totalSupply or value <= fromBalance <= totalSupply.
+                _totalSupply -= value;
+            }
+        } else {
+            // Overflow not possible: balance + value is at most totalSupply, which we know fits into a uint256.
+            _balancesFrom += value;
+        }
+    }
 
     // /**
     //  * @dev Creates a `value` amount of tokens and assigns them to `account`, by transferring it from address(0).
@@ -221,7 +226,11 @@ abstract contract ERC20{
     //  *
     //  * Requirements are the same as {_approve}.
     //  */
-    function _approve(address owner, address spender, uint256 value) internal virtual {
+    function _approve(
+        address owner,
+        address spender,
+        uint256 value
+    ) internal virtual {
         if (owner == address(0)) {
             revert ERC20InvalidApprover(address(0));
         }
@@ -231,23 +240,29 @@ abstract contract ERC20{
         _allowancesReceiver = value;
     }
 
-    // /**
-    //  * @dev Updates `owner` s allowance for `spender` based on spent `value`.
-    //  *
-    //  * Does not update the allowance value in case of infinite allowance.
-    //  * Revert if not enough allowance is available.
-    //  *
-    //  * Does not emit an {Approval} event.
-    //  */
-    // function _spendAllowance(address owner, address spender, uint256 value) internal virtual {
-    //     uint256 currentAllowance = allowance(owner, spender);
-    //     if (currentAllowance != type(uint256).max) {
-    //         if (currentAllowance < value) {
-    //             revert ERC20InsufficientAllowance(spender, currentAllowance, value);
-    //         }
-    //         unchecked {
-    //             _approve(owner, spender, currentAllowance - value, false);
-    //         }
-    //     }
-    // }
+    /**
+     * @dev Updates `owner` s allowance for `spender` based on spent `value`.
+     *
+     * Does not update the allowance value in case of infinite allowance.
+     * Revert if not enough allowance is available.
+     *
+     * Does not emit an {Approval} event.
+     */
+    function _spendAllowance(
+        address owner,
+        address spender,
+        uint256 value
+    ) internal virtual {
+        uint256 currentAllowance = allowance(owner, spender);
+        if (currentAllowance != 99999999) {
+            if (currentAllowance < value) {
+                revert ERC20InsufficientAllowance(
+                    spender,
+                    currentAllowance,
+                    value
+                );
+            }
+            _approve(owner, spender, currentAllowance - value);
+        }
+    }
 }
