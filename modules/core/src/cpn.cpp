@@ -27,7 +27,7 @@ namespace cpn
     {
         if (expression == nullptr)
         {
-            expression_ = [](::std::vector<::std::any>) -> ::std::optional<Token>
+            expression_ = [](::std::vector<Token> params) -> ::std::optional<Token>
             {
                 return Token(cpn::CTRL_COLOR, "()");
             };
@@ -119,14 +119,14 @@ namespace cpn
         {
             auto place = arc->place();
 
-            ::std::vector<::std::any> arguments;
+            ::std::vector<Token> arguments;
             auto requiredArguments = arc->arguments();
             for (auto &requiredArgumentName : requiredArguments)
             {
                 if (symbols.count(requiredArgumentName) == 0)
                     return false;
 
-                arguments.push_back(symbols[requiredArgumentName].value());
+                arguments.push_back(symbols[requiredArgumentName]);
             }
 
             auto outToken = arc->parse(arguments);

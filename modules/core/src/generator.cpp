@@ -531,10 +531,10 @@ void Generator::endVisit(IfStatement const &_node)
         con1,
         cpn::Arc::Orientation::BD,
         ::std::vector<::std::string>({"condition"}),
-        [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+        [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
         {
             PSM_ASSERT(params.size() == 1);
-            return cpn::Token("bool", params[0]);
+            return params[0];
         });
 
     // if condition is true, send control token to if body
@@ -543,11 +543,11 @@ void Generator::endVisit(IfStatement const &_node)
         con1,
         cpn::Arc::Orientation::T2P,
         ::std::vector<::std::string>({"condition"}),
-        [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+        [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
         {
             PSM_ASSERT(params.size() == 1);
             // FIXME: should cast to bool value
-            int conditionValue = ::std::any_cast<int>(params[0]);
+            int conditionValue = ::std::any_cast<int>(params[0].value());
             if (conditionValue)
                 return cpn::Token(cpn::CTRL_COLOR, "()");
             else
@@ -574,11 +574,11 @@ void Generator::endVisit(IfStatement const &_node)
             con1,
             cpn::Arc::Orientation::T2P,
             ::std::vector<::std::string>({"condition"}),
-            [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+            [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
             {
                 PSM_ASSERT(params.size() == 1);
                 // FIXME: should cast to bool value
-                int conditionValue = ::std::any_cast<int>(params[0]);
+                int conditionValue = ::std::any_cast<int>(params[0].value());
                 if (!conditionValue)
                     return cpn::Token(cpn::CTRL_COLOR, "()");
                 else
@@ -597,11 +597,11 @@ void Generator::endVisit(IfStatement const &_node)
             con1,
             cpn::Arc::Orientation::T2P,
             ::std::vector<::std::string>({"condition"}),
-            [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+            [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
             {
                 PSM_ASSERT(params.size() == 1);
                 // FIXME: should cast to bool value
-                int conditionValue = ::std::any_cast<int>(params[0]);
+                int conditionValue = ::std::any_cast<int>(params[0].value());
                 if (!conditionValue)
                     return cpn::Token(cpn::CTRL_COLOR, "()");
                 else
@@ -756,11 +756,11 @@ void Generator::endVisit(Return const &_node)
             con1,
             cpn::Arc::Orientation::BD,
             ::std::vector<::std::string>({"x"}),
-            [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
-        {
-            PSM_ASSERT(params.size() == 1);
-            return cpn::Token("int", params[0]);
-        });
+            [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+            {
+                PSM_ASSERT(params.size() == 1);
+                return params[0];
+            });
 
         // add return value to place
         ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(
@@ -768,11 +768,11 @@ void Generator::endVisit(Return const &_node)
             con1,
             cpn::Arc::Orientation::T2P,
             ::std::vector<::std::string>({"x"}),
-            [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
-        {
-            PSM_ASSERT(params.size() == 1);
-            return cpn::Token("int", params[0]);
-        });
+            [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+            {
+                PSM_ASSERT(params.size() == 1);
+                return params[0];
+            });
 
         network_->addArc(arc1);
         network_->addArc(arc2);
@@ -873,11 +873,11 @@ void Generator::endVisit(VariableDeclarationStatement const &_node)
             con1,
             cpn::Arc::Orientation::BD,
             ::std::vector<::std::string>({"x"}),
-        [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
-        {
-            PSM_ASSERT(params.size() == 1);
-            return cpn::Token("int", params[0]);
-        });
+            [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+            {
+                PSM_ASSERT(params.size() == 1);
+                return params[0];
+            });
 
         // update variable place value
         ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(
@@ -885,11 +885,11 @@ void Generator::endVisit(VariableDeclarationStatement const &_node)
             con1,
             cpn::Arc::Orientation::T2P,
             ::std::vector<::std::string>({"x"}),
-        [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
-        {
-            PSM_ASSERT(params.size() == 1);
-            return cpn::Token("int", params[0]);
-        });
+            [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+            {
+                PSM_ASSERT(params.size() == 1);
+                return params[0];
+            });
 
         network_->addArc(arc1);
         network_->addArc(arc2);
@@ -994,10 +994,10 @@ void Generator::endVisit(Assignment const &_node)
         con1,
         cpn::Arc::Orientation::T2P,
         ::std::vector<::std::string>({"x"}),
-        [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+        [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
         {
             PSM_ASSERT(params.size() == 1);
-            return cpn::Token("int", params[0]);
+            return params[0];
         });
 
     // get rhs value
@@ -1006,10 +1006,10 @@ void Generator::endVisit(Assignment const &_node)
         con1,
         cpn::Arc::Orientation::BD,
         ::std::vector<::std::string>({"x"}),
-        [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+        [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
         {
             PSM_ASSERT(params.size() == 1);
-            return cpn::Token("int", params[0]);
+            return params[0];
         });
 
     ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(outPlace, con1, cpn::Arc::Orientation::T2P);
@@ -1086,10 +1086,10 @@ void Generator::endVisit(BinaryOperation const &_node)
         op,
         cpn::Arc::Orientation::BD,
         ::std::vector<::std::string>({"x"}),
-        [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+        [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
         {
             PSM_ASSERT(params.size() == 1);
-            return cpn::Token("int", params[0]);
+            return params[0];
         });
 
     // get rhs value
@@ -1098,10 +1098,10 @@ void Generator::endVisit(BinaryOperation const &_node)
         op,
         cpn::Arc::Orientation::BD,
         ::std::vector<::std::string>({"y"}),
-        [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+        [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
         {
             PSM_ASSERT(params.size() == 1);
-            return cpn::Token("int", params[0]);
+            return params[0];
         });
 
     // remove old result value and send new value
@@ -1110,12 +1110,12 @@ void Generator::endVisit(BinaryOperation const &_node)
         op,
         cpn::Arc::Orientation::T2P,
         ::std::vector<::std::string>({"x", "y"}),
-        [&](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+        [&](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
         {
             PSM_ASSERT(params.size() == 2);
             // FIXME: any types
-            int val1 = ::std::any_cast<int>(params[0]);
-            int val2 = ::std::any_cast<int>(params[1]);
+            int val1 = ::std::any_cast<int>(params[0].value());
+            int val2 = ::std::any_cast<int>(params[1].value());
             int result;
             Token op = _node.getOperator();
             switch (op)
@@ -1216,15 +1216,54 @@ void Generator::endVisit(FunctionCall const &_node)
     else if (auto elementTypenameExpression = dynamic_cast<ElementaryTypeNameExpression *>(exp))
     {
         callee = "typeConversion";
-        auto inPlace = network_->getPlaceByName(::std::to_string(elementTypenameExpression->id()) + ".in");
-        auto outPlace = network_->getPlaceByName(::std::to_string(elementTypenameExpression->id()) + ".out");
-        auto resultPlace = network_->getPlaceByName(::std::to_string(elementTypenameExpression->id()) + ".result");
-        network_->alias(inPlace, ::std::to_string(_node.id()) + ".in");
-        network_->alias(outPlace, ::std::to_string(_node.id()) + ".out");
+        auto resultType = elementTypenameExpression->type().typeName().toString();
+        ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
+        ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+        network_->addPlace(inPlace);
+        network_->addPlace(outPlace);
+
+        // create result place
+        ::std::shared_ptr<cpn::Place> resultPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".result", resultType);
+        network_->addPlace(resultPlace);
+
+        // create con0
+        ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+        network_->addTransition(con0);
+
+        // connect arcs
+        ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+        ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
+        network_->addArc(arc1);
+        network_->addArc(arc2);
+
         for (auto const &param : _node.arguments())
         {
             auto paramResultPlace = network_->getPlaceByName(::std::to_string(param->id()) + ".result");
-            network_->alias(paramResultPlace, ::std::to_string(_node.id()) + ".result");
+
+            ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(
+                paramResultPlace,
+                con0,
+                cpn::Arc::Orientation::BD,
+                ::std::vector<::std::string>({"x"}),
+                [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+                {
+                    PSM_ASSERT(params.size() == 1);
+                    return params[0];
+                });
+
+            ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(
+                resultPlace,
+                con0,
+                cpn::Arc::Orientation::T2P,
+                ::std::vector<::std::string>({"x"}),
+                [resultType](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+                {
+                    PSM_ASSERT(params.size() == 1);
+                    return cpn::Token(resultType, params[0].value());
+                });
+
+            network_->addArc(arc3);
+            network_->addArc(arc4);
         }
         return;
     }
@@ -1271,9 +1310,28 @@ void Generator::endVisit(FunctionCall const &_node)
     for (auto const &param : _node.arguments())
     {
         auto paramResultPlace = network_->getPlaceByName(::std::to_string(param->id()) + ".result");
-        auto functionParamPlace = network_->getPlaceByName(callee + "." + SCOPE_PARAM + functionParams_[callee][cnt++]);
-        ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(paramResultPlace, con0, cpn::Arc::Orientation::BD);
-        ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(functionParamPlace, con0, cpn::Arc::Orientation::BD);
+        auto paramName = functionParams_[callee][cnt++];
+        auto functionParamPlace = network_->getPlaceByName(callee + "." + SCOPE_PARAM + paramName);
+        ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(
+            paramResultPlace,
+            con0,
+            cpn::Arc::Orientation::BD,
+            ::std::vector<::std::string>({paramName}),
+            [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+            {
+                PSM_ASSERT(params.size() == 1);
+                return params[0];
+            });
+        ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(
+            functionParamPlace,
+            con0,
+            cpn::Arc::Orientation::T2P,
+            ::std::vector<::std::string>({paramName}),
+            [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+            {
+                PSM_ASSERT(params.size() == 1);
+                return params[0];
+            });
         network_->addArc(arc5);
         network_->addArc(arc6);
     }
@@ -1404,21 +1462,21 @@ bool Generator::visit(ElementaryTypeNameExpression const &_node)
 void Generator::endVisit(ElementaryTypeNameExpression const &_node)
 {
     // Does literally nothing...
-    // create inout control places
-    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
-    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
-    network_->addPlace(inPlace);
-    network_->addPlace(outPlace);
+    // // create inout control places
+    // ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
+    // ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    // network_->addPlace(inPlace);
+    // network_->addPlace(outPlace);
 
-    // create ElementaryTypeNameExpression transition
-    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
-    network_->addTransition(con0);
+    // // create ElementaryTypeNameExpression transition
+    // ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    // network_->addTransition(con0);
 
-    // create arcs
-    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
-    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
-    network_->addArc(arc1);
-    network_->addArc(arc2);
+    // // create arcs
+    // ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+    // ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
+    // network_->addArc(arc1);
+    // network_->addArc(arc2);
 }
 
 bool Generator::visit(Literal const &_node)

@@ -117,7 +117,7 @@ namespace cpn
     class Arc
     {
     public:
-        using ArcExpression = ::std::function<::std::optional<Token>(::std::vector<::std::any>)>;
+        using ArcExpression = ::std::function<::std::optional<Token>(::std::vector<Token>)>;
 
         enum class Orientation
         {
@@ -155,7 +155,7 @@ namespace cpn
             return orientation_;
         }
 
-        ::std::optional<Token> parse(::std::vector<::std::any> arguments)
+        ::std::optional<Token> parse(::std::vector<Token> arguments)
         {
             return expression_(arguments);
         }
