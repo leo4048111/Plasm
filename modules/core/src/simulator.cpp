@@ -36,10 +36,12 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
         for (auto &entry : network->getEntryPointsInfo())
         {
             auto place = network->getPlaceByName(entry.first);
+            LOGI("Adding control to entry: %s", place->name().c_str());
             place->push(ctrl);
 
             for (auto &paramPlace : entry.second)
             {
+                LOGI("Adding token to param place: %s", paramPlace->name().c_str());
                 paramPlace->push(cpn::Token("int", 1));
             }
         }

@@ -1,6 +1,7 @@
 #include "generator.hpp"
 
 #include "logger.hpp"
+#include "randomizer.hpp"
 #include "cpn.hpp"
 
 _START_PSM_NM_
@@ -63,6 +64,9 @@ void Generator::declareMsg()
 {
     ::std::shared_ptr<cpn::Place> msgPlace = ::std::make_shared<cpn::Place>(::std::string(SCOPE_GLOB) + "msg", "t_magic_message");
     network_->addPlace(msgPlace);
+    // randomize msg value
+    auto addr = Randomizer::GetInstance().makeAddress();
+    network_->addInitialMarking(msgPlace, cpn::Token("address", addr));
 }
 
 bool Generator::visit(SourceUnit const &_node)
@@ -322,11 +326,14 @@ void Generator::endVisit(VariableDeclaration const &_node)
         auto type = _node.typeName().annotation().type->toString();
 
         // create places
-        if (network_->getPlaceByName(name) == nullptr)
+        ::std::shared_ptr<cpn::Place> place = network_->getPlaceByName(name);
+        if (place == nullptr)
         {
-            ::std::shared_ptr<cpn::Place> place = ::std::make_shared<cpn::Place>(name, type);
+            place = ::std::make_shared<cpn::Place>(name, type);
             network_->addPlace(place);
         }
+        // Create initial markings in case value reference fails
+        network_->addInitialMarking(place, cpn::Token(type, 0));
     }
 }
 

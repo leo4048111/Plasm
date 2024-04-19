@@ -23,6 +23,7 @@ set(PSM_MODULE_HDR
     ${PSM_MODULE_CORE_INCLUDE_DIR}/cpn.hpp
     ${PSM_MODULE_CORE_INCLUDE_DIR}/visualizer.hpp
     ${PSM_MODULE_CORE_INCLUDE_DIR}/simulator.hpp
+    ${PSM_MODULE_CORE_INCLUDE_DIR}/randomizer.hpp
 )
 
 set(PSM_MODULE_SRC
@@ -37,6 +38,7 @@ set(PSM_MODULE_SRC
     ${PSM_MODULE_CORE_SRC_DIR}/cpn.cpp
     ${PSM_MODULE_CORE_SRC_DIR}/visualizer.cpp
     ${PSM_MODULE_CORE_SRC_DIR}/simulator.cpp
+    ${PSM_MODULE_CORE_SRC_DIR}/randomizer.cpp
 )
 
 # target

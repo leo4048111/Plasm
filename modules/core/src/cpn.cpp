@@ -92,7 +92,10 @@ namespace cpn
         {
             auto place = arc->place();
             if (place->empty())
+            {
+                LOGE("Transition %s fire failed, Place %s is empty.", transition->name().c_str(), place->name().c_str());
                 return false;
+            }
         }
 
         // mapping variable names to token value
