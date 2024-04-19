@@ -35,7 +35,7 @@ namespace cpn
         else
             expression_ = expression;
         if (arguments.empty())
-            arguments_ = {"()"};
+            arguments_ = {"CTRL"};
         else
             arguments_ = arguments;
     }
@@ -93,7 +93,7 @@ namespace cpn
             auto place = arc->place();
             if (place->empty())
             {
-                LOGE("Transition %s fire failed, Place %s is empty.", transition->name().c_str(), place->name().c_str());
+                LOGW("Transition %s fire failed, Place %s is empty.", transition->name().c_str(), place->name().c_str());
                 return false;
             }
         }

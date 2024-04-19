@@ -866,8 +866,31 @@ void Generator::endVisit(VariableDeclarationStatement const &_node)
         ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(exprInPlace, con0, cpn::Arc::Orientation::T2P);
         ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(exprOutPlace, con1, cpn::Arc::Orientation::P2T);
         ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(outPlace, con1, cpn::Arc::Orientation::T2P);
-        ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(exprResultPlace, con1, cpn::Arc::Orientation::BD);
-        ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(varPlace, con1, cpn::Arc::Orientation::BD);
+
+        // get expression value
+        ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(
+            exprResultPlace,
+            con1,
+            cpn::Arc::Orientation::BD,
+            ::std::vector<::std::string>({"x"}),
+        [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+        {
+            PSM_ASSERT(params.size() == 1);
+            return cpn::Token("int", params[0]);
+        });
+
+        // update variable place value
+        ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(
+            varPlace,
+            con1,
+            cpn::Arc::Orientation::T2P,
+            ::std::vector<::std::string>({"x"}),
+        [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+        {
+            PSM_ASSERT(params.size() == 1);
+            return cpn::Token("int", params[0]);
+        });
+
         network_->addArc(arc1);
         network_->addArc(arc2);
         network_->addArc(arc3);
@@ -900,7 +923,7 @@ void Generator::endVisit(ExpressionStatement const &_node)
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
 
-    // create VariableDeclarationStatement transition
+    // create ExpressionStatement transition
     ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
     network_->addTransition(con0);
     ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con1");
@@ -1140,6 +1163,21 @@ void Generator::endVisit(BinaryOperation const &_node)
             case Token::Equal:
                 result = val1 == val2; // Equal
                 break;
+            case Token::NotEqual:
+                result = val1 != val2; // Not equal
+                break;
+            case Token::LessThan:
+                result = val1 < val2; // Less than
+                break;
+            case Token::GreaterThan:
+                result = val1 > val2; // Greater than
+                break;
+            case Token::LessThanOrEqual:
+                result = val1 <= val2; // Less than or equal
+                break;
+            case Token::GreaterThanOrEqual:
+                result = val1 >= val2; // Greater than or equal
+                break;
             default:
                 throw std::invalid_argument("Unsupported operation type");
             }
@@ -1372,7 +1410,7 @@ void Generator::endVisit(ElementaryTypeNameExpression const &_node)
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
 
-    // create VariableDeclarationStatement transition
+    // create ElementaryTypeNameExpression transition
     ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
     network_->addTransition(con0);
 
