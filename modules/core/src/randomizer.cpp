@@ -7,7 +7,7 @@ _START_PSM_NM_
 
 ::std::string Randomizer::makeAddress()
 {
-    std::string address = "0x";
+    std::string address = "";
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, 15);
