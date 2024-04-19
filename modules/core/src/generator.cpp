@@ -749,8 +749,30 @@ void Generator::endVisit(Return const &_node)
         ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(exprInPlace, con0, cpn::Arc::Orientation::T2P);
         ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(exprOutPlace, con1, cpn::Arc::Orientation::P2T);
         ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(outPlace, con1, cpn::Arc::Orientation::T2P);
-        ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(exprResultPlace, con1, cpn::Arc::Orientation::BD);
-        ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(retPlace, con1, cpn::Arc::Orientation::BD);
+
+        // reference return value
+        ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(
+            exprResultPlace,
+            con1,
+            cpn::Arc::Orientation::BD,
+            ::std::vector<::std::string>({"x"}),
+            [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+        {
+            PSM_ASSERT(params.size() == 1);
+            return cpn::Token("int", params[0]);
+        });
+
+        // add return value to place
+        ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(
+            retPlace,
+            con1,
+            cpn::Arc::Orientation::T2P,
+            ::std::vector<::std::string>({"x"}),
+            [](::std::vector<::std::any> params) -> ::std::optional<cpn::Token>
+        {
+            PSM_ASSERT(params.size() == 1);
+            return cpn::Token("int", params[0]);
+        });
 
         network_->addArc(arc1);
         network_->addArc(arc2);

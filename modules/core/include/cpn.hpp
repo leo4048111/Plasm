@@ -78,14 +78,14 @@ namespace cpn
 
         const ::std::vector<Token> &tokens() const { return tokens_; };
 
-        const Token &front()
+        const Token &top()
         {
-            return tokens_.front();
+            return tokens_.back();
         }
 
         void pop()
         {
-            tokens_.erase(tokens_.begin());
+            tokens_.pop_back();
         }
 
         void clear()

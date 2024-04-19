@@ -103,7 +103,7 @@ namespace cpn
         for (auto &arc : trans_in_degree_map_[transition->name()])
         {
             auto place = arc->place();
-            auto token = place->front();
+            auto token = place->top();
 
             auto arguments = arc->arguments();
 
