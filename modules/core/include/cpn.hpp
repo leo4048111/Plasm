@@ -28,6 +28,11 @@ namespace cpn
             return value_;
         }
 
+        ::std::string color() const
+        {
+            return color_;
+        }
+
         bool control() const
         {
             return color_ == CTRL_COLOR;

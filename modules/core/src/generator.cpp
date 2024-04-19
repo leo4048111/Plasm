@@ -1113,76 +1113,106 @@ void Generator::endVisit(BinaryOperation const &_node)
         [&](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
         {
             PSM_ASSERT(params.size() == 2);
-            // FIXME: any types
-            int val1 = ::std::any_cast<int>(params[0].value());
-            int val2 = ::std::any_cast<int>(params[1].value());
-            int result;
-            Token op = _node.getOperator();
-            switch (op)
+
+            auto calculate = []<typename T>(T val1, T val2, Token op) -> T
             {
-            case Token::Add:
-                result = val1 + val2;
-                break;
-            case Token::Sub:
-                result = val1 - val2;
-                break;
-            case Token::Mul:
-                result = val1 * val2;
-                break;
-            case Token::Div:
-                if (val2 == 0)
+                T result;
+                switch (op)
                 {
-                    throw std::runtime_error("Division by zero");
+                case Token::Add:
+                    result = val1 + val2;
+                    break;
+                case Token::Sub:
+                    result = val1 - val2;
+                    break;
+                case Token::Mul:
+                    result = val1 * val2;
+                    break;
+                case Token::Div:
+                    if (val2 == 0)
+                    {
+                        throw std::runtime_error("Division by zero");
+                    }
+                    result = val1 / val2;
+                    break;
+                case Token::Mod:
+                    result = val1 % val2;
+                    break;
+                case Token::And:
+                    result = val1 && val2; // Logical AND
+                    break;
+                case Token::Or:
+                    result = val1 || val2; // Logical OR
+                    break;
+                case Token::BitAnd:
+                    result = val1 & val2; // Bitwise AND
+                    break;
+                case Token::BitOr:
+                    result = val1 | val2; // Bitwise OR
+                    break;
+                case Token::BitXor:
+                    result = val1 ^ val2; // Bitwise XOR
+                    break;
+                case Token::SHL:
+                    result = val1 << val2; // Shift left
+                    break;
+                case Token::SHR:
+                    result = val1 >> val2; // Shift right
+                    break;
+                case Token::Equal:
+                    result = val1 == val2; // Equal
+                    break;
+                case Token::NotEqual:
+                    result = val1 != val2; // Not equal
+                    break;
+                case Token::LessThan:
+                    result = val1 < val2; // Less than
+                    break;
+                case Token::GreaterThan:
+                    result = val1 > val2; // Greater than
+                    break;
+                case Token::LessThanOrEqual:
+                    result = val1 <= val2; // Less than or equal
+                    break;
+                case Token::GreaterThanOrEqual:
+                    result = val1 >= val2; // Greater than or equal
+                    break;
+                default:
+                    throw std::invalid_argument("Unsupported operation type");
                 }
-                result = val1 / val2;
-                break;
-            case Token::Mod:
-                result = val1 % val2;
-                break;
-            case Token::And:
-                result = val1 && val2; // Logical AND
-                break;
-            case Token::Or:
-                result = val1 || val2; // Logical OR
-                break;
-            case Token::BitAnd:
-                result = val1 & val2; // Bitwise AND
-                break;
-            case Token::BitOr:
-                result = val1 | val2; // Bitwise OR
-                break;
-            case Token::BitXor:
-                result = val1 ^ val2; // Bitwise XOR
-                break;
-            case Token::SHL:
-                result = val1 << val2; // Shift left
-                break;
-            case Token::SHR:
-                result = val1 >> val2; // Shift right
-                break;
-            case Token::Equal:
-                result = val1 == val2; // Equal
-                break;
-            case Token::NotEqual:
-                result = val1 != val2; // Not equal
-                break;
-            case Token::LessThan:
-                result = val1 < val2; // Less than
-                break;
-            case Token::GreaterThan:
-                result = val1 > val2; // Greater than
-                break;
-            case Token::LessThanOrEqual:
-                result = val1 <= val2; // Less than or equal
-                break;
-            case Token::GreaterThanOrEqual:
-                result = val1 >= val2; // Greater than or equal
-                break;
-            default:
-                throw std::invalid_argument("Unsupported operation type");
+
+                return result;
+            };
+
+            Token op = _node.getOperator();
+
+            if(params[0].color() == "address")
+            {
+                ::std::string val1;
+                ::std::string val2;
+                if(params[0].value().type() == typeid(int))
+                {
+                    val1 = ::std::to_string(::std::any_cast<int>(params[0].value()));
+                } else {
+                    val1 = ::std::any_cast<::std::string>(params[0].value());
+                }
+                if(params[1].value().type() == typeid(int))
+                {
+                    val2 = ::std::to_string(::std::any_cast<int>(params[1].value()));
+                } else {
+                    val2 = ::std::any_cast<::std::string>(params[1].value());
+                }
+                // FIXME: calculate any types with calculate()
+                // FIXME: support operator for address
+                return cpn::Token(params[0].color(), (int)(val1 == val2));
+            } else
+            {
+                auto val1 = ::std::any_cast<int>(params[0].value());
+                auto val2 = ::std::any_cast<int>(params[1].value());
+                auto result = calculate(val1, val2, op);
+                return cpn::Token(params[0].color(), result);
             }
 
-            return cpn::Token("int", (int)result);
         });
 
     network_->addArc(arc1);
