@@ -19,12 +19,12 @@ public:
     using Graph = boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS,
                                         boost::property<boost::vertex_name_t, std::string>,
                                         boost::property<boost::edge_name_t, std::string>>;
-    void Draw(::std::shared_ptr<cpn::Network> network, ::std::map<int64_t, ::std::string> nodeTypes, bool verbose = false);
+    void Draw(::std::shared_ptr<cpn::Network> network, bool verbose = false);
 
 private:
     void addArc(Graph &g, ::std::shared_ptr<cpn::Arc> arc);
-    void addPlace(Graph &g, ::std::shared_ptr<cpn::Place> place, ::std::map<int64_t, ::std::string> &nodeTypes);
-    void addTransition(Graph &g, ::std::shared_ptr<cpn::Transition> transition, ::std::map<int64_t, ::std::string> &nodeTypes);
+    void addPlace(Graph &g, ::std::shared_ptr<cpn::Place> place);
+    void addTransition(Graph &g, ::std::shared_ptr<cpn::Transition> transition);
 
     template <typename VertexTypeMap, typename VertexNameMap>
     class vertex_property_writer

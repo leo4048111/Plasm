@@ -273,10 +273,9 @@ void CLI::CompileAndGenerate(bool simulate)
 
         // get pointer to cpn
         auto network = generator.getNetwork();
-        auto nodeTypes = generator.getNodeTypes();
 
         // dump csv
-        Visualizer::GetInstance().Draw(network, nodeTypes, args_.count(g_strVerbose));
+        Visualizer::GetInstance().Draw(network, args_.count(g_strVerbose));
 
         // simulate
         if(simulate)

@@ -27,39 +27,25 @@ void Visualizer::addArc(Graph &g, ::std::shared_ptr<cpn::Arc> arc)
     }
 }
 
-void Visualizer::addPlace(Graph &g, ::std::shared_ptr<cpn::Place> place, ::std::map<int64_t, ::std::string> &nodeTypes)
+void Visualizer::addPlace(Graph &g, ::std::shared_ptr<cpn::Place> place)
 {
     auto v = boost::add_vertex(g);
     auto name = place->name();
-    size_t pos = name.find('.');
-    if (pos != std::string::npos)
-    {
-        auto idStr = name.substr(0, pos);
-        if (idStr[0] >= '0' && idStr[0] <= '9')
-            name = nodeTypes[std::stoull(idStr)] + "." + name;
-    }
     vertexMap_[place->name()] = v;
     vertexTypeMap_[vertexMap_[place->name()]] = "place";
     vertexNameMap_[vertexMap_[place->name()]] = name;
 }
 
-void Visualizer::addTransition(Graph &g, ::std::shared_ptr<cpn::Transition> transition, ::std::map<int64_t, ::std::string> &nodeTypes)
+void Visualizer::addTransition(Graph &g, ::std::shared_ptr<cpn::Transition> transition)
 {
     auto v = boost::add_vertex(g);
     auto name = transition->name();
-    size_t pos = name.find('.');
-    if (pos != std::string::npos)
-    {
-        auto idStr = name.substr(0, pos);
-        if (idStr[0] >= '0' && idStr[0] <= '9')
-            name = nodeTypes[std::stoull(idStr)] + "." + name;
-    }
     vertexMap_[transition->name()] = v;
     vertexTypeMap_[vertexMap_[transition->name()]] = "transition";
     vertexNameMap_[vertexMap_[transition->name()]] = name;
 }
 
-void Visualizer::Draw(::std::shared_ptr<cpn::Network> network, ::std::map<int64_t, ::std::string> nodeTypes, bool verbose)
+void Visualizer::Draw(::std::shared_ptr<cpn::Network> network, bool verbose)
 {
     Graph g;
     vertexMap_.clear();
@@ -71,13 +57,13 @@ void Visualizer::Draw(::std::shared_ptr<cpn::Network> network, ::std::map<int64_
         // add places
         for (const auto &place : network->places())
         {
-            addPlace(g, place, nodeTypes);
+            addPlace(g, place);
         }
 
         // add transitions
         for (const auto &transition : network->transitions())
         {
-            addTransition(g, transition, nodeTypes);
+            addTransition(g, transition);
         }
 
         // add arcs
@@ -96,13 +82,13 @@ void Visualizer::Draw(::std::shared_ptr<cpn::Network> network, ::std::map<int64_
                 auto transition = arc->transition();
                 if (vertexMap_.find(transition->name()) == vertexMap_.end())
                 {
-                    addTransition(g, transition, nodeTypes);
+                    addTransition(g, transition);
                     for (auto &arc2 : network->getTransitionOutDegree(transition))
                     {
                         auto place = arc2->place();
                         if (vertexMap_.find(place->name()) == vertexMap_.end())
                         {
-                            addPlace(g, place, nodeTypes);
+                            addPlace(g, place);
                             dfs(place, dfs);
                         }
                         if(arc2->orientation() != cpn::Arc::Orientation::BD)
@@ -117,7 +103,7 @@ void Visualizer::Draw(::std::shared_ptr<cpn::Network> network, ::std::map<int64_
         for (auto &info : entryPointInfo)
         {
             auto place = network->getPlaceByName(info.first);
-            addPlace(g, place, nodeTypes);
+            addPlace(g, place);
             dfs(place, dfs);
         }
     }

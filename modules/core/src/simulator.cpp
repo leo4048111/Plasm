@@ -3,6 +3,7 @@
 #include "logger.hpp"
 
 #include <functional>
+#include <regex>
 
 _START_PSM_NM_
 
@@ -96,7 +97,28 @@ void Simulator::dfs(::std::shared_ptr<cpn::Place> place, ::std::shared_ptr<cpn::
     for (auto &arc : arcs)
     {
         auto transition = arc->transition();
-        bool result = network_->fire(transition);
+        // check function call return path
+        ::std::regex functionCallCon1Pattern("\\bFunctionCall\\.[0-9]+\\.con1\\b");
+        bool isFunctionCallCon1 = ::std::regex_search(transition->name(), functionCallCon1Pattern);
+        bool result;
+        if(isFunctionCallCon1)
+        {
+            auto callerPlace = functionStack_.top();
+            auto callerPlaceName = callerPlace->name();
+            auto idStartPos = callerPlaceName.find("FunctionCall.");
+            auto idEndPos = callerPlaceName.find(".", idStartPos);
+            auto idString = callerPlaceName.substr(idStartPos, idEndPos - idStartPos);
+            auto callerId = std::stoi(idString);
+
+            if(transition->name() == "FunctionCall." + std::to_string(callerId) + ".con1")
+            {
+                result = network_->fire(transition);
+            }
+            else
+                result = false;
+        }
+        else
+            result = network_->fire(transition);
 
         if (result)
         {
@@ -109,7 +131,14 @@ void Simulator::dfs(::std::shared_ptr<cpn::Place> place, ::std::shared_ptr<cpn::
                 {
                     if(place->top().color() == cpn::CTRL_COLOR)
                     {
+                        // register caller
+                        ::std::regex callerPattern("\\bFunctionCall\\.[0-9]+\\.in\\b");
+                        bool isFunctionCall = ::std::regex_search(place->name(), callerPattern);
+                        if(isFunctionCall)
+                            functionStack_.push(place);
                         dfs(place, exitPoint);
+                        if(isFunctionCall)
+                            functionStack_.pop();
                     }
                 }
             }

@@ -22,6 +22,7 @@ private:
 
 private:
     ::std::shared_ptr<cpn::Network> network_;
+    ::std::stack<::std::shared_ptr<cpn::Place>> functionStack_;
 };
 
 _END_PSM_NM_

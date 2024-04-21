@@ -21,8 +21,6 @@ public:
 
 	::std::shared_ptr<cpn::Network> getNetwork() { return network_; };
 
-	::std::map<int64_t, ::std::string> getNodeTypes() const { return nodeTypes_; };
-
 	::std::vector<::std::string> getFunctions() const { return functions_; };
 
 	bool visit(solidity::frontend::SourceUnit const &_node) override;
