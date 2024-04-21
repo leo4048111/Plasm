@@ -105,9 +105,9 @@ void Simulator::dfs(::std::shared_ptr<cpn::Place> place, ::std::shared_ptr<cpn::
         {
             auto callerPlace = functionStack_.top();
             auto callerPlaceName = callerPlace->name();
-            auto idStartPos = callerPlaceName.find("FunctionCall.");
-            auto idEndPos = callerPlaceName.find(".", idStartPos);
-            auto idString = callerPlaceName.substr(idStartPos, idEndPos - idStartPos);
+            auto idStartPos = callerPlaceName.find(".");
+            auto idEndPos = callerPlaceName.find(".", idStartPos + 1);
+            auto idString = callerPlaceName.substr(idStartPos + 1, idEndPos - idStartPos);
             auto callerId = std::stoi(idString);
 
             if(transition->name() == "FunctionCall." + std::to_string(callerId) + ".con1")

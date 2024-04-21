@@ -1192,13 +1192,13 @@ void Generator::endVisit(BinaryOperation const &_node)
                 ::std::string val2;
                 if(params[0].value().type() == typeid(int))
                 {
-                    val1 = getFullNodeType(::std::any_cast<int>(params[0].value()));
+                    val1 = ::std::to_string(::std::any_cast<int>(params[0].value()));
                 } else {
                     val1 = ::std::any_cast<::std::string>(params[0].value());
                 }
                 if(params[1].value().type() == typeid(int))
                 {
-                    val2 = getFullNodeType(::std::any_cast<int>(params[1].value()));
+                    val2 = ::std::to_string(::std::any_cast<int>(params[1].value()));
                 } else {
                     val2 = ::std::any_cast<::std::string>(params[1].value());
                 }
