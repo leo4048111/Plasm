@@ -246,16 +246,16 @@ bool Generator::visit(FunctionDefinition const &_node)
 void Generator::endVisit(FunctionDefinition const &_node)
 {
     // create alias for block io places
-    auto blockInPlace = network_->getPlaceByName(::std::to_string(_node.body().id()) + ".in");
-    auto blockOutPlace = network_->getPlaceByName(::std::to_string(_node.body().id()) + ".out");
+    auto blockInPlace = network_->getPlaceByName(getFullNodeType(_node.body().id()) + ".in");
+    auto blockOutPlace = network_->getPlaceByName(getFullNodeType(_node.body().id()) + ".out");
 
     // get function io places
     auto functionInPlace = network_->getPlaceByName(scope() + "in");
     auto functionOutPlace = network_->getPlaceByName(scope() + "out");
 
     // connect places
-    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
-    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con1");
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
+    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con1");
     network_->addTransition(con0);
     network_->addTransition(con1);
 
@@ -311,14 +311,14 @@ void Generator::endVisit(VariableDeclaration const &_node)
 
     if (expr)
     {
-        auto exprInPlace = network_->getPlaceByName(::std::to_string(expr->id()) + ".in");
-        auto exprOutPlace = network_->getPlaceByName(::std::to_string(expr->id()) + ".out");
-        auto exprResultPlace = network_->getPlaceByName(::std::to_string(expr->id()) + ".result");
+        auto exprInPlace = network_->getPlaceByName(getFullNodeType(expr->id()) + ".in");
+        auto exprOutPlace = network_->getPlaceByName(getFullNodeType(expr->id()) + ".out");
+        auto exprResultPlace = network_->getPlaceByName(getFullNodeType(expr->id()) + ".result");
 
         // create alias
         network_->alias(exprResultPlace, scope() + _node.name());
-        network_->alias(exprInPlace, ::std::to_string(_node.id()) + ".in");
-        network_->alias(exprOutPlace, ::std::to_string(_node.id()) + ".out");
+        network_->alias(exprInPlace, getFullNodeType(_node.id()) + ".in");
+        network_->alias(exprOutPlace, getFullNodeType(_node.id()) + ".out");
     }
     else
     {
@@ -423,15 +423,15 @@ bool Generator::visit(Block const &_node)
 void Generator::endVisit(Block const &_node)
 {
     // create inout control places
-    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
-    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
 
     // connect statement io places
     if (!_node.statements().size())
     {
-        ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+        ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
         network_->addTransition(con0);
         ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
         ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
@@ -442,8 +442,8 @@ void Generator::endVisit(Block const &_node)
 
     // connect first statementinplace with block inplace
     int cnt = 0;
-    auto firstStmtInPlace = network_->getPlaceByName(::std::to_string(_node.statements().front()->id()) + ".in");
-    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con" + ::std::to_string(cnt++));
+    auto firstStmtInPlace = network_->getPlaceByName(getFullNodeType(_node.statements().front()->id()) + ".in");
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con" + ::std::to_string(cnt++));
     ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
     ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(firstStmtInPlace, con0, cpn::Arc::Orientation::T2P);
     network_->addTransition(con0);
@@ -451,8 +451,8 @@ void Generator::endVisit(Block const &_node)
     network_->addArc(arc2);
 
     // connect last statementoutplace with block outplace
-    auto lastStmtOutPlace = network_->getPlaceByName(::std::to_string(_node.statements().back()->id()) + ".out");
-    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con" + ".last");
+    auto lastStmtOutPlace = network_->getPlaceByName(getFullNodeType(_node.statements().back()->id()) + ".out");
+    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con" + ".last");
     ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(lastStmtOutPlace, con1, cpn::Arc::Orientation::P2T);
     ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(outPlace, con1, cpn::Arc::Orientation::T2P);
     network_->addTransition(con1);
@@ -465,9 +465,9 @@ void Generator::endVisit(Block const &_node)
         auto lastStmt = _node.statements().at(cnt - 1);
 
         auto curStmt = _node.statements().at(cnt);
-        ::std::shared_ptr<cpn::Place> lastOutPlace = network_->getPlaceByName(::std::to_string(lastStmt->id()) + ".out");
-        ::std::shared_ptr<cpn::Place> curInPlace = network_->getPlaceByName(::std::to_string(curStmt->id()) + ".in");
-        ::std::shared_ptr<cpn::Transition> con = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con" + ::std::to_string(cnt++));
+        ::std::shared_ptr<cpn::Place> lastOutPlace = network_->getPlaceByName(getFullNodeType(lastStmt->id()) + ".out");
+        ::std::shared_ptr<cpn::Place> curInPlace = network_->getPlaceByName(getFullNodeType(curStmt->id()) + ".in");
+        ::std::shared_ptr<cpn::Transition> con = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con" + ::std::to_string(cnt++));
         network_->addTransition(con);
 
         // connect last stmt outplace with cur stmt inplace
@@ -495,23 +495,23 @@ bool Generator::visit(IfStatement const &_node)
 void Generator::endVisit(IfStatement const &_node)
 {
     // create inout control places
-    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
-    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
 
     // create ifstatement transitions
-    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
     network_->addTransition(con0);
-    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con1");
+    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con1");
     network_->addTransition(con1);
-    ::std::shared_ptr<cpn::Transition> con2 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con2");
+    ::std::shared_ptr<cpn::Transition> con2 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con2");
     network_->addTransition(con2);
 
     // get condition places
-    auto conditionResultPlace = network_->getPlaceByName(::std::to_string(_node.condition().id()) + ".result");
-    auto conditionInPlace = network_->getPlaceByName(::std::to_string(_node.condition().id()) + ".in");
-    auto conditionOutPlace = network_->getPlaceByName(::std::to_string(_node.condition().id()) + ".out");
+    auto conditionResultPlace = network_->getPlaceByName(getFullNodeType(_node.condition().id()) + ".result");
+    auto conditionInPlace = network_->getPlaceByName(getFullNodeType(_node.condition().id()) + ".in");
+    auto conditionOutPlace = network_->getPlaceByName(getFullNodeType(_node.condition().id()) + ".out");
 
     // connect condition places
     ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
@@ -522,8 +522,8 @@ void Generator::endVisit(IfStatement const &_node)
     network_->addArc(arc3);
 
     // get if body io place
-    auto ifBodyInPlace = network_->getPlaceByName(::std::to_string(_node.trueStatement().id()) + ".in");
-    auto ifBodyOutPlace = network_->getPlaceByName(::std::to_string(_node.trueStatement().id()) + ".out");
+    auto ifBodyInPlace = network_->getPlaceByName(getFullNodeType(_node.trueStatement().id()) + ".in");
+    auto ifBodyOutPlace = network_->getPlaceByName(getFullNodeType(_node.trueStatement().id()) + ".out");
 
     // get condition boolean value
     ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(
@@ -563,10 +563,10 @@ void Generator::endVisit(IfStatement const &_node)
     // create arcs for false body
     if (_node.falseStatement())
     {
-        ::std::shared_ptr<cpn::Transition> con3 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con3");
+        ::std::shared_ptr<cpn::Transition> con3 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con3");
         network_->addTransition(con3);
-        auto ifFalseBodyInPlace = network_->getPlaceByName(::std::to_string(_node.falseStatement()->id()) + ".in");
-        auto ifFalseBodyOutPlace = network_->getPlaceByName(::std::to_string(_node.falseStatement()->id()) + ".out");
+        auto ifFalseBodyInPlace = network_->getPlaceByName(getFullNodeType(_node.falseStatement()->id()) + ".in");
+        auto ifFalseBodyOutPlace = network_->getPlaceByName(getFullNodeType(_node.falseStatement()->id()) + ".out");
 
         // trigger false body if condition is false
         ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::Arc>(
@@ -635,30 +635,30 @@ bool Generator::visit(WhileStatement const &_node)
 void Generator::endVisit(WhileStatement const &_node)
 {
     // create inout control places
-    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
-    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
 
     // create whilestatement transitions
-    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
     network_->addTransition(con0);
 
     // get condition io place and result place
-    auto conditionResultPlace = network_->getPlaceByName(::std::to_string(_node.condition().id()) + ".result");
-    auto conditionInPlace = network_->getPlaceByName(::std::to_string(_node.condition().id()) + ".in");
-    auto conditionOutPlace = network_->getPlaceByName(::std::to_string(_node.condition().id()) + ".out");
+    auto conditionResultPlace = network_->getPlaceByName(getFullNodeType(_node.condition().id()) + ".result");
+    auto conditionInPlace = network_->getPlaceByName(getFullNodeType(_node.condition().id()) + ".in");
+    auto conditionOutPlace = network_->getPlaceByName(getFullNodeType(_node.condition().id()) + ".out");
 
     // create while statement loop transition
-    ::std::shared_ptr<cpn::Transition> loop = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".loop");
+    ::std::shared_ptr<cpn::Transition> loop = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".loop");
     network_->addTransition(loop);
 
     // get while loop body
-    auto whileBodyInPlace = network_->getPlaceByName(::std::to_string(_node.body().id()) + ".in");
-    auto whileBodyOutPlace = network_->getPlaceByName(::std::to_string(_node.body().id()) + ".out");
+    auto whileBodyInPlace = network_->getPlaceByName(getFullNodeType(_node.body().id()) + ".in");
+    auto whileBodyOutPlace = network_->getPlaceByName(getFullNodeType(_node.body().id()) + ".out");
 
     // create again transition
-    ::std::shared_ptr<cpn::Transition> again = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".again");
+    ::std::shared_ptr<cpn::Transition> again = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".again");
     network_->addTransition(again);
 
     // create arcs
@@ -711,13 +711,13 @@ bool Generator::visit(Return const &_node)
 void Generator::endVisit(Return const &_node)
 {
     // create inout control places
-    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
-    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
 
     // create return transition
-    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
     network_->addTransition(con0);
 
     // get function return place
@@ -736,13 +736,13 @@ void Generator::endVisit(Return const &_node)
     else
     {
         // create ret transition
-        ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con1");
+        ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con1");
         network_->addTransition(con1);
 
         // get expression io place
-        auto exprInPlace = network_->getPlaceByName(::std::to_string(_node.expression()->id()) + ".in");
-        auto exprOutPlace = network_->getPlaceByName(::std::to_string(_node.expression()->id()) + ".out");
-        auto exprResultPlace = network_->getPlaceByName(::std::to_string(_node.expression()->id()) + ".result");
+        auto exprInPlace = network_->getPlaceByName(getFullNodeType(_node.expression()->id()) + ".in");
+        auto exprOutPlace = network_->getPlaceByName(getFullNodeType(_node.expression()->id()) + ".out");
+        auto exprResultPlace = network_->getPlaceByName(getFullNodeType(_node.expression()->id()) + ".result");
 
         // connect places
         ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
@@ -803,13 +803,13 @@ bool Generator::visit(RevertStatement const &_node)
     nodeTypes_.insert(::std::make_pair(_node.id(), "RevertStatement"));
     // Does literally nothing...
     // create inout control places
-    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
-    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
 
     // create VariableDeclarationStatement transition
-    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
     network_->addTransition(con0);
 
     // create arcs
@@ -835,13 +835,13 @@ bool Generator::visit(VariableDeclarationStatement const &_node)
 void Generator::endVisit(VariableDeclarationStatement const &_node)
 {
     // create inout control places
-    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
-    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
 
     // create VariableDeclarationStatement transition
-    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
     network_->addTransition(con0);
 
     // check if has value
@@ -850,15 +850,15 @@ void Generator::endVisit(VariableDeclarationStatement const &_node)
     if (expr)
     {
         // get expression io place
-        auto exprInPlace = network_->getPlaceByName(::std::to_string(expr->id()) + ".in");
-        auto exprOutPlace = network_->getPlaceByName(::std::to_string(expr->id()) + ".out");
-        auto exprResultPlace = network_->getPlaceByName(::std::to_string(expr->id()) + ".result");
+        auto exprInPlace = network_->getPlaceByName(getFullNodeType(expr->id()) + ".in");
+        auto exprOutPlace = network_->getPlaceByName(getFullNodeType(expr->id()) + ".out");
+        auto exprResultPlace = network_->getPlaceByName(getFullNodeType(expr->id()) + ".result");
 
         // get variable place
         auto varPlace = network_->getPlaceByName(scope() + _node.declarations().front()->name());
 
         // create out transition
-        ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con1");
+        ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con1");
         network_->addTransition(con1);
 
         // connect
@@ -918,20 +918,20 @@ bool Generator::visit(ExpressionStatement const &_node)
 void Generator::endVisit(ExpressionStatement const &_node)
 {
     // create inout control places
-    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
-    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
 
     // create ExpressionStatement transition
-    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
     network_->addTransition(con0);
-    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con1");
+    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con1");
     network_->addTransition(con1);
 
     // get expression io place
-    auto exprInPlace = network_->getPlaceByName(::std::to_string(_node.expression().id()) + ".in");
-    auto exprOutPlace = network_->getPlaceByName(::std::to_string(_node.expression().id()) + ".out");
+    auto exprInPlace = network_->getPlaceByName(getFullNodeType(_node.expression().id()) + ".in");
+    auto exprOutPlace = network_->getPlaceByName(getFullNodeType(_node.expression().id()) + ".out");
 
     // connect
     ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
@@ -961,27 +961,27 @@ bool Generator::visit(Assignment const &_node)
 void Generator::endVisit(Assignment const &_node)
 {
     // create inout control places
-    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
-    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
 
     // create assignment transition
-    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
-    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con1");
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
+    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con1");
     network_->addTransition(con0);
     network_->addTransition(con1);
 
     // get lhs storage places
-    auto lhsResultPlace = network_->getPlaceByName(::std::to_string(_node.leftHandSide().id()) + ".result");
+    auto lhsResultPlace = network_->getPlaceByName(getFullNodeType(_node.leftHandSide().id()) + ".result");
 
     // get rhs io control places and storage place
-    auto rhsResultPlace = network_->getPlaceByName(::std::to_string(_node.rightHandSide().id()) + ".result");
-    auto rhsInPlace = network_->getPlaceByName(::std::to_string(_node.rightHandSide().id()) + ".in");
-    auto rhsOutPlace = network_->getPlaceByName(::std::to_string(_node.rightHandSide().id()) + ".out");
+    auto rhsResultPlace = network_->getPlaceByName(getFullNodeType(_node.rightHandSide().id()) + ".result");
+    auto rhsInPlace = network_->getPlaceByName(getFullNodeType(_node.rightHandSide().id()) + ".in");
+    auto rhsOutPlace = network_->getPlaceByName(getFullNodeType(_node.rightHandSide().id()) + ".out");
 
     // create alias for result place
-    network_->alias(lhsResultPlace, ::std::to_string(_node.id()) + ".result");
+    network_->alias(lhsResultPlace, getFullNodeType(_node.id()) + ".result");
 
     // create arcs
     ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
@@ -1045,32 +1045,32 @@ bool Generator::visit(BinaryOperation const &_node)
 void Generator::endVisit(BinaryOperation const &_node)
 {
     // create inout control places
-    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
-    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
 
     // create binary op transition
-    ::std::shared_ptr<cpn::Transition> op = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".op");
-    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
-    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con1");
+    ::std::shared_ptr<cpn::Transition> op = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".op");
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
+    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con1");
     network_->addTransition(op);
     network_->addTransition(con0);
     network_->addTransition(con1);
 
     // get lhs and rhs places
-    auto lhsResultPlace = network_->getPlaceByName(::std::to_string(_node.leftExpression().id()) + ".result");
-    auto rhsResultPlace = network_->getPlaceByName(::std::to_string(_node.rightExpression().id()) + ".result");
-    auto lhsInPlace = network_->getPlaceByName(::std::to_string(_node.leftExpression().id()) + ".in");
-    auto rhsInPlace = network_->getPlaceByName(::std::to_string(_node.rightExpression().id()) + ".in");
-    auto lhsOutPlace = network_->getPlaceByName(::std::to_string(_node.leftExpression().id()) + ".out");
-    auto rhsOutPlace = network_->getPlaceByName(::std::to_string(_node.rightExpression().id()) + ".out");
+    auto lhsResultPlace = network_->getPlaceByName(getFullNodeType(_node.leftExpression().id()) + ".result");
+    auto rhsResultPlace = network_->getPlaceByName(getFullNodeType(_node.rightExpression().id()) + ".result");
+    auto lhsInPlace = network_->getPlaceByName(getFullNodeType(_node.leftExpression().id()) + ".in");
+    auto rhsInPlace = network_->getPlaceByName(getFullNodeType(_node.rightExpression().id()) + ".in");
+    auto lhsOutPlace = network_->getPlaceByName(getFullNodeType(_node.leftExpression().id()) + ".out");
+    auto rhsOutPlace = network_->getPlaceByName(getFullNodeType(_node.rightExpression().id()) + ".out");
 
     // TODO: support auto type conversion
     // PSM_ASSERT(lhsPlace->color() == rhsPlace->color());
 
     // create place for result
-    ::std::shared_ptr<cpn::Place> resultPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".result", "unknown");
+    ::std::shared_ptr<cpn::Place> resultPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".result", "unknown");
     network_->addPlace(resultPlace);
 
     // create arcs
@@ -1192,13 +1192,13 @@ void Generator::endVisit(BinaryOperation const &_node)
                 ::std::string val2;
                 if(params[0].value().type() == typeid(int))
                 {
-                    val1 = ::std::to_string(::std::any_cast<int>(params[0].value()));
+                    val1 = getFullNodeType(::std::any_cast<int>(params[0].value()));
                 } else {
                     val1 = ::std::any_cast<::std::string>(params[0].value());
                 }
                 if(params[1].value().type() == typeid(int))
                 {
-                    val2 = ::std::to_string(::std::any_cast<int>(params[1].value()));
+                    val2 = getFullNodeType(::std::any_cast<int>(params[1].value()));
                 } else {
                     val2 = ::std::any_cast<::std::string>(params[1].value());
                 }
@@ -1247,17 +1247,17 @@ void Generator::endVisit(FunctionCall const &_node)
     {
         callee = "typeConversion";
         auto resultType = elementTypenameExpression->type().typeName().toString();
-        ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
-        ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+        ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+        ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
         network_->addPlace(inPlace);
         network_->addPlace(outPlace);
 
         // create result place
-        ::std::shared_ptr<cpn::Place> resultPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".result", resultType);
+        ::std::shared_ptr<cpn::Place> resultPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".result", resultType);
         network_->addPlace(resultPlace);
 
         // create con0
-        ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+        ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
         network_->addTransition(con0);
 
         // connect arcs
@@ -1268,7 +1268,7 @@ void Generator::endVisit(FunctionCall const &_node)
 
         for (auto const &param : _node.arguments())
         {
-            auto paramResultPlace = network_->getPlaceByName(::std::to_string(param->id()) + ".result");
+            auto paramResultPlace = network_->getPlaceByName(getFullNodeType(param->id()) + ".result");
 
             ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(
                 paramResultPlace,
@@ -1304,15 +1304,15 @@ void Generator::endVisit(FunctionCall const &_node)
     }
 
     // create inout control places
-    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
-    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
 
     // create function call transition and call ret transition
-    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
     network_->addTransition(con0);
-    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con1");
+    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con1");
     network_->addTransition(con1);
     auto funcInPlace = network_->getPlaceByName(callee + ".in");
     auto funcOutPlace = network_->getPlaceByName(callee + ".out");
@@ -1339,7 +1339,7 @@ void Generator::endVisit(FunctionCall const &_node)
     int cnt = 0;
     for (auto const &param : _node.arguments())
     {
-        auto paramResultPlace = network_->getPlaceByName(::std::to_string(param->id()) + ".result");
+        auto paramResultPlace = network_->getPlaceByName(getFullNodeType(param->id()) + ".result");
         auto paramName = functionParams_[callee][cnt++];
         auto functionParamPlace = network_->getPlaceByName(callee + "." + SCOPE_PARAM + paramName);
         ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(
@@ -1370,7 +1370,7 @@ void Generator::endVisit(FunctionCall const &_node)
     auto funcRetPlace = network_->getPlaceByName(callee + "." + SCOPE_RET);
 
     if (funcRetPlace)
-        network_->alias(funcRetPlace, ::std::to_string(_node.id()) + ".result");
+        network_->alias(funcRetPlace, getFullNodeType(_node.id()) + ".result");
 }
 
 bool Generator::visit(FunctionCallOptions const &_node)
@@ -1396,13 +1396,13 @@ bool Generator::visit(MemberAccess const &_node)
 
 void Generator::endVisit(MemberAccess const &_node)
 {
-    auto exprPlace = network_->getPlaceByName(::std::to_string(_node.expression().id()) + ".result");
-    auto exprInPlace = network_->getPlaceByName(::std::to_string(_node.expression().id()) + ".in");
-    auto exprOutPlace = network_->getPlaceByName(::std::to_string(_node.expression().id()) + ".out");
+    auto exprPlace = network_->getPlaceByName(getFullNodeType(_node.expression().id()) + ".result");
+    auto exprInPlace = network_->getPlaceByName(getFullNodeType(_node.expression().id()) + ".in");
+    auto exprOutPlace = network_->getPlaceByName(getFullNodeType(_node.expression().id()) + ".out");
 
-    network_->alias(exprPlace, ::std::to_string(_node.id()) + ".result");
-    network_->alias(exprInPlace, ::std::to_string(_node.id()) + ".in");
-    network_->alias(exprOutPlace, ::std::to_string(_node.id()) + ".out");
+    network_->alias(exprPlace, getFullNodeType(_node.id()) + ".result");
+    network_->alias(exprInPlace, getFullNodeType(_node.id()) + ".in");
+    network_->alias(exprOutPlace, getFullNodeType(_node.id()) + ".out");
 }
 
 bool Generator::visit(IndexAccess const &_node)
@@ -1422,7 +1422,12 @@ bool Generator::visit(IndexRangeAccess const &_node)
 bool Generator::visit(Identifier const &_node)
 {
     LOGT("Generator in %s", "Identifier");
+    nodeTypes_.insert(::std::make_pair(_node.id(), "Identifier"));
+    return true;
+}
 
+void Generator::endVisit(Identifier const &_node)
+{
     // search for local var
     auto place = network_->getPlaceByName(scope() + _node.name());
 
@@ -1432,7 +1437,7 @@ bool Generator::visit(Identifier const &_node)
     if (typeString.find("function") != ::std::string::npos)
     {
         // Do nothing with function name identifier...
-        return true;
+        return;
     }
 
     // search for param
@@ -1457,17 +1462,17 @@ bool Generator::visit(Identifier const &_node)
     if (place == nullptr)
     {
         LOGE("Identifier %s not found", _node.name().c_str());
-        return false;
+        return;
     }
 
     // create inout control places
-    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
-    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
 
     // create transitions
-    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
     network_->addTransition(con0);
 
     // create arcs
@@ -1476,10 +1481,7 @@ bool Generator::visit(Identifier const &_node)
     network_->addArc(arc1);
     network_->addArc(arc2);
 
-    network_->alias(place, ::std::to_string(_node.id()) + ".result");
-
-    nodeTypes_.insert(::std::make_pair(_node.id(), "Identifier"));
-    return true;
+    network_->alias(place, getFullNodeType(_node.id()) + ".result");
 }
 
 bool Generator::visit(ElementaryTypeNameExpression const &_node)
@@ -1493,13 +1495,13 @@ void Generator::endVisit(ElementaryTypeNameExpression const &_node)
 {
     // Does literally nothing...
     // // create inout control places
-    // ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
-    // ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    // ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+    // ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
     // network_->addPlace(inPlace);
     // network_->addPlace(outPlace);
 
     // // create ElementaryTypeNameExpression transition
-    // ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    // ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
     // network_->addTransition(con0);
 
     // // create arcs
@@ -1519,17 +1521,17 @@ bool Generator::visit(Literal const &_node)
 void Generator::endVisit(Literal const &_node)
 {
     // create inout control places
-    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".in", cpn::CTRL_COLOR);
-    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".out", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
 
     // create ifstatement transitions
-    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(::std::to_string(_node.id()) + ".con0");
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
     network_->addTransition(con0);
 
     // add result place for literal(literal value in default token value)
-    ::std::shared_ptr<cpn::Place> resultPlace = ::std::make_shared<cpn::Place>(::std::to_string(_node.id()) + ".result", _node.annotation().type->toString());
+    ::std::shared_ptr<cpn::Place> resultPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".result", _node.annotation().type->toString());
     network_->addPlace(resultPlace);
 
     // add literal token
