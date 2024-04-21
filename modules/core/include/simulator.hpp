@@ -18,7 +18,7 @@ public:
     void Simulate(::std::shared_ptr<cpn::Network> network);
 
 private:
-    void dfs(::std::shared_ptr<cpn::Place> place);
+    void dfs(::std::shared_ptr<cpn::Place> place, ::std::shared_ptr<cpn::Place> exitPoint);
 
 private:
     ::std::shared_ptr<cpn::Network> network_;

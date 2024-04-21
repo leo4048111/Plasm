@@ -26,12 +26,14 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
 
     // traverse all permutations
     ::std::string lastHash = "";
+    int round = 0;
     do
     {
         LOGI("==================================================");
         network_->reset();
 
         cpn::Token ctrl(cpn::CTRL_COLOR, "()");
+        LOGI("Simulation round: %d", round++);
 
         for (auto &entry : network->getEntryPointsInfo())
         {
@@ -48,8 +50,17 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
         LOGI("Initial hash: %s", network_->hash().c_str());
         for (auto &entry : entryPoints)
         {
+            auto entryName = entry->name();
+            ::std::string exitName;
+            size_t lastDotPos = entryName.find_last_of('.');
+            if (lastDotPos != ::std::string::npos)
+            {
+                exitName = entryName.substr(0, lastDotPos) + ".out";
+            }
+            auto exitPlace = network_->getPlaceByName(exitName);
+
             LOGI("Entry from: %s", entry->name().c_str());
-            dfs(entry);
+            dfs(entry,exitPlace);
             LOGI("Entry out: %s", entry->name().c_str());
         }
         LOGI("Final hash: %s", network_->hash().c_str());
@@ -73,9 +84,14 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
     }
 }
 
-void Simulator::dfs(std::shared_ptr<cpn::Place> place)
+void Simulator::dfs(::std::shared_ptr<cpn::Place> place, ::std::shared_ptr<cpn::Place> exitPoint)
 {
     LOGI("In Place: %s", place->name().c_str());
+    if(place.get() == exitPoint.get()) {
+        LOGI("Exit Point reached: %s", place->name().c_str());
+        place->pop();
+        return;
+    }
     auto arcs = network_->getPlaceOutDegree(place);
     for (auto &arc : arcs)
     {
@@ -89,7 +105,13 @@ void Simulator::dfs(std::shared_ptr<cpn::Place> place)
             for (auto &arc2 : arcs2)
             {
                 auto place = arc2->place();
-                dfs(place);
+                if(place->size())
+                {
+                    if(place->top().color() == cpn::CTRL_COLOR)
+                    {
+                        dfs(place, exitPoint);
+                    }
+                }
             }
         }
     }

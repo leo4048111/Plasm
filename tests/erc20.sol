@@ -61,7 +61,7 @@ abstract contract ERC20 {
         if (to == address(0)) {
             revert ERC20InvalidReceiver(address(0));
         }
-        // _update(from, to, value);
+        _update(from, to, value);
     }
 
     /**
@@ -137,7 +137,7 @@ abstract contract ERC20 {
     function _update(address from, address to, uint256 value) internal virtual {
         if (from == address(0)) {
             // Overflow check required: The rest of the code assumes that totalSupply never overflows
-            _totalSupply += value;
+            _totalSupply = _totalSupply + value;
         } else {
             uint256 fromBalance = _balancesFrom;
             if (fromBalance < value) {
@@ -149,13 +149,11 @@ abstract contract ERC20 {
         }
 
         if (to == address(0)) {
-            unchecked {
-                // Overflow not possible: value <= totalSupply or value <= fromBalance <= totalSupply.
-                _totalSupply -= value;
-            }
+            // Overflow not possible: value <= totalSupply or value <= fromBalance <= totalSupply.
+            _totalSupply = _totalSupply - value;
         } else {
             // Overflow not possible: balance + value is at most totalSupply, which we know fits into a uint256.
-            _balancesFrom += value;
+            _balancesFrom = _balancesFrom + value;
         }
     }
 
