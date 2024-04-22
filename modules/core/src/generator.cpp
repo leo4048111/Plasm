@@ -4,6 +4,9 @@
 #include "randomizer.hpp"
 #include "cpn.hpp"
 
+#include <regex>
+#include <string>
+
 _START_PSM_NM_
 
 using namespace solidity::frontend;
@@ -136,13 +139,30 @@ bool Generator::visit(ContractDefinition const &_node)
         {
             // make param places
             auto name = param->name();
-            ::std::shared_ptr<cpn::Place> paramPlace = ::std::make_shared<cpn::Place>(functionDefinition->name() + "." + SCOPE_PARAM + name, "int");
+            ::std::shared_ptr<cpn::Place> paramPlace = ::std::make_shared<cpn::Place>(
+                functionDefinition->name() + "." + SCOPE_PARAM + name,
+                param->typeName().annotation().type->toString());
             network_->addPlace(paramPlace);
         }
 
-        // make return place
-        ::std::shared_ptr<cpn::Place> retPlace = ::std::make_shared<cpn::Place>(functionDefinition->name() + "." + SCOPE_RET, "int");
-        network_->addPlace(retPlace);
+        ::std::shared_ptr<cpn::Place> retPlace = nullptr;
+
+        for (auto const &ret : functionDefinition->returnParameters())
+        {
+            // make return place
+            retPlace = ::std::make_shared<cpn::Place>(
+                functionDefinition->name() + "." + SCOPE_RET,
+                ret->typeName().annotation().type->toString());
+            network_->addPlace(retPlace);
+        }
+
+        if (retPlace == nullptr)
+        {
+            retPlace = ::std::make_shared<cpn::Place>(
+                functionDefinition->name() + "." + SCOPE_RET,
+                "void");
+            network_->addPlace(retPlace);
+        }
     }
 
     // register global msg
@@ -321,7 +341,7 @@ void Generator::endVisit(VariableDeclaration const &_node)
         network_->alias(exprOutPlace, getFullNodeType(_node.id()) + ".out");
 
         // check whether is global state variable
-        if(::std::string(scope()) == ::std::string(SCOPE_GLOB))
+        if (::std::string(scope()) == ::std::string(SCOPE_GLOB))
         {
             network_->track(exprResultPlace);
         }
@@ -339,12 +359,38 @@ void Generator::endVisit(VariableDeclaration const &_node)
             network_->addPlace(place);
         }
         // check whether is global state variable
-        if(::std::string(scope()) == ::std::string(SCOPE_GLOB))
+        if (::std::string(scope()) == ::std::string(SCOPE_GLOB))
         {
             network_->track(place);
         }
         // Create initial markings in case value reference fails
-        network_->addInitialMarking(place, cpn::Token(type, 0));
+        // check if variable type is mapping or array
+        ::std::regex mappingPattern(R"(mapping\((\w+)\s*=>\s*(\w+)\))");
+
+        if (::std::regex_search(type, mappingPattern)) // mapping
+        {
+            auto leftTypePos = type.find("(", 0);
+            auto rightTypePos = type.find("=>", 0);
+            auto leftType = type.substr(leftTypePos + 1, rightTypePos - 2 - leftTypePos);
+            auto rightType = type.substr(rightTypePos + 2, type.size() - rightTypePos - 2);
+
+            if (leftType == "address" && rightType == "uint256")
+            {
+                network_->addInitialMarking(place, cpn::Token(type, ::std::map<::std::string, int>()));
+            }
+            else // support other mapping types
+            {
+                network_->addInitialMarking(place, cpn::Token(type, ::std::map<::std::string, int>()));
+            }
+        }
+        else if (false) // array
+        {
+            // TODO
+        }
+        else
+        {
+            network_->addInitialMarking(place, cpn::Token(type, 0));
+        }
     }
 }
 
@@ -1213,33 +1259,37 @@ void Generator::endVisit(BinaryOperation const &_node)
 
             Token op = _node.getOperator();
 
-            if(params[0].color() == "address")
+            if (params[0].color() == "address")
             {
                 ::std::string val1;
                 ::std::string val2;
-                if(params[0].value().type() == typeid(int))
+                if (params[0].value().type() == typeid(int))
                 {
                     val1 = ::std::to_string(::std::any_cast<int>(params[0].value()));
-                } else {
+                }
+                else
+                {
                     val1 = ::std::any_cast<::std::string>(params[0].value());
                 }
-                if(params[1].value().type() == typeid(int))
+                if (params[1].value().type() == typeid(int))
                 {
                     val2 = ::std::to_string(::std::any_cast<int>(params[1].value()));
-                } else {
+                }
+                else
+                {
                     val2 = ::std::any_cast<::std::string>(params[1].value());
                 }
                 // FIXME: calculate any types with calculate()
                 // FIXME: support operator for address
                 return cpn::Token(params[0].color(), (int)(val1 == val2));
-            } else
+            }
+            else
             {
                 auto val1 = ::std::any_cast<int>(params[0].value());
                 auto val2 = ::std::any_cast<int>(params[1].value());
                 auto result = calculate(val1, val2, op);
                 return cpn::Token(params[0].color(), result);
             }
-
         });
 
     network_->addArc(arc1);
@@ -1437,6 +1487,83 @@ bool Generator::visit(IndexAccess const &_node)
     LOGT("Generator in %s", "IndexAccess");
     nodeTypes_.insert(::std::make_pair(_node.id(), "IndexAccess"));
     return true;
+}
+
+void Generator::endVisit(IndexAccess const &_node)
+{
+    // create inout control places
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
+    network_->addPlace(inPlace);
+    network_->addPlace(outPlace);
+
+    // create result place
+    // FIXME: any type
+    ::std::shared_ptr<cpn::Place> resultPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".result", "uint256");
+    network_->addPlace(resultPlace);
+
+    auto baseExpressionResult = network_->getPlaceByName(getFullNodeType(_node.baseExpression().id()) + ".result");
+    auto indexExpressionResult = network_->getPlaceByName(getFullNodeType(_node.indexExpression()->id()) + ".result");
+
+    auto baseType = baseExpressionResult->color();
+
+    // check if variable type is mapping or array
+    ::std::regex mappingPattern(R"(mapping\((\w+)\s*=>\s*(\w+)\))");
+
+    if (::std::regex_search(baseType, mappingPattern)) // mapping
+    {
+        // create transitions
+        ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
+        network_->addTransition(con0);
+
+        // create arcs
+        ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+        ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
+
+        // get index
+        ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(
+            indexExpressionResult,
+            con0,
+            cpn::Arc::Orientation::BD,
+            ::std::vector<::std::string>({"index"}),
+            [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+            {
+                PSM_ASSERT(params.size() == 1);
+                return params[0];
+            });
+
+        // get base value
+        ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(
+            baseExpressionResult,
+            con0,
+            cpn::Arc::Orientation::BD,
+            ::std::vector<::std::string>({"base"}),
+            [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+            {
+                PSM_ASSERT(params.size() == 1);
+                return params[0];
+            });
+
+        // retrieve indexed value and send to result
+        ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(
+            resultPlace,
+            con0,
+            cpn::Arc::Orientation::T2P,
+            ::std::vector<::std::string>({"base", "index"}),
+            [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+            {
+                PSM_ASSERT(params.size() == 2);
+                auto base = ::std::any_cast<::std::map<::std::string, int>>(params[0].value());
+                auto index = ::std::any_cast<::std::string>(params[1].value());
+                return cpn::Token("uint256", base[index]); // FIXME: any types
+            });
+
+        network_->addArc(arc1);
+        network_->addArc(arc2);
+        network_->addArc(arc3);
+        network_->addArc(arc4);
+        network_->addArc(arc5);
+    }
 }
 
 bool Generator::visit(IndexRangeAccess const &_node)

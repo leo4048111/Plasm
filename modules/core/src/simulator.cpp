@@ -1,6 +1,7 @@
 #include "simulator.hpp"
 
 #include "logger.hpp"
+#include "randomizer.hpp"
 
 #include <functional>
 #include <regex>
@@ -45,7 +46,10 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
             for (auto &paramPlace : entry.second)
             {
                 LOGI("Adding token to param place: %s", paramPlace->name().c_str());
-                paramPlace->push(cpn::Token("int", 1));
+                if(paramPlace->color() == "address")
+                    paramPlace->push(cpn::Token(paramPlace->color(), Randomizer::GetInstance().makeAddress()));
+                else
+                    paramPlace->push(cpn::Token(paramPlace->color(), Randomizer::GetInstance().makeRandom(0, INT8_MAX)));
             }
         }
         LOGI("Initial hash: %s", network_->hash().c_str());
