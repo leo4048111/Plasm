@@ -158,7 +158,7 @@ namespace cpn
     {
         ::std::string hash = "";
 
-        for (auto &place : places_)
+        for (auto &place : tracked_places_)
         {
             for (auto &token : place->tokens())
             {

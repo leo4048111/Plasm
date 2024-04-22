@@ -319,6 +319,12 @@ void Generator::endVisit(VariableDeclaration const &_node)
         network_->alias(exprResultPlace, scope() + _node.name());
         network_->alias(exprInPlace, getFullNodeType(_node.id()) + ".in");
         network_->alias(exprOutPlace, getFullNodeType(_node.id()) + ".out");
+
+        // check whether is global state variable
+        if(::std::string(scope()) == ::std::string(SCOPE_GLOB))
+        {
+            network_->track(exprResultPlace);
+        }
     }
     else
     {
@@ -331,6 +337,11 @@ void Generator::endVisit(VariableDeclaration const &_node)
         {
             place = ::std::make_shared<cpn::Place>(name, type);
             network_->addPlace(place);
+        }
+        // check whether is global state variable
+        if(::std::string(scope()) == ::std::string(SCOPE_GLOB))
+        {
+            network_->track(place);
         }
         // Create initial markings in case value reference fails
         network_->addInitialMarking(place, cpn::Token(type, 0));
@@ -1541,7 +1552,11 @@ void Generator::endVisit(Literal const &_node)
         if (tokenValue[0] >= '0' && tokenValue[0] <= '9')
             network_->addInitialMarking(resultPlace, cpn::Token(_node.annotation().type->toString(), ::std::stoi(_node.value())));
         else if (tokenValue[0] == 't') // "true"
+            // FIXME: should be bool value
             network_->addInitialMarking(resultPlace, cpn::Token(_node.annotation().type->toString(), 1));
+        else if (tokenValue[0] == 'f') // "false"
+            // FIXME: should be bool value
+            network_->addInitialMarking(resultPlace, cpn::Token(_node.annotation().type->toString(), 0));
     }
     // create arcs
     ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);

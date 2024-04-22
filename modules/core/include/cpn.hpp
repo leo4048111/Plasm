@@ -192,6 +192,8 @@ namespace cpn
 
         ::std::string hash() const;
 
+        void track(::std::shared_ptr<Place> place) { tracked_places_.push_back(place); };
+
         void addEntryPoint(::std::shared_ptr<Place> place, ::std::vector<::std::shared_ptr<Place>> requiredParams)
         {
             entry_points_info_.insert(::std::make_pair(place->name(), requiredParams));
@@ -262,6 +264,8 @@ namespace cpn
         ::std::map<::std::string, ::std::vector<::std::shared_ptr<Arc>>> place_in_degree_map_;  // mapping place in degrees
 
         ::std::map<::std::string, ::std::vector<Token>> initial_markings_;
+
+        ::std::vector<::std::shared_ptr<Place>> tracked_places_; // tracked places for hashing
     };
 }
 
