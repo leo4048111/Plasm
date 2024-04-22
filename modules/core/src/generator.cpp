@@ -805,7 +805,23 @@ bool Generator::visit(EmitStatement const &_node)
 {
     LOGT("Generator in %s", "EmitStatement");
     nodeTypes_.insert(::std::make_pair(_node.id(), "EmitStatement"));
-    return true;
+    // Does literally nothing...
+    // create inout control places
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
+    network_->addPlace(inPlace);
+    network_->addPlace(outPlace);
+
+    // create connector
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
+    network_->addTransition(con0);
+
+    // create arcs
+    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
+    network_->addArc(arc1);
+    network_->addArc(arc2);
+    return false;
 }
 
 bool Generator::visit(RevertStatement const &_node)
