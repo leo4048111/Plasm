@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 56
  */
 
-pragma solidity ^0.4.16;
+pragma solidity >0.4.16;
 
 /// @author Bowen Sanders
 /// sections built on the work of Jordi Baylina (Owned, data structure)

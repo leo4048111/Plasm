@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 33
  */
 
-pragma solidity ^0.4.24;
+pragma solidity >0.4.24;
 
 
 contract SimpleWallet {

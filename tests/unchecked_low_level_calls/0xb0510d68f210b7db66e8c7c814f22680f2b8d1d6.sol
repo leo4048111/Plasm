@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 69,71,73,75,102
  */
 
-pragma solidity ^0.4.23;
+pragma solidity >0.4.23;
 
 contract Splitter{
     

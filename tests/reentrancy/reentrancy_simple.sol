@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 24
  */
 
- pragma solidity ^0.4.15;
+ pragma solidity >0.4.15;
 
  contract Reentrance {
      mapping (address => uint) userBalance;

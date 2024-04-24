@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 44,97
  */
 
-pragma solidity ^0.4.18;
+pragma solidity >0.4.18;
 
 contract Ownable
 {

@@ -6,7 +6,7 @@
 
  // https://etherscan.io/address/0xf91546835f756da0c10cfa0cda95b15577b84aa7#code
 
- pragma solidity ^0.4.23;
+ pragma solidity >0.4.23;
  // produced by the Solididy File Flattener (c) David Appleton 2018
  // contact : dave@akomba.com
  // released under Apache 2.0 licence

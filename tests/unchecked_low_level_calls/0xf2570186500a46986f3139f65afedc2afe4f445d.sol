@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 18
  */
 
-pragma solidity ^0.4.16;
+pragma solidity >0.4.16;
 
 contract RealOldFuckMaker {
     address fuck = 0xc63e7b1DEcE63A77eD7E4Aeef5efb3b05C81438D;

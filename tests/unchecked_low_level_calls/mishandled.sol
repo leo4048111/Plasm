@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 14
  */
 
-pragma solidity ^0.4.0;
+pragma solidity >0.4.0;
 contract SendBack {
     mapping (address => uint) userBalances;
     function withdrawBalance() {  

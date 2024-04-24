@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 150
  */
 
-pragma solidity ^0.4.24;
+pragma solidity >0.4.24;
 
 /* This is fiftyflip 
 a simple yet elegant game contract 

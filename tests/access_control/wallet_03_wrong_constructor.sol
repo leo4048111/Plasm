@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 19,20
  */
 
- pragma solidity ^0.4.24;
+ pragma solidity >0.4.24;
 
  /* User can add pay in and withdraw Ether.
     The constructor is wrongly named, so anyone can become 'creator' and withdraw all funds.

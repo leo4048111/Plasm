@@ -7,7 +7,7 @@
 //Multi-transactional, multi-function
 //Arithmetic instruction reachable
 
-pragma solidity ^0.4.23;
+pragma solidity >0.4.23;
 
 contract IntegerOverflowMultiTxMultiFuncFeasible {
     uint256 private initialized = 0;

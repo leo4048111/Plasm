@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 15
  */
 
-pragma solidity ^0.4.24;
+pragma solidity >0.4.24;
 
 contract ModifierEntrancy {
   mapping (address => uint) public tokenBalance;

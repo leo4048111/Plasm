@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 162,175,180,192
  */
 
-pragma solidity ^0.4.9;
+pragma solidity >0.4.9;
 
 contract TownCrier {
     struct Request { // the data structure for each request

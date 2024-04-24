@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 20
  */
 
- pragma solidity ^0.4.22;
+ pragma solidity >0.4.22;
 
  contract Phishable {
     address public owner;

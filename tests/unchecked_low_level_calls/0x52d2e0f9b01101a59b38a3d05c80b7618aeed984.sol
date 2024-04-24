@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 27
  */
 
-pragma solidity ^0.4.19;
+pragma solidity >0.4.19;
 contract Token {
     function transfer(address _to, uint _value) returns (bool success);
     function balanceOf(address _owner) constant returns (uint balance);

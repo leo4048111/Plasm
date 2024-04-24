@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 23,25,33
  */
 
-pragma solidity ^0.4.21;
+pragma solidity >0.4.21;
 
 contract TokenSaleChallenge {
     mapping(address => uint256) public balanceOf;

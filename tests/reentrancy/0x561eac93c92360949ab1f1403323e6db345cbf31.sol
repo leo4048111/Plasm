@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 54
  */
 
-pragma solidity ^0.4.19;
+pragma solidity >0.4.19;
 
 contract BANK_SAFE
 {

@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 21
  */
 
-pragma solidity ^0.4.0;
+pragma solidity >0.4.0;
 contract EtherBank{
     mapping (address => uint) userBalances;
     function getBalance(address user) constant returns(uint) {  

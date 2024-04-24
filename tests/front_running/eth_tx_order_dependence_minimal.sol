@@ -4,16 +4,12 @@
  * @vulnerable_at_lines: 23,31
  */
 
-pragma solidity ^0.4.16;
+pragma solidity >0.4.16;
 
 contract EthTxOrderDependenceMinimal {
-    address public owner;
+    address payable public owner;
     bool public claimed;
     uint public reward;
-
-    function EthTxOrderDependenceMinimal() public {
-        owner = msg.sender;
-    }
 
     function setReward() public payable {
         require (!claimed);
@@ -24,11 +20,11 @@ contract EthTxOrderDependenceMinimal {
         reward = msg.value;
     }
 
-    function claimReward(uint256 submission) {
+    function claimReward(uint256 submission) payable public {
         require (!claimed);
         require(submission < 10);
         // <yes> <report> FRONT_RUNNING
-        msg.sender.transfer(reward);
+        payable(msg.sender).transfer(reward);
         claimed = true;
     }
 }

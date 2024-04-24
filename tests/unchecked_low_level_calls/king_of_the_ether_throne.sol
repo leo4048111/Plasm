@@ -21,7 +21,7 @@
 // TODO - maybe allow different return payment address?
 
 //added pragma version
-pragma solidity ^0.4.0;
+pragma solidity >0.4.0;
 
 contract KingOfTheEtherThrone {
 

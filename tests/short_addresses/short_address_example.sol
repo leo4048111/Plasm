@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 18
  */
 
- pragma solidity ^0.4.11;
+ pragma solidity >0.4.11;
 
  contract MyToken {
     mapping (address => uint) balances;

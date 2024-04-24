@@ -4,7 +4,7 @@
  * @vulnerable_at_lines: 25
  */
 
- pragma solidity ^0.4.15;
+ pragma solidity >0.4.15;
 
  contract Unprotected{
      address private owner;
