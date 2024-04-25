@@ -44,6 +44,11 @@ namespace cpn
             return ::std::regex_search(color_, mappingPattern);
         }
 
+        bool array() const {
+            ::std::regex arrayPattern(R"([a-zA-Z]+\[[0-9]*\])");
+            return ::std::regex_search(color_, arrayPattern);
+        }
+
         const ::std::type_info &type() const { return value_.type(); }
 
     private:
@@ -207,6 +212,7 @@ namespace cpn
 
         void addInitialMarking(::std::shared_ptr<Place> place, Token token)
         {
+            place->push(token);
             initial_markings_[place->name()].push_back(token);
         }
 

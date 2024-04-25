@@ -100,6 +100,7 @@ public:
 	void endVisit(solidity::frontend::ElementaryTypeNameExpression const &_node) override;
 	void endVisit(solidity::frontend::Identifier const &_node) override;
 	void endVisit(solidity::frontend::IndexAccess const &_node) override;
+	void endVisit(solidity::frontend::TupleExpression const &_node) override;
 
 private:
 	::std::string scope() const { return sscope_.top(); };

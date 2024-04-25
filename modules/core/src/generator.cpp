@@ -366,6 +366,7 @@ void Generator::endVisit(VariableDeclaration const &_node)
         // Create initial markings in case value reference fails
         // check if variable type is mapping or array
         ::std::regex mappingPattern(R"(mapping\((\w+)\s*=>\s*(\w+)\))");
+        ::std::regex arrayPattern(R"([a-zA-Z]+\[[0-9]*\])");
 
         if (::std::regex_search(type, mappingPattern)) // mapping
         {
@@ -383,9 +384,33 @@ void Generator::endVisit(VariableDeclaration const &_node)
                 network_->addInitialMarking(place, cpn::Token(type, ::std::map<::std::string, int>()));
             }
         }
-        else if (false) // array
+        else if (::std::regex_search(type, arrayPattern)) // array
         {
-            // TODO
+            auto typePos = type.find("[", 0);
+            auto arrayType = type.substr(0, typePos);
+            // if static array, find element size
+            auto rightBracketPos = type.find("]", 0);
+            auto arraySize = -1;
+            if(typePos + 1 < rightBracketPos)
+            {
+                arraySize = ::std::stoi(type.substr(typePos + 1, rightBracketPos - typePos - 1));
+            }
+            if(arrayType == "address" || arrayType == "string")
+            {
+                ::std::vector<::std::string> arr;
+                if(arraySize != -1) {
+                    arr.resize(arraySize, "");
+                }
+                network_->addInitialMarking(place, cpn::Token(type, arr));
+            }
+            else // support other array types
+            {
+                ::std::vector<int> arr;
+                if(arraySize != -1) {
+                    arr.resize(arraySize, 0);
+                }
+                network_->addInitialMarking(place, cpn::Token(type, arr));
+            }
         }
         else
         {
@@ -1146,6 +1171,7 @@ void Generator::endVisit(Assignment const &_node)
         auto baseType = baseExpressionResult->color();
 
         ::std::regex mappingPattern(R"(mapping\((\w+)\s*=>\s*(\w+)\))");
+        ::std::regex arrayPattern(R"([a-zA-Z]+\[[0-9]*\].*)");
 
         if (::std::regex_search(baseType, mappingPattern)) // mapping
         {
@@ -1245,6 +1271,64 @@ bool Generator::visit(TupleExpression const &_node)
     LOGT("Generator in %s", "TupleExpression");
     nodeTypes_.insert(::std::make_pair(_node.id(), "TupleExpression"));
     return true;
+}
+
+void Generator::endVisit(TupleExpression const &_node)
+{
+    // create inout control places
+    ::std::shared_ptr<cpn::Place> inPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".in", cpn::CTRL_COLOR);
+    ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
+    network_->addPlace(inPlace);
+    network_->addPlace(outPlace);
+
+    // create con0
+    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
+    network_->addTransition(con0);
+
+    // connect io
+    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
+    network_->addArc(arc1);
+    network_->addArc(arc2);
+
+    // create place for result
+    auto type = _node.annotation().type->toString();
+    ::std::shared_ptr<cpn::Place> resultPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".result", type);
+    network_->addPlace(resultPlace);
+
+    // check tuple value type
+    auto typePos = type.find("[", 0);
+    auto tupleType = type.substr(0, typePos);
+
+    // create tuple values
+    if(tupleType == "address" || tupleType == "string")
+    {
+        ::std::vector<::std::string> values;
+        for(auto& comp : _node.components())
+        {
+            // FIXME: support expressions
+            auto compResultPlace = network_->getPlaceByName(getFullNodeType(comp->id()) + ".result");
+            auto token = compResultPlace->top();
+            auto value = ::std::any_cast<::std::string>(token.value());
+            values.push_back(value);
+        }
+
+        network_->addInitialMarking(resultPlace, cpn::Token(type, values));
+    }
+    else if(tupleType.find("uint") != ::std::string::npos)
+    {
+        ::std::vector<int> values;
+        for(auto& comp : _node.components())
+        {
+            // FIXME: support expressions
+            auto compResultPlace = network_->getPlaceByName(getFullNodeType(comp->id()) + ".result");
+            auto token = compResultPlace->top();
+            auto value = ::std::any_cast<int>(token.value());
+            values.push_back(value);
+        }
+
+        network_->addInitialMarking(resultPlace, cpn::Token(type, values));
+    }
 }
 
 bool Generator::visit(UnaryOperation const &_node)
@@ -1655,6 +1739,7 @@ void Generator::endVisit(IndexAccess const &_node)
 
     // check if variable type is mapping or array
     ::std::regex mappingPattern(R"(mapping\((\w+)\s*=>\s*(\w+)\))");
+    ::std::regex arrayPattern(R"(.+\[[0-9]*\].*)");
 
     if (::std::regex_search(baseType, mappingPattern)) // mapping
     {
@@ -1702,6 +1787,72 @@ void Generator::endVisit(IndexAccess const &_node)
                 auto base = ::std::any_cast<::std::map<::std::string, int>>(params[0].value());
                 auto index = ::std::any_cast<::std::string>(params[1].value());
                 return cpn::Token("uint256", base[index]); // FIXME: any types
+            });
+
+        network_->addArc(arc1);
+        network_->addArc(arc2);
+        network_->addArc(arc3);
+        network_->addArc(arc4);
+        network_->addArc(arc5);
+    }
+    else if (::std::regex_search(baseType, arrayPattern))
+    {
+        // create transitions
+        ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
+        network_->addTransition(con0);
+
+        // create arcs
+        ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
+        ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(outPlace, con0, cpn::Arc::Orientation::T2P);
+
+        // get index
+        ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(
+            indexExpressionResult,
+            con0,
+            cpn::Arc::Orientation::BD,
+            ::std::vector<::std::string>({"index"}),
+            [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+            {
+                PSM_ASSERT(params.size() == 1);
+                return params[0];
+            });
+
+        // get base value
+        ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(
+            baseExpressionResult,
+            con0,
+            cpn::Arc::Orientation::BD,
+            ::std::vector<::std::string>({"base"}),
+            [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+            {
+                PSM_ASSERT(params.size() == 1);
+                return params[0];
+            });
+
+        // retrieve indexed value and send to result
+        ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(
+            resultPlace,
+            con0,
+            cpn::Arc::Orientation::T2P,
+            ::std::vector<::std::string>({"base", "index"}),
+            [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+            {
+                PSM_ASSERT(params.size() == 2);
+                auto color = params[0].color();
+                auto typePos = color.find("[", 0);
+                auto arrayType = color.substr(0, typePos);
+                auto index = ::std::any_cast<int>(params[1].value());
+
+                if (arrayType == "address" && arrayType == "uint256")
+                {
+                    auto base = ::std::any_cast<::std::vector<::std::string>>(params[0].value());
+                    return cpn::Token(arrayType, base[index]); // FIXME: any types
+                }
+                else // support other mapping types
+                {
+                    auto base = ::std::any_cast<::std::vector<int>>(params[0].value());
+                    return cpn::Token(arrayType, base[index]);
+                }
             });
 
         network_->addArc(arc1);
