@@ -1039,42 +1039,28 @@ void Generator::endVisit(Assignment const &_node)
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
 
+    // get rhs io control places and storage place
+    auto rhsResultPlace = network_->getPlaceByName(getFullNodeType(_node.rightHandSide().id()) + ".result");
+    auto rhsInPlace = network_->getPlaceByName(getFullNodeType(_node.rightHandSide().id()) + ".in");
+    auto rhsOutPlace = network_->getPlaceByName(getFullNodeType(_node.rightHandSide().id()) + ".out");
+
+    // create result place
+    ::std::shared_ptr<cpn::Place> resultPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".result", rhsResultPlace->color());
+    network_->addPlace(resultPlace);
+
     // create assignment transition
     ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
     ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con1");
     network_->addTransition(con0);
     network_->addTransition(con1);
 
-    // get lhs storage places
-    auto lhsResultPlace = network_->getPlaceByName(getFullNodeType(_node.leftHandSide().id()) + ".result");
-
-    // get rhs io control places and storage place
-    auto rhsResultPlace = network_->getPlaceByName(getFullNodeType(_node.rightHandSide().id()) + ".result");
-    auto rhsInPlace = network_->getPlaceByName(getFullNodeType(_node.rightHandSide().id()) + ".in");
-    auto rhsOutPlace = network_->getPlaceByName(getFullNodeType(_node.rightHandSide().id()) + ".out");
-
-    // create alias for result place
-    network_->alias(lhsResultPlace, getFullNodeType(_node.id()) + ".result");
-
-    // create arcs
+     // create arcs
     ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
     ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(rhsInPlace, con0, cpn::Arc::Orientation::T2P);
     ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(rhsOutPlace, con1, cpn::Arc::Orientation::P2T);
 
-    // update lhs value
-    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(
-        lhsResultPlace,
-        con1,
-        cpn::Arc::Orientation::T2P,
-        ::std::vector<::std::string>({"x"}),
-        [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
-        {
-            PSM_ASSERT(params.size() == 1);
-            return params[0];
-        });
-
     // get rhs value
-    ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(
+    ::std::shared_ptr<cpn::Arc> arc4 = ::std::make_shared<cpn::Arc>(
         rhsResultPlace,
         con1,
         cpn::Arc::Orientation::BD,
@@ -1085,13 +1071,95 @@ void Generator::endVisit(Assignment const &_node)
             return params[0];
         });
 
-    ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(outPlace, con1, cpn::Arc::Orientation::T2P);
+    ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(outPlace, con1, cpn::Arc::Orientation::T2P);
+
     network_->addArc(arc1);
     network_->addArc(arc2);
     network_->addArc(arc3);
     network_->addArc(arc4);
     network_->addArc(arc5);
-    network_->addArc(arc6);
+
+
+    // IndexAccess assignment and normal assignment are handled differently
+    // IndexAccess assignment type
+    try
+    {
+        const IndexAccess &indexAccessNode = dynamic_cast<const IndexAccess &>(_node.leftHandSide());
+        // get base node result place
+        auto baseExpressionResult = network_->getPlaceByName(getFullNodeType(indexAccessNode.baseExpression().id()) + ".result");
+        auto indexExpressionResult = network_->getPlaceByName(getFullNodeType(indexAccessNode.indexExpression()->id()) + ".result");
+
+        auto baseType = baseExpressionResult->color();
+
+        ::std::regex mappingPattern(R"(mapping\((\w+)\s*=>\s*(\w+)\))");
+
+        if (::std::regex_search(baseType, mappingPattern)) // mapping
+        {
+            // create arcs
+            // get index
+            ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(
+                indexExpressionResult,
+                con1,
+                cpn::Arc::Orientation::BD,
+                ::std::vector<::std::string>({"index"}),
+                [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+                {
+                    PSM_ASSERT(params.size() == 1);
+                    return params[0];
+                });
+
+            // get base value
+            ::std::shared_ptr<cpn::Arc> arc7 = ::std::make_shared<cpn::Arc>(
+                baseExpressionResult,
+                con1,
+                cpn::Arc::Orientation::P2T,
+                ::std::vector<::std::string>({"base"}),
+                [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+                {
+                    PSM_ASSERT(params.size() == 1);
+                    return params[0];
+                });
+
+            // update map value
+            ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::Arc>(
+                baseExpressionResult,
+                con1,
+                cpn::Arc::Orientation::T2P,
+                ::std::vector<::std::string>({"base", "index", "x"}),
+                [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+                {
+                    PSM_ASSERT(params.size() == 3);
+                    auto base = ::std::any_cast<::std::map<::std::string, int>>(params[0].value());
+                    auto index = ::std::any_cast<::std::string>(params[1].value());
+                    base[index] = ::std::any_cast<int>(params[2].value());
+                    return cpn::Token(params[0].color(), base); // FIXME: any types
+                }
+            );
+
+            network_->addArc(arc6);
+            network_->addArc(arc7);
+            network_->addArc(arc8);
+        }
+    }
+    catch (const std::bad_cast &e)
+    {   // normal assignment
+        // get lhs storage places
+        auto lhsResultPlace = network_->getPlaceByName(getFullNodeType(_node.leftHandSide().id()) + ".result");
+
+        // update lhs value
+        ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(
+            lhsResultPlace,
+            con1,
+            cpn::Arc::Orientation::T2P,
+            ::std::vector<::std::string>({"x"}),
+            [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+            {
+                PSM_ASSERT(params.size() == 1);
+                return params[0];
+            });
+
+        network_->addArc(arc6);
+    }
 }
 
 bool Generator::visit(TupleExpression const &_node)

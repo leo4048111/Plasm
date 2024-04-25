@@ -9,6 +9,7 @@
 #include <map>
 #include <functional>
 #include <optional>
+#include <regex>
 
 _START_PSM_NM_
 
@@ -36,6 +37,11 @@ namespace cpn
         bool control() const
         {
             return color_ == CTRL_COLOR;
+        }
+
+        bool mapping() const {
+            ::std::regex mappingPattern(R"(mapping\((\w+)\s*=>\s*(\w+)\))");
+            return ::std::regex_search(color_, mappingPattern);
         }
 
         const ::std::type_info &type() const { return value_.type(); }

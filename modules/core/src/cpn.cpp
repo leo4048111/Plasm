@@ -166,6 +166,12 @@ namespace cpn
                     hash += ::std::any_cast<::std::string>(token.value());
                 else if (token.type() == typeid(int))
                     hash += ::std::any_cast<int>(token.value());
+                else if(token.mapping()){
+                    auto m = ::std::any_cast<::std::map<::std::string, int>>(token.value());
+                    for(auto &p : m){
+                        hash += p.first + ::std::to_string(p.second);
+                    }
+                }
             }
         }
 
