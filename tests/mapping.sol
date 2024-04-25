@@ -7,7 +7,7 @@ contract Baseline {
     function foo() public {
         uint256 a = balances[msg.sender];
         if(condition)
-            balances[msg.sender] = 999;
+            balances[msg.sender] += 999;
     }
 
     function foo2() public {
