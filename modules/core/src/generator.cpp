@@ -1044,6 +1044,61 @@ void Generator::endVisit(Assignment const &_node)
     auto rhsInPlace = network_->getPlaceByName(getFullNodeType(_node.rightHandSide().id()) + ".in");
     auto rhsOutPlace = network_->getPlaceByName(getFullNodeType(_node.rightHandSide().id()) + ".out");
 
+    // get op and declare calculate function
+    auto op = _node.assignmentOperator();
+    // val1 lhs value, val2 rhs value
+    auto calculate = []<typename T>(T val1, T val2, Token op) -> T {
+        T result;
+        switch (op) {
+            case Token::Assign:
+                result = val2;
+                break;
+            case Token::AssignBitOr:
+                result = val1 | val2;
+                break;
+            case Token::AssignBitXor:
+                result = val1 ^ val2;
+                break;
+            case Token::AssignBitAnd:
+                result = val1 & val2;
+                break;
+            case Token::AssignShl:
+                result = val1 << val2;
+                break;
+            case Token::AssignSar:
+                // Assuming SAR is arithmetic right shift, often equivalent to signed shift
+                result = val1 >> val2;
+                break;
+            case Token::AssignShr:
+                // Logical right shift (implementation depends on whether T is signed or unsigned)
+                result = static_cast<typename std::make_unsigned<T>::type>(val1) >> val2;
+                break;
+            case Token::AssignAdd:
+                result = val1 + val2;
+                break;
+            case Token::AssignSub:
+                result = val1 - val2;
+                break;
+            case Token::AssignMul:
+                result = val1 * val2;
+                break;
+            case Token::AssignDiv:
+                // Safety check for division by zero should be handled if T can be zero
+                if (val2 == 0) throw std::invalid_argument("Division by zero is not allowed");
+                result = val1 / val2;
+                break;
+            case Token::AssignMod:
+                // Safety check for division by zero should be handled if T can be zero
+                if (val2 == 0) throw std::invalid_argument("Modulo by zero is not allowed");
+                result = val1 % val2;
+                break;
+            default:
+                throw std::invalid_argument("Unsupported operation type");
+        }
+
+        return result;
+    };
+
     // create result place
     ::std::shared_ptr<cpn::Place> resultPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".result", rhsResultPlace->color());
     network_->addPlace(resultPlace);
@@ -1078,7 +1133,6 @@ void Generator::endVisit(Assignment const &_node)
     network_->addArc(arc3);
     network_->addArc(arc4);
     network_->addArc(arc5);
-
 
     // IndexAccess assignment and normal assignment are handled differently
     // IndexAccess assignment type
@@ -1126,12 +1180,13 @@ void Generator::endVisit(Assignment const &_node)
                 con1,
                 cpn::Arc::Orientation::T2P,
                 ::std::vector<::std::string>({"base", "index", "x"}),
-                [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+                [op, calculate](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
                 {
                     PSM_ASSERT(params.size() == 3);
                     auto base = ::std::any_cast<::std::map<::std::string, int>>(params[0].value());
                     auto index = ::std::any_cast<::std::string>(params[1].value());
-                    base[index] = ::std::any_cast<int>(params[2].value());
+                    auto origValue = base[index];
+                    base[index] = calculate(origValue, ::std::any_cast<int>(params[2].value()), op);
                     return cpn::Token(params[0].color(), base); // FIXME: any types
                 }
             );
@@ -1146,19 +1201,42 @@ void Generator::endVisit(Assignment const &_node)
         // get lhs storage places
         auto lhsResultPlace = network_->getPlaceByName(getFullNodeType(_node.leftHandSide().id()) + ".result");
 
-        // update lhs value
+        // get lhs value
         ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(
             lhsResultPlace,
             con1,
-            cpn::Arc::Orientation::T2P,
-            ::std::vector<::std::string>({"x"}),
+            cpn::Arc::Orientation::P2T,
+            ::std::vector<::std::string>({"y"}),
             [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
             {
                 PSM_ASSERT(params.size() == 1);
                 return params[0];
             });
 
+        // update lhs value
+        ::std::shared_ptr<cpn::Arc> arc7 = ::std::make_shared<cpn::Arc>(
+            lhsResultPlace,
+            con1,
+            cpn::Arc::Orientation::T2P,
+            ::std::vector<::std::string>({"x", "y"}),
+            [op, calculate](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
+            {
+                PSM_ASSERT(params.size() == 2);
+                if(params[1].color() == "address" || params[1].color() == "string")
+                {
+                    // FIXME: operands for string
+                    return cpn::Token(params[1].color(), params[0].value());
+                }
+                else {
+                    auto x = ::std::any_cast<int>(params[0].value());
+                    auto y = ::std::any_cast<int>(params[1].value());
+                    auto result = calculate(y, x, op);
+                    return cpn::Token(params[1].color(), result); // FIXME: any types
+                }
+            });
+
         network_->addArc(arc6);
+        network_->addArc(arc7);
     }
 }
 
