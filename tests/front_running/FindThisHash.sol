@@ -11,11 +11,11 @@ contract FindThisHash {
 
     mapping(address => uint256) public balances;
 
-    function sha3(string sol) public view returns (bytes32) {
+    function sha3(string memory sol) public view returns (bytes32) {
         return hash;
     }
 
-    function solve(string solution) public {
+    function solve(string memory solution) public {
         // If you can find the pre image of the hash, receive 1000 ether
          // <yes> <report> FRONT_RUNNING
         require(hash == sha3(solution));
