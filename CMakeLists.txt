@@ -57,6 +57,9 @@ add_subdirectory(${PSM_THIRD_PARTY_DIR}/pugixml)
 # # ogdf
 # add_subdirectory(${PSM_THIRD_PARTY_DIR}/ogdf)
 
+# csv-parser
+add_subdirectory(${PSM_THIRD_PARTY_DIR}/csv-parser)
+
 # modules
 add_subdirectory(${PSM_ROOT_DIR}/modules)
 

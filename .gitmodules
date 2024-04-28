@@ -10,3 +10,7 @@
 	path = third_party/ogdf
 	url = https://github.com/ogdf/ogdf
 	ignore = dirty
+[submodule "third_party/csv-parser"]
+	path = third_party/csv-parser
+	url = https://github.com/vincentlaucsb/csv-parser.git
+	ignore = dirty
