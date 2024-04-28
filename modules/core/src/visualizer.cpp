@@ -109,7 +109,7 @@ void Visualizer::Draw(::std::shared_ptr<cpn::Network> network, bool verbose)
     }
 
     // dump
-    std::ofstream dotFile("cpn_network.dot");
+    std::ofstream dotFile(network->name() + ".dot");
     boost::write_graphviz(dotFile, g,
                           vertex_property_writer<decltype(vertexTypeMap_), decltype(vertexNameMap_)>(vertexTypeMap_, vertexNameMap_));
 }

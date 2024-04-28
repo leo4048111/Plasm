@@ -168,21 +168,38 @@ void CLI::ReadInputFiles()
             continue;
         }
 
-        if (!boost::filesystem::is_regular_file(infile))
-        {
+        // check if path is directory or regular file
+        std::vector<boost::filesystem::path> expandedPaths;
+        if (boost::filesystem::is_directory(infile)) {
+            boost::filesystem::directory_iterator end_itr;
+            for (boost::filesystem::directory_iterator itr(infile); itr != end_itr; ++itr) {
+                if (boost::filesystem::is_regular_file(itr->path())) {
+                    // check file extention
+                    // TODO: supports regular expression
+                    if (itr->path().extension() != ".sol") {
+                        continue;
+                    }
+                    expandedPaths.push_back(itr->path());
+                    LOGI("Found file: %s", itr->path().string().c_str());
+                }
+            }
+        } else if(boost::filesystem::is_regular_file(infile)){
+            expandedPaths.push_back(infile);
+        } else {
             if (!options_.input.ignoreMissingFiles) {
-                LOGE("%s%s%s", '"', infile.string().c_str(), "\" is not a valid regular file.");
+                LOGE("%s%s%s", '"', infile.string().c_str(), "\" is not a valid regular file or directory.");
                 PSM_BAIL();
             }
             else
-                LOGW("%s is not a valid regular file. Skipping.", infile.string().c_str());
-
+                LOGW("%s is not a valid regular file or directory. Skipping.", infile.string().c_str());
             continue;
         }
 
-        ::std::string fileContent = solidity::util::readFileAsString(infile);
-        fileReader_.addOrUpdateFile(infile, ::std::move(fileContent));
-        fileReader_.allowDirectory(boost::filesystem::canonical(infile).remove_filename());
+        for(auto const& infile : expandedPaths) {
+            ::std::string fileContent = solidity::util::readFileAsString(infile);
+            fileReader_.addOrUpdateFile(infile, ::std::move(fileContent));
+            fileReader_.allowDirectory(boost::filesystem::canonical(infile).remove_filename());
+        }
     }
 
     if (fileReader_.sourceUnits().empty())
@@ -190,6 +207,9 @@ void CLI::ReadInputFiles()
         LOGE("All specified input files either do not exist or are not regular files.");
         PSM_BAIL();
     }
+
+    if(!boost::filesystem::is_directory(options_.input.resultPath))
+        boost::filesystem::create_directories(options_.input.resultPath);
 }
 
 void CLI::ProcessInput()
@@ -256,7 +276,24 @@ void CLI::CompileAndGenerate(bool simulate)
 
     for (auto const &error : compiler_->errors())
     {
-        LOGW("%s", error->what());
+        auto sourceLocation = error->sourceLocation();
+        ::std::ostringstream ss;
+        if(sourceLocation) {
+            ss << *sourceLocation << "\n";
+        }
+        ss << error->what();
+        switch(error->severity())
+        {
+            case solidity::langutil::Error::Severity::Warning:
+                LOGW("%s", ss.str().c_str());
+                break;
+            case solidity::langutil::Error::Severity::Error:
+                LOGE("%s", ss.str().c_str());
+                break;
+            case solidity::langutil::Error::Severity::Info:
+                LOGI("%s", ss.str().c_str());
+                break;
+        }
     }
 
     if(!result) {
@@ -265,14 +302,17 @@ void CLI::CompileAndGenerate(bool simulate)
     }
 
     for(auto& x : fileReader_.sourceUnits()) {
+        LOGI("Parsing %s.sol", GetFilenameOfPath(x.first).c_str());
         auto& unit = compiler_->ast(x.first);
         // CPNIDEGenerator generator;
         Generator generator;
         generator.toCPN(unit);
-        generator.dump();
+        // generator.dump();
 
         // get pointer to cpn
         auto network = generator.getNetwork();
+        auto dumpPath = (options_.input.resultPath / GetFilenameOfPath(x.first)).string();
+        network->setName(dumpPath);
 
         // dump csv
         Visualizer::GetInstance().Draw(network, args_.count(g_strVerbose));
@@ -330,6 +370,14 @@ po::options_description CLI::GetOptionsDescription()
     desc.add_options()(g_strSimulate.c_str(), "run simulation");
     desc.add_options()(g_strVerbose.c_str(), "dump unused places and transitions");
     return desc;
+}
+
+::std::string CLI::GetFilenameOfPath(::std::string const& _path) const
+{
+    auto name = boost::filesystem::path(_path).filename().string();
+    auto pos = name.find_last_of(".");
+    name = name.substr(0, pos);
+    return name;
 }
 
 _END_PSM_NM_

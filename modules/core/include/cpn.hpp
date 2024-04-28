@@ -203,6 +203,10 @@ namespace cpn
 
         ::std::string hash() const;
 
+        ::std::string name() const { return name_; }
+
+        void setName(::std::string name) { name_ = name; }
+
         void track(::std::shared_ptr<Place> place) { tracked_places_.push_back(place); };
 
         void addEntryPoint(::std::shared_ptr<Place> place, ::std::vector<::std::shared_ptr<Place>> requiredParams)
@@ -262,6 +266,7 @@ namespace cpn
         void alias(::std::shared_ptr<Transition> transition, ::std::string alias);
 
     private:
+        ::std::string name_{"network"};
         ::std::vector<::std::shared_ptr<Place>> places_;
         ::std::vector<::std::shared_ptr<Transition>> transitions_;
         ::std::vector<::std::shared_ptr<Arc>> arcs_;

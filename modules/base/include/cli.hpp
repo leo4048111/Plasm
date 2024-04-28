@@ -42,7 +42,8 @@ struct CLIOptions {
         CLIMode mode{CLIMode::NetGen};
 		std::set<boost::filesystem::path> paths;
 		boost::filesystem::path basePath = "";
-		std::vector<boost::filesystem::path> includePaths;
+        boost::filesystem::path resultPath = "results/";
+		::std::vector<boost::filesystem::path> includePaths;
         bool ignoreMissingFiles{false}; // if true, missing input file won't bail the whole cli
 	} input;
 
@@ -86,6 +87,8 @@ private:
     void PrintHelp() const;
 
     void PrintLicense() const;
+
+    ::std::string GetFilenameOfPath(::std::string const& _path) const;
 
     static boost::program_options::options_description GetOptionsDescription();
 
