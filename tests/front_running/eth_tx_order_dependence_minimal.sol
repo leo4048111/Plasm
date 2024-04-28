@@ -10,21 +10,21 @@ contract EthTxOrderDependenceMinimal {
     address payable public owner;
     bool public claimed;
     uint public reward;
+    mapping(address => uint) public balances;
 
     function setReward() public payable {
-        require (!claimed);
+        require (claimed != false);
 
         require(msg.sender == owner);
         // <yes> <report> FRONT_RUNNING
-        owner.transfer(reward);
         reward = msg.value;
     }
 
     function claimReward(uint256 submission) payable public {
-        require (!claimed);
+        require (claimed != false);
         require(submission < 10);
         // <yes> <report> FRONT_RUNNING
-        payable(msg.sender).transfer(reward);
+        balances[msg.sender] += reward;
         claimed = true;
     }
 }

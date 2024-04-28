@@ -1,53 +1,37 @@
-/*
- * @source: http://blockchain.unica.it/projects/ethereum-survey/attacks.html#oddsandevens
- * @author: -
- * @vulnerable_at_lines: 25,28
- */
-
 pragma solidity >0.4.2;
 
-contract OddsAndEvens{
+contract OddsAndEvens {
+    mapping(address => uint) public balances;
+    mapping(address => uint) public numbers;
+    address private player1Addr;
+    address private player2Addr;
 
-  struct Player {
-    address addr;
-    uint number;
-  }
+    uint8 public tot;
 
-  Player[2] public players;         //public only for debug purpose
-
-  uint8 tot;
-  address owner;
-
-  function OddsAndEvens() {
-    owner = msg.sender;
-  }
-// <yes> <report> FRONT_RUNNING
-  function play(uint number) payable{
-    if (msg.value != 1 ether) throw;
-    // <yes> <report> FRONT_RUNNING
-    players[tot] = Player(msg.sender, number);
-    tot++;
-
-    if (tot==2) andTheWinnerIs();
-  }
-
-  function andTheWinnerIs() private {
-    bool res ;
-    uint n = players[0].number+players[1].number;
-    if (n%2==0) {
-      res = players[0].addr.send(1800 finney);
-    }
-    else {
-      res = players[1].addr.send(1800 finney);
+    // Function for players to play the game
+    function play(uint number) public payable {
+        if (msg.value != 1 ether) return;
+        if (tot == 0) {
+            player1Addr = msg.sender;
+            numbers[player1Addr] = number;
+            tot += 1;
+        } else if (tot == 1) {
+            player2Addr = msg.sender;
+            numbers[player2Addr] = number;
+            tot += 1;
+            if (tot == 2) andTheWinnerIs();
+        }
     }
 
-    delete players;
-    tot=0;
-  }
+    // Private function to decide and reward the winner
+    function andTheWinnerIs() private {
+        uint n = numbers[player1Addr] + numbers[player2Addr];
+        if (n % 2 == 0) {
+            balances[player1Addr] += 1800;
+        } else {
+            balances[player2Addr] += 1800;
+        }
 
-  function getProfit() {
-    if(msg.sender!=owner) throw;
-    bool res = msg.sender.send(this.balance);
-  }
-
+        tot = 0;
+    }
 }
