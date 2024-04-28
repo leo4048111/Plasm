@@ -4,6 +4,7 @@
 #include <optional>
 #include <set>
 #include <map>
+#include <chrono>
 
 #include "logger.hpp"
 #include "noopgenerator.hpp"
@@ -11,6 +12,7 @@
 #include "generator.hpp"
 #include "visualizer.hpp"
 #include "simulator.hpp"
+#include "report.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -302,7 +304,9 @@ void CLI::CompileAndGenerate(bool simulate)
     }
 
     for(auto& x : fileReader_.sourceUnits()) {
-        LOGI("Parsing %s.sol", GetFilenameOfPath(x.first).c_str());
+        Report report;
+        report.filename = GetFilenameOfPath(x.first);
+        LOGI("Parsing %s.sol", report.filename.c_str());
         auto& unit = compiler_->ast(x.first);
         // CPNIDEGenerator generator;
         Generator generator;
@@ -311,15 +315,35 @@ void CLI::CompileAndGenerate(bool simulate)
 
         // get pointer to cpn
         auto network = generator.getNetwork();
-        auto dumpPath = (options_.input.resultPath / GetFilenameOfPath(x.first)).string();
-        network->setName(dumpPath);
+        report.dump_path = (options_.input.resultPath / report.filename).string();
+        network->setName(report.dump_path);
 
         // dump csv
         Visualizer::GetInstance().Draw(network, args_.count(g_strVerbose));
 
         // simulate
-        if(simulate)
-            Simulator::GetInstance().Simulate(network);
+        if(simulate) {
+            Simulator::GetInstance()
+            .SetOnStart([&](){
+                // Record the simulation start time in milliseconds since epoch
+                report.start_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch()
+                ).count();
+                LOGI("Simulation Start");
+            })
+            .SetOnEnd([&](){
+                // Record the simulation end time in milliseconds since epoch
+                report.end_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch()
+                ).count();
+
+                // Calculate the duration of the simulation in seconds
+                report.duration = (report.end_time - report.start_time) / 1000.0; // Convert from milliseconds to seconds
+
+                LOGI("Simulation End");
+            })
+            .Simulate(network);
+        }
     }
 
     compiler_->reset();
