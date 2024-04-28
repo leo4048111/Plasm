@@ -72,7 +72,7 @@ void CLI::ProcessArgs()
         options_.input.mode = CLIMode::License;
     else if (args_.count(g_strVersion) > 0)
         options_.input.mode = CLIMode::Version;
-    else if(args_.count(g_strSimulate) > 0)
+    else if (args_.count(g_strSimulate) > 0)
         options_.input.mode = CLIMode::Simulate;
     else
         options_.input.mode = CLIMode::NetGen;
@@ -160,7 +160,8 @@ void CLI::ReadInputFiles()
     {
         if (!boost::filesystem::exists(infile))
         {
-            if (!options_.input.ignoreMissingFiles) {
+            if (!options_.input.ignoreMissingFiles)
+            {
                 LOGE("\"%s\" is not found.", infile.string().c_str());
                 PSM_BAIL();
             }
@@ -172,23 +173,32 @@ void CLI::ReadInputFiles()
 
         // check if path is directory or regular file
         std::vector<boost::filesystem::path> expandedPaths;
-        if (boost::filesystem::is_directory(infile)) {
+        if (boost::filesystem::is_directory(infile))
+        {
             boost::filesystem::directory_iterator end_itr;
-            for (boost::filesystem::directory_iterator itr(infile); itr != end_itr; ++itr) {
-                if (boost::filesystem::is_regular_file(itr->path())) {
+            for (boost::filesystem::directory_iterator itr(infile); itr != end_itr; ++itr)
+            {
+                if (boost::filesystem::is_regular_file(itr->path()))
+                {
                     // check file extention
                     // TODO: supports regular expression
-                    if (itr->path().extension() != ".sol") {
+                    if (itr->path().extension() != ".sol")
+                    {
                         continue;
                     }
                     expandedPaths.push_back(itr->path());
                     LOGI("Found file: %s", itr->path().string().c_str());
                 }
             }
-        } else if(boost::filesystem::is_regular_file(infile)){
+        }
+        else if (boost::filesystem::is_regular_file(infile))
+        {
             expandedPaths.push_back(infile);
-        } else {
-            if (!options_.input.ignoreMissingFiles) {
+        }
+        else
+        {
+            if (!options_.input.ignoreMissingFiles)
+            {
                 LOGE("%s%s%s", '"', infile.string().c_str(), "\" is not a valid regular file or directory.");
                 PSM_BAIL();
             }
@@ -197,7 +207,8 @@ void CLI::ReadInputFiles()
             continue;
         }
 
-        for(auto const& infile : expandedPaths) {
+        for (auto const &infile : expandedPaths)
+        {
             ::std::string fileContent = solidity::util::readFileAsString(infile);
             fileReader_.addOrUpdateFile(infile, ::std::move(fileContent));
             fileReader_.allowDirectory(boost::filesystem::canonical(infile).remove_filename());
@@ -210,7 +221,7 @@ void CLI::ReadInputFiles()
         PSM_BAIL();
     }
 
-    if(!boost::filesystem::is_directory(options_.input.resultPath))
+    if (!boost::filesystem::is_directory(options_.input.resultPath))
         boost::filesystem::create_directories(options_.input.resultPath);
 }
 
@@ -280,34 +291,37 @@ void CLI::CompileAndGenerate(bool simulate)
     {
         auto sourceLocation = error->sourceLocation();
         ::std::ostringstream ss;
-        if(sourceLocation) {
+        if (sourceLocation)
+        {
             ss << *sourceLocation << "\n";
         }
         ss << error->what();
-        switch(error->severity())
+        switch (error->severity())
         {
-            case solidity::langutil::Error::Severity::Warning:
-                LOGW("%s", ss.str().c_str());
-                break;
-            case solidity::langutil::Error::Severity::Error:
-                LOGE("%s", ss.str().c_str());
-                break;
-            case solidity::langutil::Error::Severity::Info:
-                LOGI("%s", ss.str().c_str());
-                break;
+        case solidity::langutil::Error::Severity::Warning:
+            LOGW("%s", ss.str().c_str());
+            break;
+        case solidity::langutil::Error::Severity::Error:
+            LOGE("%s", ss.str().c_str());
+            break;
+        case solidity::langutil::Error::Severity::Info:
+            LOGI("%s", ss.str().c_str());
+            break;
         }
     }
 
-    if(!result) {
+    if (!result)
+    {
         LOGE("Error compiling...");
         PSM_BAIL();
     }
 
-    for(auto& x : fileReader_.sourceUnits()) {
+    for (auto &x : fileReader_.sourceUnits())
+    {
         Report report;
         report.filename = GetFilenameOfPath(x.first);
         LOGI("Parsing %s.sol", report.filename.c_str());
-        auto& unit = compiler_->ast(x.first);
+        auto &unit = compiler_->ast(x.first);
         // CPNIDEGenerator generator;
         Generator generator;
         generator.toCPN(unit);
@@ -322,16 +336,16 @@ void CLI::CompileAndGenerate(bool simulate)
         Visualizer::GetInstance().Draw(network, args_.count(g_strVerbose));
 
         // simulate
-        if(simulate) {
+        if (simulate)
+        {
             Simulator::GetInstance()
-            .SetOnStart([&](){
+                .SetOnStart([&]() {
                 // Record the simulation start time in milliseconds since epoch
                 report.start_time = std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::system_clock::now().time_since_epoch()
                 ).count();
-                LOGI("Simulation Start");
-            })
-            .SetOnEnd([&](){
+                LOGI("Simulation Start"); })
+                .SetOnEnd([&](){
                 // Record the simulation end time in milliseconds since epoch
                 report.end_time = std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::system_clock::now().time_since_epoch()
@@ -340,9 +354,17 @@ void CLI::CompileAndGenerate(bool simulate)
                 // Calculate the duration of the simulation in seconds
                 report.duration = (report.end_time - report.start_time) / 1000.0; // Convert from milliseconds to seconds
 
-                LOGI("Simulation End");
-            })
-            .Simulate(network);
+                LOGI("Simulation End"); })
+                .SetOnError([&]() {
+                // Log the error
+                LOGE("Simulation Error");})
+                .SetOnSuccess([&](){
+                // Log the success of the simulation
+                LOGI("Simulation Successful");
+
+                // Optionally update the Report structure to reflect the success status
+                report.infos["Success"] = "The simulation completed successfully."; })
+                .Simulate(network);
         }
     }
 
@@ -396,7 +418,7 @@ po::options_description CLI::GetOptionsDescription()
     return desc;
 }
 
-::std::string CLI::GetFilenameOfPath(::std::string const& _path) const
+::std::string CLI::GetFilenameOfPath(::std::string const &_path) const
 {
     auto name = boost::filesystem::path(_path).filename().string();
     auto pos = name.find_last_of(".");
