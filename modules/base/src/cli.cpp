@@ -358,12 +358,22 @@ void CLI::CompileAndGenerate(bool simulate)
                 report.duration = (report.end_time - report.start_time) / 1000.0; // Convert from milliseconds to seconds
 
                 LOGI("Simulation End"); })
-                .SetOnError([&]() {
-                // Log the error
-                LOGE("Simulation Error");})
-                .SetOnSuccess([&](){
-                // Log the success of the simulation
-                LOGI("Simulation Successful");
+                .SetOnError([&](::std::string initial_hash, ::std::string expect_hash, ::std::string cur_hash) {
+                    report.initial_hash = initial_hash;
+                    report.expect_hash = expect_hash;
+                    report.cur_hash = cur_hash;
+                    report.error_info = "Hash mismatch in different transition fire orders...";
+                    report.hash_mismatch = true;
+                    LOGE("Initial hash: %s, expect hash: %s, cur hash: %s, mismatch...", initial_hash.c_str(), expect_hash.c_str(), cur_hash.c_str());
+                    LOGE("Potential TOD vulnerability found...");
+                })
+                .SetOnSuccess([&](::std::string initial_hash, ::std::string cur_hash){
+                    report.initial_hash = initial_hash;
+                    report.expect_hash = cur_hash;
+                    report.cur_hash = cur_hash;
+                    report.hash_mismatch = false;
+                    LOGI("Initial hash: %s, cur hash: %s, matched...", initial_hash.c_str(), cur_hash.c_str());
+                    LOGI("Simulation passed...");
                 })
                 .Simulate(network);
                 reports.push_back(report);
@@ -437,7 +447,7 @@ void CLI::DumpReports(const ::std::vector<Report>& reports) const {
     // Write CSV header
     writer << ::std::vector<::std::string>({
         "Filename", "DumpPath", "StartTime", "EndTime",
-        "Duration", "Memory", "InitialHash", "ExpectHash",
+        "Duration", "Memory", "InitialHash", "ExpectHash", "CurHash",
         "HashMismatch", "ErrorInfo"
     });
 
@@ -446,7 +456,7 @@ void CLI::DumpReports(const ::std::vector<Report>& reports) const {
         writer << ::std::vector<::std::string>({
             report.filename, report.dump_path, ::std::to_string(report.start_time),
             ::std::to_string(report.end_time), ::std::to_string(report.duration), ::std::to_string(report.memory),
-            report.initial_hash, report.expect_hash, report.hash_mismatch ? "true" : "false",
+            report.initial_hash, report.expect_hash, report.cur_hash, report.hash_mismatch ? "true" : "false",
             report.error_info
         });
     }

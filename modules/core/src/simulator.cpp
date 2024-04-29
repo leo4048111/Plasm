@@ -27,10 +27,13 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
 
     // traverse all permutations
     ::std::string lastHash = "";
+    ::std::string initHash = "";
+    ::std::string curHash = "";
     int round = 0;
     do
     {
         network_->reset();
+        initHash = network_->hash();
 
         cpn::Token ctrl(cpn::CTRL_COLOR, "()");
 
@@ -60,7 +63,7 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
 
             dfs(entry,exitPlace);
         }
-        ::std::string curHash = network_->hash();
+        curHash = network_->hash();
         if (lastHash != "")
         {
             if (lastHash != curHash)
@@ -69,11 +72,17 @@ void Simulator::Simulate(std::shared_ptr<cpn::Network> network)
             }
         }
         lastHash = network_->hash().c_str();
+
+        if(!passed) break;
     } while (std::next_permutation(entryPoints.begin(), entryPoints.end(), [](const std::shared_ptr<cpn::Place> &a, const std::shared_ptr<cpn::Place> &b)
                                    { return a->name() < b->name(); }));
 
     if (passed)
     {
+        if(onSuccess_) onSuccess_(initHash, curHash);
+    }
+    else {
+        if(onError_) onError_(initHash, lastHash, curHash);
     }
 
     if(onEnd_) onEnd_();
