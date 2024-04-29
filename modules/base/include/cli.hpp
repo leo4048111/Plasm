@@ -2,6 +2,7 @@
 
 #include "base.hpp"
 #include "singleton.hpp"
+#include "report.hpp"
 
 #include <memory>
 
@@ -87,6 +88,8 @@ private:
     void PrintHelp() const;
 
     void PrintLicense() const;
+
+    void DumpReports(const ::std::vector<Report>& reports) const;
 
     ::std::string GetFilenameOfPath(::std::string const& _path) const;
 

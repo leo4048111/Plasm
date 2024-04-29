@@ -316,6 +316,7 @@ void CLI::CompileAndGenerate(bool simulate)
         PSM_BAIL();
     }
 
+    ::std::vector<Report> reports;
     for (auto &x : fileReader_.sourceUnits())
     {
         Report report;
@@ -365,9 +366,11 @@ void CLI::CompileAndGenerate(bool simulate)
                 // Optionally update the Report structure to reflect the success status
                 report.infos["Success"] = "The simulation completed successfully."; })
                 .Simulate(network);
+                reports.push_back(report);
         }
     }
 
+    DumpReports(reports);
     compiler_->reset();
 }
 
@@ -424,6 +427,11 @@ po::options_description CLI::GetOptionsDescription()
     auto pos = name.find_last_of(".");
     name = name.substr(0, pos);
     return name;
+}
+
+void CLI::DumpReports(const ::std::vector<Report>& reports) const
+{
+
 }
 
 _END_PSM_NM_
