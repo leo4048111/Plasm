@@ -452,6 +452,9 @@ void CLI::DumpReports(const ::std::vector<Report>& reports) const {
     }
 
     // Output the content of stringstream to standard output or a file
-    LOGI(ss.str().c_str()); // Can also output to a file: ofstream outputFile("reports.csv"); outputFile << ss.str();
+    auto csvFilePath = (options_.input.resultPath / "reports.csv").string();
+    ::std::ofstream outputFile(csvFilePath);
+    outputFile << ss.str();
+    outputFile.close();
 }
 _END_PSM_NM_
