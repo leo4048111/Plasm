@@ -59,6 +59,7 @@ add_subdirectory(${PSM_THIRD_PARTY_DIR}/pugixml)
 
 # csv-parser
 add_subdirectory(${PSM_THIRD_PARTY_DIR}/csv-parser)
+include_directories(${PSM_THIRD_PARTY_DIR}/csv-parser/include)
 
 # modules
 add_subdirectory(${PSM_ROOT_DIR}/modules)

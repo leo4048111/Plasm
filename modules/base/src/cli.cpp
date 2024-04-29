@@ -5,6 +5,7 @@
 #include <set>
 #include <map>
 #include <chrono>
+#include <sstream>
 
 #include "logger.hpp"
 #include "noopgenerator.hpp"
@@ -13,6 +14,7 @@
 #include "visualizer.hpp"
 #include "simulator.hpp"
 #include "report.hpp"
+#include "csv.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -362,9 +364,7 @@ void CLI::CompileAndGenerate(bool simulate)
                 .SetOnSuccess([&](){
                 // Log the success of the simulation
                 LOGI("Simulation Successful");
-
-                // Optionally update the Report structure to reflect the success status
-                report.infos["Success"] = "The simulation completed successfully."; })
+                })
                 .Simulate(network);
                 reports.push_back(report);
         }
@@ -429,9 +429,29 @@ po::options_description CLI::GetOptionsDescription()
     return name;
 }
 
-void CLI::DumpReports(const ::std::vector<Report>& reports) const
-{
+void CLI::DumpReports(const ::std::vector<Report>& reports) const {
+    ::std::stringstream ss; // Create stringstream object
 
+    auto writer = csv::make_csv_writer(ss); // Create CSV writer
+
+    // Write CSV header
+    writer << ::std::vector<::std::string>({
+        "Filename", "DumpPath", "StartTime", "EndTime",
+        "Duration", "Memory", "InitialHash", "ExpectHash",
+        "HashMismatch", "ErrorInfo"
+    });
+
+    // Iterate over reports vector and write information of each Report object into the CSV file
+    for (const auto& report : reports) {
+        writer << ::std::vector<::std::string>({
+            report.filename, report.dump_path, ::std::to_string(report.start_time),
+            ::std::to_string(report.end_time), ::std::to_string(report.duration), ::std::to_string(report.memory),
+            report.initial_hash, report.expect_hash, report.hash_mismatch ? "true" : "false",
+            report.error_info
+        });
+    }
+
+    // Output the content of stringstream to standard output or a file
+    LOGI(ss.str().c_str()); // Can also output to a file: ofstream outputFile("reports.csv"); outputFile << ss.str();
 }
-
 _END_PSM_NM_
