@@ -1615,26 +1615,42 @@ void Generator::endVisit(FunctionCall const &_node)
     ::std::shared_ptr<cpn::Place> outPlace = ::std::make_shared<cpn::Place>(getFullNodeType(_node.id()) + ".out", cpn::CTRL_COLOR);
     network_->addPlace(inPlace);
     network_->addPlace(outPlace);
-
-    // create function call transition and call ret transition
-    ::std::shared_ptr<cpn::Transition> con0 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con0");
-    network_->addTransition(con0);
-    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con1");
-    network_->addTransition(con1);
     auto funcInPlace = network_->getPlaceByName(callee + ".in");
     auto funcOutPlace = network_->getPlaceByName(callee + ".out");
+
+    // connect function parameter io places
+    ::std::shared_ptr<cpn::Place> lastOutPlace = inPlace;
+    int cnt = 0;
+    for (auto const &param : _node.arguments())
+    {
+        auto functionParamInPlace = network_->getPlaceByName(getFullNodeType(param->id()) + ".in");
+        auto functionParamOutPlace = network_->getPlaceByName(getFullNodeType(param->id()) + ".out");
+        auto conx = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con" + ::std::to_string(cnt++));
+        network_->addTransition(conx);
+        ::std::shared_ptr<cpn::Arc> arc7 = ::std::make_shared<cpn::Arc>(lastOutPlace, conx, cpn::Arc::Orientation::P2T);
+        ::std::shared_ptr<cpn::Arc> arc8 = ::std::make_shared<cpn::Arc>(functionParamInPlace, conx, cpn::Arc::Orientation::T2P);
+        network_->addArc(arc7);
+        network_->addArc(arc8);
+        lastOutPlace = functionParamOutPlace;
+    }
+
+    // connect last out place with function in
+    auto conx = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con" + ::std::to_string(cnt++));
+    network_->addTransition(conx);
+    ::std::shared_ptr<cpn::Arc> arc9 = ::std::make_shared<cpn::Arc>(lastOutPlace, conx, cpn::Arc::Orientation::P2T);
+    ::std::shared_ptr<cpn::Arc> arc10 = ::std::make_shared<cpn::Arc>(funcInPlace, conx, cpn::Arc::Orientation::T2P);
+    network_->addArc(arc9);
+    network_->addArc(arc10);
+
+    // create function call transition and call ret transition
+    ::std::shared_ptr<cpn::Transition> con1 = ::std::make_shared<cpn::Transition>(getFullNodeType(_node.id()) + ".con" + ::std::to_string(cnt++));
+    network_->addTransition(con1);
 
     if (funcInPlace == nullptr || funcOutPlace == nullptr)
     {
         LOGE("Function %s not found", callee.c_str());
         return;
     }
-
-    // connect function call transition with in place
-    ::std::shared_ptr<cpn::Arc> arc1 = ::std::make_shared<cpn::Arc>(inPlace, con0, cpn::Arc::Orientation::P2T);
-    ::std::shared_ptr<cpn::Arc> arc2 = ::std::make_shared<cpn::Arc>(funcInPlace, con0, cpn::Arc::Orientation::T2P);
-    network_->addArc(arc1);
-    network_->addArc(arc2);
 
     // connect function call ret transition with out place
     ::std::shared_ptr<cpn::Arc> arc3 = ::std::make_shared<cpn::Arc>(funcOutPlace, con1, cpn::Arc::Orientation::P2T);
@@ -1643,7 +1659,7 @@ void Generator::endVisit(FunctionCall const &_node)
     network_->addArc(arc4);
 
     // connect function param places
-    int cnt = 0;
+    cnt = 0;
     for (auto const &param : _node.arguments())
     {
         auto paramResultPlace = network_->getPlaceByName(getFullNodeType(param->id()) + ".result");
@@ -1651,7 +1667,7 @@ void Generator::endVisit(FunctionCall const &_node)
         auto functionParamPlace = network_->getPlaceByName(callee + "." + SCOPE_PARAM + paramName);
         ::std::shared_ptr<cpn::Arc> arc5 = ::std::make_shared<cpn::Arc>(
             paramResultPlace,
-            con0,
+            conx,
             cpn::Arc::Orientation::BD,
             ::std::vector<::std::string>({paramName}),
             [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
@@ -1661,7 +1677,7 @@ void Generator::endVisit(FunctionCall const &_node)
             });
         ::std::shared_ptr<cpn::Arc> arc6 = ::std::make_shared<cpn::Arc>(
             functionParamPlace,
-            con0,
+            conx,
             cpn::Arc::Orientation::T2P,
             ::std::vector<::std::string>({paramName}),
             [](::std::vector<cpn::Token> params) -> ::std::optional<cpn::Token>
