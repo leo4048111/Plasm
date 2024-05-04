@@ -100,8 +100,8 @@ void Simulator::dfs(::std::shared_ptr<cpn::Place> place, ::std::shared_ptr<cpn::
     {
         auto transition = arc->transition();
         // check function call return path
-        ::std::regex functionCallCon1Pattern("\\bFunctionCall\\.[0-9]+\\.con1\\b");
-        bool isFunctionCallCon1 = ::std::regex_search(transition->name(), functionCallCon1Pattern);
+        ::std::regex functionCallConLastPattern("\\bFunctionCall\\.[0-9]+\\.con.out\\b");
+        bool isFunctionCallCon1 = ::std::regex_search(transition->name(), functionCallConLastPattern);
         bool result;
         if(isFunctionCallCon1)
         {
@@ -112,7 +112,7 @@ void Simulator::dfs(::std::shared_ptr<cpn::Place> place, ::std::shared_ptr<cpn::
             auto idString = callerPlaceName.substr(idStartPos + 1, idEndPos - idStartPos);
             auto callerId = std::stoi(idString);
 
-            if(transition->name() == "FunctionCall." + std::to_string(callerId) + ".con1")
+            if(transition->name() == "FunctionCall." + std::to_string(callerId) + ".con.out")
             {
                 result = network_->fire(transition);
             }

@@ -17,7 +17,7 @@ contract EthTxOrderDependenceMinimal {
 
         require(msg.sender == owner);
         // <yes> <report> FRONT_RUNNING
-        reward = msg.value;
+        reward = 9999;
     }
 
     function claimReward(uint256 submission) payable public {
