@@ -31,6 +31,7 @@ void Visualizer::addPlace(Graph &g, ::std::shared_ptr<cpn::Place> place)
 {
     auto v = boost::add_vertex(g);
     auto name = place->name();
+    if(vertexMap_.find(name) != vertexMap_.end()) return;
     vertexMap_[place->name()] = v;
     vertexTypeMap_[vertexMap_[place->name()]] = "place";
     vertexNameMap_[vertexMap_[place->name()]] = name;
@@ -40,6 +41,7 @@ void Visualizer::addTransition(Graph &g, ::std::shared_ptr<cpn::Transition> tran
 {
     auto v = boost::add_vertex(g);
     auto name = transition->name();
+    if(vertexMap_.find(name) != vertexMap_.end()) return;
     vertexMap_[transition->name()] = v;
     vertexTypeMap_[vertexMap_[transition->name()]] = "transition";
     vertexNameMap_[vertexMap_[transition->name()]] = name;
