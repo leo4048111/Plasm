@@ -134,7 +134,6 @@ namespace cpn
                 place->push(outToken.value());
         }
 
-        LOGI("%s", transition->name().c_str());
         return true;
     }
 
