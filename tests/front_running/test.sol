@@ -6,11 +6,7 @@ contract TestContract {
     uint256 public b = 2;
     uint256 public c = 4;
 
-    function foo() public {
-        c = a + b;
-
-        if(2 > 1) {
-            a = 1;
-        }
+    function foo() public returns(uint256) {
+        return 1;
     }
 }
