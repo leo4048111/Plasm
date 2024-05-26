@@ -8,8 +8,8 @@ contract VotingContract {
     bool public votingClosed = false;
 
     function vote(bool _vote) public {
-        require(!voted[msg.sender], "Already voted");
-        require(!votingClosed, "Voting is closed");
+        require(voted[msg.sender] == false, "Already voted");
+        require(votingClosed == false, "Voting is closed");
         if (_vote) {
             yesCount += 1;
         } else {
