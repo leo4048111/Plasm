@@ -1,8 +1,6 @@
 # Plasm
 A solidity to CPN tool.
 
-Still developing, contributions are welcomed
-
 ```
 ├── CMakeLists.txt
 ├── README.md
@@ -31,4 +29,8 @@ Still developing, contributions are welcomed
 └── third_party
     ├── pugixml
     └── solidity
+```
+## Usage
+```
+./Plasm ./tests/front_running
 ```
